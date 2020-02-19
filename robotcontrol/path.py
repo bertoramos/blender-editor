@@ -71,21 +71,29 @@ def draw_pose_note(context, name, pose, color, font, font_align):
     loc = pose.loc
     rot = pose.rotation
 
-    txt = ""
-    txt += 'x = {:0.4f} y = {:0.4f} z = {:0.4f}'.format(loc.x, loc.y, loc.z) + " [m] |"
-    txt += '\u03B1 = {:0.4f} \u03B2 = {:0.4f} \u03B3 = {:0.4f}'.format(degrees(rot.x), degrees(rot.y), degrees(rot.z)) + " [deg] |"
-
+    txt = '({:0.4f}, {:0.4f}, {:0.4f})'.format(loc.x, loc.y, loc.z)
 
     hint_space = 10
     rotation = 0
-    pose_note_name = utils.draw_text(context, name, txt, loc, color, hint_space, font, font_align, rotation)
+    loc_note_name = utils.draw_text(context, name, txt, loc, color, hint_space, font, font_align, rotation)
 
-    bpy.data.objects[pose_note_name].lock_location[0:3] = (True, True, True)
-    bpy.data.objects[pose_note_name].lock_rotation[0:3] = (True, True, True)
-    bpy.data.objects[pose_note_name].lock_scale[0:3] = (True, True, True)
-    bpy.data.objects[pose_note_name].protected = True
+    bpy.data.objects[loc_note_name].lock_location[0:3] = (True, True, True)
+    bpy.data.objects[loc_note_name].lock_rotation[0:3] = (True, True, True)
+    bpy.data.objects[loc_note_name].lock_scale[0:3] = (True, True, True)
+    bpy.data.objects[loc_note_name].protected = True
 
-    return pose_note_name
+    txt = '({:0.4f}, {:0.4f}, {:0.4f})'.format(degrees(rot.x), degrees(rot.y), degrees(rot.z))
+
+    rot_note_name = utils.draw_text(context, name, txt, loc, color, hint_space, font, font_align, rotation)
+
+    bpy.data.objects[rot_note_name].location += Vector((1,1,1))
+
+    bpy.data.objects[rot_note_name].lock_location[0:3] = (True, True, True)
+    bpy.data.objects[rot_note_name].lock_rotation[0:3] = (True, True, True)
+    bpy.data.objects[rot_note_name].lock_scale[0:3] = (True, True, True)
+    bpy.data.objects[rot_note_name].protected = True
+
+    return loc_note_name, rot_note_name
 
 def draw_speed_note(context, name, action, color, font, font_align):
     # Draw notes
@@ -243,10 +251,19 @@ class Action:
         update_arrow(self._arrow, self._p1)
 
     def draw_annotation(self, context):
-        self._note = Annotation(context, "Note", self, Vector((1.0, 1.0, 1.0, 1.0)), 14, 'C')
+        color = Vector((1.0, 1.0, 1.0, 1.0))
+        font = 14
+        font_align = 'C'
+        self._loc_note_name, self._rot_note_name = draw_pose_note(context, "Note_pose", self.p1, color, font, font_align)
+        self._speed_note_name = draw_speed_note(context, "Note_speed", self, color, font, font_align)
 
     def del_annotation(self):
-        del self._note
+        loc_note = bpy.data.objects[self._loc_note_name]
+        rot_note = bpy.data.objects[self._rot_note_name]
+        speed_note = bpy.data.objects[self._speed_note_name]
+        bpy.data.objects.remove(loc_note, do_unlink=True)
+        bpy.data.objects.remove(rot_note, do_unlink=True)
+        bpy.data.objects.remove(speed_note, do_unlink=True)
 
     def get_p0(self):
         return self._p0
@@ -263,7 +280,8 @@ class Action:
 
         arrow = bpy.data.objects[self._arrow]
         bpy.data.objects.remove(arrow, do_unlink=True)
-        del self._note
+
+        self.del_annotation()
 
     p0 = property(get_p0)
     p1 = property(get_p1)
