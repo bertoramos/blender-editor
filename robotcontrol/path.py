@@ -1,6 +1,6 @@
 
 import bpy
-from mathutils import Vector
+from mathutils import Vector, Euler
 
 from bpy_extras.object_utils import object_data_add
 import bmesh
@@ -86,7 +86,9 @@ def draw_pose_note(context, name, pose, color, font, font_align):
 
     rot_note_name = utils.draw_text(context, name, txt, loc, color, hint_space, font, font_align, rotation)
 
-    bpy.data.objects[rot_note_name].location += Vector((1,1,1))
+    euler_rot = Euler(rot)
+
+    bpy.data.objects[rot_note_name].location += euler_rot.to_matrix().col[2]
 
     bpy.data.objects[rot_note_name].lock_location[0:3] = (True, True, True)
     bpy.data.objects[rot_note_name].lock_rotation[0:3] = (True, True, True)
