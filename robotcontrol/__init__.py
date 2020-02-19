@@ -27,6 +27,8 @@ import pathEditor
 import pathEditorPanel
 import collapse_check
 import utils
+import robot
+import robot_panel
 
 # Remove
 import importlib
@@ -38,9 +40,11 @@ importlib.reload(pathEditor)
 importlib.reload(pathEditorPanel)
 importlib.reload(collapse_check)
 importlib.reload(utils)
+importlib.reload(robot)
+importlib.reload(robot_panel)
 
-operadores = [cursorListener, pathEditor]
-paneles = [pathEditorPanel]
+operadores = [cursorListener, pathEditor, robot]
+paneles = [pathEditorPanel, robot_panel]
 
 def register():
     for op in operadores:

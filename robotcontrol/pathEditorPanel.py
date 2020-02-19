@@ -5,12 +5,10 @@ import pathEditor as pe
 
 def autoregister():
     bpy.utils.register_class(PathCreationPanel)
-    bpy.utils.register_class(RobotPropsPanel)
     bpy.utils.register_class(ToolsPanel)
 
 def autounregister():
     bpy.utils.unregister_class(PathCreationPanel)
-    bpy.utils.unregister_class(RobotPropsPanel)
     bpy.utils.unregister_class(ToolsPanel)
 
 class PathCreationPanel(bpy.types.Panel):
@@ -44,7 +42,7 @@ class ToolsPanel(bpy.types.Panel):
         box.prop(props, "prop_speed", text="Speed")
         self.layout.operator(pe.MoveCursorToLastPoseOperator.bl_idname, icon="REW")
 
-
+"""
 class RobotPropsPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_RobotPropsPanel"
     bl_label = "Robot Props"
@@ -61,3 +59,4 @@ class RobotPropsPanel(bpy.types.Panel):
         self.layout.prop(props, "prop_margin_width", text="Safety width margin")
         self.layout.prop(props, "prop_length", text="Length")
         self.layout.prop(props, "prop_margin_length", text="Safety length margin")
+"""

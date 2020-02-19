@@ -16,9 +16,6 @@ def autoregister():
 
     bpy.utils.register_class(PoseProps)
     bpy.types.Scene.pose_props = bpy.props.PointerProperty(type=PoseProps)
-    bpy.utils.register_class(RobotProps)
-    bpy.types.Scene.robot_props = bpy.props.PointerProperty(type=RobotProps)
-    bpy.utils.register_class(SetRobotPropsOperator)
 
     bpy.utils.register_class(SavePoseOperator)
     bpy.utils.register_class(UndoPoseOperator)
@@ -36,9 +33,6 @@ def autounregister():
 
     bpy.utils.unregister_class(PoseProps)
     del bpy.types.Scene.pose_props
-    bpy.utils.unregister_class(RobotProps)
-    del bpy.types.Scene.robot_props
-    bpy.utils.unregister_class(SetRobotPropsOperator)
 
     bpy.utils.unregister_class(SavePoseOperator)
     bpy.utils.unregister_class(UndoPoseOperator)
@@ -100,6 +94,7 @@ class PathDrawer(cl.Observer):
         if self.current_action is not None:
             self.current_action.move(current_pose)
 
+"""
 class RobotProps(bpy.types.PropertyGroup):
     prop_width: bpy.props.FloatProperty(min=0.0, default=1.5)
     prop_height: bpy.props.FloatProperty(min=0.0, default=1.5)
@@ -107,7 +102,8 @@ class RobotProps(bpy.types.PropertyGroup):
     prop_margin_height: bpy.props.FloatProperty(min=0.0, default=0.5)
     prop_margin_width: bpy.props.FloatProperty(min=0.0, default=0.5)
     prop_margin_length: bpy.props.FloatProperty(min=0.0, default=1.5)
-
+"""
+"""
 class SetRobotPropsOperator(bpy.types.Operator):
     bl_idname = "scene.set_robot_props"
     bl_label = 'Set robot props'
@@ -120,7 +116,7 @@ class SetRobotPropsOperator(bpy.types.Operator):
     def invoke(self, context, event):
         wm = context.window_manager
         return wm.invoke_props_dialog(self)
-
+"""
 class PoseProps(bpy.types.PropertyGroup):
     prop_speed: bpy.props.FloatProperty(min=0.0, max=100.0, default=5.0)
 
