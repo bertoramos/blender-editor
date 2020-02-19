@@ -31,7 +31,7 @@ def add_obstacle(self, context, name, size, margin, r, g, b, a):
     obstacle.object_type = 'OBSTACLE'
 
     if obstacle.active_material is None:
-        mat = bpy.data.materials.new("Material_cursor")
+        mat = bpy.data.materials.new("Material_" + name)
         obstacle.active_material = mat
     mat.diffuse_color = Vector((r, g, b, a))
 
@@ -40,16 +40,22 @@ def add_obstacle(self, context, name, size, margin, r, g, b, a):
     y_dim = size.y + 2.0 * margin.y/100 * size.y
     z_dim = size.z + 2.0 * margin.z/100 * size.z
 
-    bpy.ops.object.empty_add(type='CUBE')
-    area = bpy.context.selected_objects[0]
+    bpy.ops.mesh.primitive_cube_add()
+    area = bpy.context.active_object
     area.name = 'margin' + name
 
-    area.scale /= 2
-    area.scale.x *= x_dim
-    area.scale.y *= y_dim
-    area.scale.z *= z_dim
+    area.dimensions = Vector((1,1,1))
+    area.dimensions.x *= x_dim
+    area.dimensions.y *= y_dim
+    area.dimensions.z *= z_dim
+
+    if area.active_material is None:
+        mat = bpy.data.materials.new("Material_margin" + name)
+        area.active_material = mat
+    mat.diffuse_color = Vector((0, 0, 0, 0.2))
 
     # Centrar area al objeto
+    # Parent set
     area.location.z += inc_z_location
     area.object_type = 'OBSTACLE_MARGIN'
 
