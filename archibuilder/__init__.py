@@ -27,6 +27,7 @@ import geom_math
 import ceilOperator
 import hideAreaOperator
 import beaconOperator
+import beaconPanel
 
 # Remove
 import importlib
@@ -38,10 +39,11 @@ importlib.reload(geom_math)
 importlib.reload(ceilOperator)
 importlib.reload(hideAreaOperator)
 importlib.reload(beaconOperator)
+importlib.reload(beaconPanel)
 
 operadores = [wallOperator, obstacleOperator, ceilOperator, hideAreaOperator, beaconOperator]
 
-paneles = [envBuilderPanel, decoratePanel]
+paneles = [envBuilderPanel, decoratePanel, beaconPanel]
 
 def register():
     for op in operadores:

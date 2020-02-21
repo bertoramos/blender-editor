@@ -1,6 +1,5 @@
 
 import bpy
-import beaconOperator as bo
 import obstacleOperator as oo
 
 def autoregister():
@@ -18,4 +17,3 @@ class DecoratePanel(bpy.types.Panel):
 
     def draw(self, context):
         self.layout.operator(oo.AddObstacleOperator.bl_idname, icon='MESH_CUBE', text="Create object")
-        self.layout.operator(bo.AddBeaconOperator.bl_idname, icon='LIGHT_POINT', text="Create beacon")
