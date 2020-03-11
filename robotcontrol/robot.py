@@ -1,13 +1,16 @@
 
 import bpy
+from mathutils import Vector
+import robot_props
+
+from math import radians
 
 def autoregister():
     RobotSet()
     bpy.utils.register_class(AddRobotOperator)
 
 def autounregister():
-    global rs
-    rs.clear()
+    RobotSet().clear()
     bpy.utils.unregister_class(AddRobotOperator)
 
 class RobotSet:
@@ -21,7 +24,7 @@ class RobotSet:
         return cls.__instance
 
     def addRobot(self, robot):
-        assert type(robot) == Robot, "Error: expected robot, get " + str(type(robot))
+        assert isinstance(robot, Robot), "Error: expected robot, get " + str(type(robot))
         RobotSet.__instance.__set.add(robot)
 
     def getRobot(self, idn):
@@ -61,7 +64,7 @@ class Robot:
         assert type(loc) == Vector, "Error: expected Vector location"
         self.__loc = loc
 
-        assert type in robot_types, "Error: robot_types does not contain " + str(type)
+        assert robot_type in robot_props.robot_types, "Error: robot_types does not contain " + str(type)
         self.__robot_type = robot_type
 
     def __get_idn(self):
@@ -92,8 +95,15 @@ class Robot:
     robot_type = property(__get_robot_type)
 
 
-def draw_myrobot(self, context):
-    pass
+def draw_myrobot(name, loc, robot_type, rot, dim, margin):
+    bpy.ops.mesh.primitive_cube_add(location=(loc.x, loc.y, loc.z))
+    myrobot = bpy.context.active_object
+    myrobot.dimensions.xyz = dim.xyz
+    myrobot.rotation_euler.z = radians(rot)
+
+    myrobot.protected = True
+
+# TODO: list robots and select to delete
 
 class MyRobot(Robot):
 
@@ -130,7 +140,6 @@ class MyRobot(Robot):
     dim = property(__get_dim)
     margin = property(__get_margin)
 
-
 class AddRobotOperator(bpy.types.Operator):
     bl_idname = "scene.add_robot"
     bl_label = "Add Robot"
@@ -149,12 +158,18 @@ class AddRobotOperator(bpy.types.Operator):
         loc = scene.robot_props.prop_robot_loc
         robot_type = scene.robot_props.prop_robot_type
 
-        if type == 'MYROBOT':
-            rot = scene.robot_props.prop_myrobot_rotation
-            dim = scene.robot_props.prop_myrobot_dim
-            margin = scene.robot_props.prop_myrobot_margin
+        robot_type_tuple = ()
+        for ENUM, enum, empty, num in robot_props.robot_types:
+            if robot_type == ENUM:
+                robot_type_tuple = (ENUM, enum, empty, num)
 
-            robot = Robot(idn, name, loc, robot_type, rot, dim, margin)
-            rs.addRobot(robot)
-        
+        if robot_type == 'MYROBOT':
+            rot = scene.myrobot_props.prop_myrobot_rotation
+            dim = scene.myrobot_props.prop_myrobot_dim
+            margin = scene.myrobot_props.prop_myrobot_margin
+
+            robot = MyRobot(idn, name, loc, robot_type_tuple, rot, dim, margin)
+            RobotSet().addRobot(robot)
+            draw_myrobot(name, loc, robot_type, rot, dim, margin)
+
         return {'FINISHED'}

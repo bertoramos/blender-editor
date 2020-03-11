@@ -18,6 +18,7 @@ class RobotPropsPanel(bpy.types.Panel):
     def draw(self, context):
         props = bpy.context.scene.robot_props
         self.layout.prop(props, "prop_robot_name", text="Name")
+        self.layout.prop(props, "prop_robot_loc", text="Location")
         self.layout.prop(props, "prop_robot_type", text="Type")
         type = bpy.context.scene.robot_props.prop_robot_type
         if type == "MYROBOT":
@@ -25,4 +26,4 @@ class RobotPropsPanel(bpy.types.Panel):
             self.layout.prop(props, "prop_myrobot_rotation")
             self.layout.prop(props, "prop_myrobot_dim")
             self.layout.prop(props, "prop_myrobot_margin")
-        self.layout.operator(robot.AddRobotOperator.bl_idname, icon="", text="Add robot")
+        self.layout.operator(robot.AddRobotOperator.bl_idname, icon="SYSTEM", text="Add robot")
