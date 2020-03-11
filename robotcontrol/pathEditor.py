@@ -94,29 +94,7 @@ class PathDrawer(cl.Observer):
         if self.current_action is not None:
             self.current_action.move(current_pose)
 
-"""
-class RobotProps(bpy.types.PropertyGroup):
-    prop_width: bpy.props.FloatProperty(min=0.0, default=1.5)
-    prop_height: bpy.props.FloatProperty(min=0.0, default=1.5)
-    prop_length: bpy.props.FloatProperty(min=0.0, default=1.5)
-    prop_margin_height: bpy.props.FloatProperty(min=0.0, default=0.5)
-    prop_margin_width: bpy.props.FloatProperty(min=0.0, default=0.5)
-    prop_margin_length: bpy.props.FloatProperty(min=0.0, default=1.5)
-"""
-"""
-class SetRobotPropsOperator(bpy.types.Operator):
-    bl_idname = "scene.set_robot_props"
-    bl_label = 'Set robot props'
-    bl_options = {"REGISTER", "UNDO"}
-    bl_description = "Set robot props"
 
-    def execute(self, context):
-        return {'FINISHED'}
-
-    def invoke(self, context, event):
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self)
-"""
 class PoseProps(bpy.types.PropertyGroup):
     prop_speed: bpy.props.FloatProperty(min=0.0, max=100.0, default=5.0)
 

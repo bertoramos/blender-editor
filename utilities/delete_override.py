@@ -46,11 +46,15 @@ def get_children(parent):
 
 def delete(self, context, delete_children):
     protected_obj = []
-    for obj in context.selected_objects:
+    to_delete = [obj for obj in context.selected_objects] # map deleted objects : avoid an invalid object error when the child of a selected object is also selected
+    for obj in to_delete:
         if not obj.protected:
             if delete_children:
                 children = get_children(obj)
                 for child in children:
+
+                    if child in to_delete: # indicates selected child was deleted
+                        to_delete.remove(child)
                     drop(child)
             drop(obj)
         else :

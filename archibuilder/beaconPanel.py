@@ -18,6 +18,15 @@ def add_infrared_panel(layout):
     layout.prop(props, "prop_distance", text="Distance")
     layout.prop(props, "prop_spot_size", text="Spot size")
 
+"""
+def add_type_panel(layout):
+    "" "
+    Add beacon props panel
+    "" "
+    pass
+
+"""
+
 class AddBeaconPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_BeaconPanel"
     bl_label = "Beacon"
@@ -34,4 +43,8 @@ class AddBeaconPanel(bpy.types.Panel):
             add_bluetooth_panel(self.layout)
         elif props.prop_type_beacon == "INFRARED":
             add_infrared_panel(self.layout)
+        """
+        elif props.prop_type_beacon == "TYPE":
+            add_type_panel(layout)
+        """
         self.layout.operator(bo.AddBeaconOperator.bl_idname, icon='LIGHT_POINT', text="Create beacon")

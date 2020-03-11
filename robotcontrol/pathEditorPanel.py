@@ -24,6 +24,7 @@ class PathCreationPanel(bpy.types.Panel):
         self.layout.operator(pe.RemoveLastSavedPoseOperator.bl_idname, icon="TRASH")
 
 class ToolsPanel(bpy.types.Panel):
+    bl_idname = "OBJECT_PT_ToolsPanel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_context = "objectmode"

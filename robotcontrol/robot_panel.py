@@ -1,5 +1,6 @@
 
 import bpy
+import robot
 
 def autoregister():
     bpy.utils.register_class(RobotPropsPanel)
@@ -21,5 +22,7 @@ class RobotPropsPanel(bpy.types.Panel):
         type = bpy.context.scene.robot_props.prop_robot_type
         if type == "MYROBOT":
             props = bpy.context.scene.myrobot_props
+            self.layout.prop(props, "prop_myrobot_rotation")
             self.layout.prop(props, "prop_myrobot_dim")
             self.layout.prop(props, "prop_myrobot_margin")
+        self.layout.operator(robot.AddRobotOperator.bl_idname, icon="", text="Add robot")
