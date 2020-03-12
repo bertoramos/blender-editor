@@ -27,3 +27,11 @@ class RobotPropsPanel(bpy.types.Panel):
             self.layout.prop(props, "prop_myrobot_dim")
             self.layout.prop(props, "prop_myrobot_margin")
         self.layout.operator(robot.AddRobotOperator.bl_idname, icon="SYSTEM", text="Add robot")
+        if len(robot.RobotSet()) > 0:
+            box = self.layout.box()
+            scene = context.scene
+
+            box.label(text="Available robots")
+            for item in scene.robot_collection:
+                box.prop(item, "selected", text=item.name)
+            box.operator(robot.DeleteRobotOperator.bl_idname, icon="TRASH", text = "Delete robot")

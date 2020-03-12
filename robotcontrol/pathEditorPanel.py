@@ -21,7 +21,7 @@ class PathCreationPanel(bpy.types.Panel):
     def draw(self, context):
         self.layout.operator(cl.StartPosesListener.bl_idname, icon="CURVE_PATH", text="Start editor")
         self.layout.operator(cl.StopPosesListener.bl_idname, icon="DISK_DRIVE", text="Stop editor (Save poses)")
-        self.layout.operator(pe.RemoveLastSavedPoseOperator.bl_idname, icon="TRASH")
+        self.layout.operator(pe.RemoveLastSavedPoseOperator.bl_idname, icon="GPBRUSH_ERASE_STROKE")
 
 class ToolsPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_ToolsPanel"
