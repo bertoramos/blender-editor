@@ -263,7 +263,7 @@ class DeleteRobotOperator(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         return len(RobotSet()) > 0
-    
+
     def execute(self, context):
         scene = context.scene
         for item in scene.robot_collection:
