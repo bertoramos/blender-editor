@@ -69,9 +69,9 @@ class PathDrawer(cl.Observer):
         showCeil()
 
     def notifyStart(self):
-        if len(pc.PathContainer()) > 0:
+        if len(pc.PathContainer()) > 0 and len(pc.PathContainer().getLastPath()) > 0:
             # Obtenemos ultima pose como inicio para crear nuevas poses
-            last_action = pc.PathContainer().getLast()
+            last_action = pc.PathContainer().getLastAction()
             loc = last_action.p1.loc
             angle = last_action.p1.rotation
             vel = last_action.speed
@@ -113,6 +113,7 @@ class SavePoseOperator(bpy.types.Operator):
         # h = bpy.context.scene.robot_props.prop_height + bpy.context.scene.robot_props.prop_margin_height
 
         # Guardamos nueva action y dibujamos la informacion para la action previa
+        print("Hola")
         pd.current_action.draw_annotation(context)
         pc.TempPathContainer().appendAction(pd.current_action)
 
@@ -149,10 +150,12 @@ class RemoveLastSavedPoseOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return len(pc.PathContainer()) > 0
+        if len(pc.PathContainer()) == 0:
+            return False
+        return len(pc.PathContainer().getLastPath()) > 0
 
     def execute(self, context):
-        action = pc.PathContainer().removeLast()
+        action = pc.PathContainer().removeLastAction()
         del action
         return {'FINISHED'}
 

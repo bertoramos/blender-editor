@@ -25,7 +25,7 @@ import pathContainer
 import cursorListener
 import pathEditor
 import pathEditorPanel
-import collapse_check
+import overlap_check
 import utils
 import robot
 import robot_props
@@ -39,7 +39,7 @@ importlib.reload(pathContainer)
 importlib.reload(cursorListener)
 importlib.reload(pathEditor)
 importlib.reload(pathEditorPanel)
-importlib.reload(collapse_check)
+importlib.reload(overlap_check)
 importlib.reload(utils)
 importlib.reload(robot)
 importlib.reload(robot_props)
