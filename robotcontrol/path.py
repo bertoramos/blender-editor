@@ -247,6 +247,11 @@ class Action:
         self._line = draw_line(p0.loc, p1.loc + Vector((_TOL, 0, 0)))
         self._arrow = create_arrow(p1)
 
+        self._loc_note_name = ""
+        self._rot_note_name = ""
+        self._speed_note_name = ""
+
+
     def move(self, pose):
         self._p1 = pose
         update_line(self._line, self._p0.loc, self._p1.loc)
@@ -260,12 +265,13 @@ class Action:
         self._speed_note_name = draw_speed_note(context, "Note_speed", self, color, font, font_align)
 
     def del_annotation(self):
-        loc_note = bpy.data.objects[self._loc_note_name]
-        rot_note = bpy.data.objects[self._rot_note_name]
-        speed_note = bpy.data.objects[self._speed_note_name]
-        bpy.data.objects.remove(loc_note, do_unlink=True)
-        bpy.data.objects.remove(rot_note, do_unlink=True)
-        bpy.data.objects.remove(speed_note, do_unlink=True)
+
+        if self._loc_note_name in bpy.data.objects:
+            bpy.data.objects.remove(bpy.data.objects[self._loc_note_name], do_unlink=True)
+        if self._rot_note_name in bpy.data.objects:
+            bpy.data.objects.remove(bpy.data.objects[self._rot_note_name], do_unlink=True)
+        if self._speed_note_name in bpy.data.objects:
+            bpy.data.objects.remove(bpy.data.objects[self._speed_note_name], do_unlink=True)
 
     def get_p0(self):
         return self._p0
@@ -277,11 +283,13 @@ class Action:
         return self._speed
 
     def __del__(self):
-        bpy.data.objects.remove(bpy.data.objects[self._line], do_unlink=True)
-        bpy.data.meshes.remove(bpy.data.meshes[self._line], do_unlink=True)
+        if self._line in bpy.data.objects:
+            bpy.data.objects.remove(bpy.data.objects[self._line], do_unlink=True)
+        if self._line in bpy.data.meshes:
+            bpy.data.meshes.remove(bpy.data.meshes[self._line], do_unlink=True)
 
-        arrow = bpy.data.objects[self._arrow]
-        bpy.data.objects.remove(arrow, do_unlink=True)
+        if self._arrow in bpy.data.objects:
+            bpy.data.objects.remove(bpy.data.objects[self._arrow], do_unlink=True)
 
         self.del_annotation()
 

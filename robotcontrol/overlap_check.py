@@ -241,22 +241,14 @@ def face_overlap(bm1, bm2):
 def check_overlap(bm0, bm1):
     """
     Check if two bmesh collides
-    :
     """
     # check overlap
     # check inside
     # check face_collision
-
-    overlap = is_overlapping(bm0, bm1), is_overlapping(bm1, bm0)
-    if any(overlap):
+    if is_overlapping(bm0, bm1):
         return True
-
-    inside = is_inside(bm0, bm1), is_inside(bm1, bm0)
-    if any(inside):
+    if is_inside(bm0, bm1):
         return True
-
-    face_overlap = face_overlap(bm0, bm1)
-    if face_overlap:
+    if face_overlap(bm0, bm1):
         return True
-
     return False

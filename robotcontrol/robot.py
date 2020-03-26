@@ -1,9 +1,10 @@
 
 import bpy
-from mathutils import Vector
+from mathutils import Vector, Euler
 import robot_props
+import cursorListener as cl
 
-from math import radians
+from math import radians, pi
 import utils
 
 def autoregister():
@@ -88,6 +89,12 @@ class RobotSet:
                 drop(bpy.data.objects[robot.note_name])
                 break
 
+    def __contains__(self, idn):
+        for robot in RobotSet.__instance.__set:
+            if robot.idn == idn:
+                return True
+        return False
+
     def clear(self):
         RobotSet.__instance.__set = set()
 
@@ -99,13 +106,14 @@ class RobotSet:
 
 class Robot:
 
-    def __init__(self, idn, name, note_name, loc, robot_type):
+    def __init__(self, idn, name, note_name, loc, rotation, robot_type):
         """
         Parameters:
             - id (int) : robot id
             - name (str) : robot name
             - note_name (str) : note name
             - loc (mathutils.Vector) : location in world
+            - rotation (mathutils.Euler) : rotation in world
             - type (tuple) : robot type. A tuple in robot_types
         """
         assert type(idn) == int, "Error: expected int, get " + str(idn)
@@ -115,6 +123,9 @@ class Robot:
 
         assert type(loc) == Vector, "Error: expected Vector location"
         self.__loc = loc
+
+        assert type(rotation) == Euler, "Error: expected Euler rotation"
+        self.__rotation = rotation
 
         assert robot_type in robot_props.robot_types, "Error: robot_types does not contain " + str(type)
         self.__robot_type = robot_type
@@ -135,6 +146,13 @@ class Robot:
         assert type(loc) == Vector, "Error: expected Vector location"
         self.__loc = loc
 
+    def __get_rotation(self):
+        return self.__rotation
+
+    def __set_rotation(self, rotation):
+        assert type(rotation) == Euler, "Error: expected Euler, get " + str(rotation)
+        self.__rotation = rotation
+
     def __get_robot_type(self):
         return self.__robot_type
 
@@ -148,6 +166,7 @@ class Robot:
     name = property(__get_name)
     note_name = property(__get_note_name)
     loc = property(__get_loc, __set_loc)
+    rotation = property(__get_rotation, __set_rotation)
     robot_type = property(__get_robot_type)
 
 
@@ -158,39 +177,36 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin):
     myrobot.rotation_euler.z = radians(rot)
     myrobot.name = name
 
+    myrobot.lock_location[0:3] = (True, True, True)
+    myrobot.lock_rotation[0:3] = (True, True, True)
+    myrobot.lock_scale[0:3] = (True, True, True)
     myrobot.protected = True
 
     note_name = draw_robot_note(context, Vector((0,0,0)), "Datos de mi robot", Vector((255,255,255,255)), 14, "C")
 
     bpy.data.objects[note_name].parent = myrobot
 
+    myrobot.object_type = "ROBOT"
+
     return myrobot.name, note_name
 
 class MyRobot(Robot):
 
-    def __init__(self, idn, name, note_name, loc, robot_type, rotation, dim, margin):
+    def __init__(self, idn, name, note_name, loc, rotation, robot_type, dim, margin):
         """
         Parameters:
             - idn (int) : robot id
             - name (str) : robot name
             - note_name (str) : note name
             - loc (mathutils.Vector) : location in world
+            - rotation (mathutils.Vector) : rotation angle
             - type (tuple) : robot type. A tuple in robot_types
-            - rotation (float) : rotation angle
             - dim (Vector) : dimension in x, y, z axis
             - margin (Vector) : margin percentage in x, y, z axis
         """
-        super().__init__(idn, name, note_name, loc, robot_type)
-        self.__rotation = rotation
+        super().__init__(idn, name, note_name, loc, rotation, robot_type)
         self.__dim = dim
         self.__margin = margin
-
-    def __get_rotation(self):
-        return self.__rotation
-
-    def __set_rotation(self, rotation):
-        assert type(rotation) == Vector, "Error: expected Vector, get " + str(rotation)
-        self.__rotation = rotation
 
     def __get_dim(self):
         return self.__dim
@@ -198,7 +214,6 @@ class MyRobot(Robot):
     def __get_margin(self):
         return self.__margin
 
-    rotation = property(__get_rotation, __set_rotation)
     dim = property(__get_dim)
     margin = property(__get_margin)
 
@@ -228,7 +243,7 @@ class AddRobotOperator(bpy.types.Operator):
         idn = len(RobotSet())
 
         name = scene.robot_props.prop_robot_name
-        loc = scene.robot_props.prop_robot_loc
+        loc = scene.robot_props.prop_robot_loc.xyz
         robot_type = scene.robot_props.prop_robot_type
 
         robot_type_tuple = ()
@@ -239,11 +254,14 @@ class AddRobotOperator(bpy.types.Operator):
         robot = None
         if robot_type == 'MYROBOT':
             rot = scene.myrobot_props.prop_myrobot_rotation
-            dim = scene.myrobot_props.prop_myrobot_dim
-            margin = scene.myrobot_props.prop_myrobot_margin
+            dim = scene.myrobot_props.prop_myrobot_dim.xyz
+            margin = scene.myrobot_props.prop_myrobot_margin.xyz
+
+            rotation = Euler((0, pi/2, radians(rot)))
+            print("Creation location : ", loc)
 
             complete_name, note_name = draw_myrobot(context, name, loc, robot_type, rot, dim, margin)
-            robot = MyRobot(idn, complete_name, note_name, loc, robot_type_tuple, rot, dim, margin)
+            robot = MyRobot(idn, complete_name, note_name, loc, rotation, robot_type_tuple, dim, margin)
             RobotSet().addRobot(robot)
 
         if robot is not None:
@@ -262,7 +280,7 @@ class DeleteRobotOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return len(RobotSet()) > 0
+        return len(RobotSet()) > 0 and not cl.isListenerActive()
 
     def execute(self, context):
         scene = context.scene
@@ -272,4 +290,6 @@ class DeleteRobotOperator(bpy.types.Operator):
                 RobotSet().deleteRobot(idn)
                 idx = scene.robot_collection.find(item.name)
                 scene.robot_collection.remove(idx)
+                if bpy.context.scene.selected_robot_props.prop_robot_id == idn:
+                    bpy.context.scene.selected_robot_props.prop_robot_id = -1
         return {'FINISHED'}

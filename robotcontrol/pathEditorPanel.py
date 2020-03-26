@@ -2,6 +2,7 @@
 import bpy
 import cursorListener as cl
 import pathEditor as pe
+import robot as robot_tools
 
 def autoregister():
     bpy.utils.register_class(PathCreationPanel)
@@ -19,6 +20,14 @@ class PathCreationPanel(bpy.types.Panel):
     bl_category = "Robot Control"
 
     def draw(self, context):
+        box = self.layout.box()
+
+        idx = context.scene.selected_robot_props.prop_robot_id
+        txt = "Robot selected : " + str(idx) if idx >= 0 else "No robot selected"
+        txt = txt if len(robot_tools.RobotSet()) > 0 else "No robot available"
+
+        box.label(text=txt)
+        box.operator(pe.SelectRobotForPathOperator.bl_idname, icon="CURVE_PATH", text="Select robot")
         self.layout.operator(cl.StartPosesListener.bl_idname, icon="CURVE_PATH", text="Start editor")
         self.layout.operator(cl.StopPosesListener.bl_idname, icon="DISK_DRIVE", text="Stop editor (Save poses)")
         self.layout.operator(pe.RemoveLastSavedPoseOperator.bl_idname, icon="GPBRUSH_ERASE_STROKE")

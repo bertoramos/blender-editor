@@ -8,6 +8,8 @@ import geomCursor as gc
 import path
 import pathContainer as pc
 
+import robot
+
 def autoregister():
     bpy.utils.register_class(StartPosesListener)
     bpy.utils.register_class(StopPosesListener)
@@ -82,6 +84,9 @@ def cursor_update(context):
     if CursorListener.listener is not None:
         CursorListener.listener.fire() # Lanzamos listener
 
+def isListenerActive():
+    return cursor_update in bpy.app.handlers.depsgraph_update_post
+
 class StopPosesListener(bpy.types.Operator):
     """
     Para el listener y notifica a los observadores
@@ -93,7 +98,7 @@ class StopPosesListener(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         # Esta activo el listener?
-        return cursor_update in bpy.app.handlers.depsgraph_update_post
+        return isListenerActive()
 
     def execute(self, context):
         bpy.ops.object.select_all(action='DESELECT')
@@ -103,7 +108,7 @@ class StopPosesListener(bpy.types.Operator):
             scene.is_cursor_active = False
         # Notifica a los observers que se va a parar el listener
         for observer in CursorListener._observers:
-            observer.notifyStop()
+            observer.notifyStop(self)
 
         # Desactivamos listener
         CursorListener.delListener()
@@ -124,7 +129,7 @@ class StartPosesListener(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         # Esta activo el listener?
-        return cursor_update not in bpy.app.handlers.depsgraph_update_post
+        return len(robot.RobotSet()) > 0 and context.scene.selected_robot_props.prop_robot_id >= 0 and not isListenerActive()
 
     def execute(self, context):
         # Indica que se activó el cursor
@@ -137,7 +142,7 @@ class StartPosesListener(bpy.types.Operator):
 
         # Informamos a observers que se activó el listener
         for observer in CursorListener._observers:
-            observer.notifyStart()
+            observer.notifyStart(self)
         return {'FINISHED'}
 
 class Observer:
