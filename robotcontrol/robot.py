@@ -81,12 +81,19 @@ class RobotSet:
             if robot.idn == idn:
                 return robot
 
+    def getRobotByName(self, name):
+        for robot in RobotSet.__instance.__set:
+            if robot.name == name:
+                return robot
+
     def deleteRobot(self, idn):
         for robot in RobotSet.__instance.__set:
             if robot.idn == idn:
                 RobotSet.__instance.__set.remove(robot)
-                drop(bpy.data.objects[robot.name])
-                drop(bpy.data.objects[robot.note_name])
+                robot_obj = bpy.data.objects[robot.name]
+                for obj in bpy.data.objects[robot.name].children:
+                    drop(obj)
+                drop(robot_obj)
                 break
 
     def __contains__(self, idn):
@@ -106,12 +113,12 @@ class RobotSet:
 
 class Robot:
 
-    def __init__(self, idn, name, note_name, loc, rotation, robot_type):
+    def __init__(self, idn, name, area_name, loc, rotation, robot_type):
         """
         Parameters:
             - id (int) : robot id
             - name (str) : robot name
-            - note_name (str) : note name
+            - area_name (str) : area name (bounding box)
             - loc (mathutils.Vector) : location in world
             - rotation (mathutils.Euler) : rotation in world
             - type (tuple) : robot type. A tuple in robot_types
@@ -119,7 +126,7 @@ class Robot:
         assert type(idn) == int, "Error: expected int, get " + str(idn)
         self.__idn = idn
         self.__name = str(name)
-        self.__note_name = str(note_name)
+        self.__area_name = str(area_name)
 
         assert type(loc) == Vector, "Error: expected Vector location"
         self.__loc = loc
@@ -136,8 +143,8 @@ class Robot:
     def __get_name(self):
         return self.__name
 
-    def __get_note_name(self):
-        return self.__note_name
+    def __get_area_name(self):
+        return self.__area_name
 
     def __get_loc(self):
         return self.__loc
@@ -164,14 +171,16 @@ class Robot:
 
     idn = property(__get_idn)
     name = property(__get_name)
-    note_name = property(__get_note_name)
+    area_name = property(__get_area_name)
     loc = property(__get_loc, __set_loc)
     rotation = property(__get_rotation, __set_rotation)
     robot_type = property(__get_robot_type)
 
 
 def draw_myrobot(context, name, loc, robot_type, rot, dim, margin):
-    bpy.ops.mesh.primitive_cube_add(location=(loc.x, loc.y, loc.z + dim.z/2.0))
+
+    # Cuerpo
+    bpy.ops.mesh.primitive_cube_add(location=(loc.x, loc.y, dim.z/2.0))
     myrobot = bpy.context.active_object
     myrobot.dimensions.xyz = dim.xyz
     myrobot.rotation_euler.z = radians(rot)
@@ -182,13 +191,60 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin):
     myrobot.lock_scale[0:3] = (True, True, True)
     myrobot.protected = True
 
+    # margen
+    bpy.ops.mesh.primitive_cube_add(location=myrobot.location.xyz[:])
+    myarea = bpy.context.active_object
+    myarea.dimensions.xyz = Vector((dim.x + dim.x*(margin.x/100.0), dim.z + dim.z*(margin.z/100.0), dim.z + dim.z*(margin.z/100.0)))
+    myarea.rotation_euler.z = radians(rot)
+
+    myarea.lock_location[0:3] = (True, True, True)
+    myarea.lock_rotation[0:3] = (True, True, True)
+    myarea.lock_scale[0:3] = (True, True, True)
+    myarea.protected = True
+
+    if myarea.active_material is None:
+        mat = bpy.data.materials.new("Material_robot_margin" + name)
+        myarea.active_material = mat
+    mat.diffuse_color = Vector((1, 1, 1, 0.2))
+
+    # icosphere
+    minx = min(dim.x, dim.y)
+    bpy.ops.mesh.primitive_ico_sphere_add(radius=minx/(2*1.5), location=(loc.x, loc.y, dim.z))
+    myico = bpy.context.active_object
+
+    if myico.active_material is None:
+        mat = bpy.data.materials.new("Material_robot_icosphere" + name)
+        myico.active_material = mat
+    mat.diffuse_color = Vector((0, 0, 1, 0.2))
+
+    # Notas
     note_name = draw_robot_note(context, Vector((0,0,0)), "Datos de mi robot", Vector((255,255,255,255)), 14, "C")
 
+
+    # Hierarchy area+robot
+    myarea.select_set(True)
+    myrobot.select_set(True)
+    bpy.context.view_layer.objects.active = myrobot
+    bpy.ops.object.parent_set()
+    myarea.select_set(False)
+    myrobot.select_set(False)
+
+    # Hierarchy icosphere + robot
+    myico.select_set(True)
+    myrobot.select_set(True)
+    bpy.context.view_layer.objects.active = myrobot
+    bpy.ops.object.parent_set()
+    myico.select_set(False)
+    myrobot.select_set(False)
+
+    myico.hide_select = True
+    myrobot.hide_select = True
+    myarea.hide_select = True
     bpy.data.objects[note_name].parent = myrobot
 
     myrobot.object_type = "ROBOT"
 
-    return myrobot.name, note_name
+    return myrobot.name, myarea.name
 
 class MyRobot(Robot):
 
@@ -256,12 +312,11 @@ class AddRobotOperator(bpy.types.Operator):
             rot = scene.myrobot_props.prop_myrobot_rotation
             dim = scene.myrobot_props.prop_myrobot_dim.xyz
             margin = scene.myrobot_props.prop_myrobot_margin.xyz
-
             rotation = Euler((0, pi/2, radians(rot)))
-            print("Creation location : ", loc)
+            loc.z = 0
+            complete_name, area_name = draw_myrobot(context, name, loc, robot_type, rot, dim, margin)
 
-            complete_name, note_name = draw_myrobot(context, name, loc, robot_type, rot, dim, margin)
-            robot = MyRobot(idn, complete_name, note_name, loc, rotation, robot_type_tuple, dim, margin)
+            robot = MyRobot(idn, complete_name, area_name, loc, rotation, robot_type_tuple, dim, margin)
             RobotSet().addRobot(robot)
 
         if robot is not None:

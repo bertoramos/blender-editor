@@ -26,6 +26,7 @@ import cursorListener
 import pathEditor
 import pathEditorPanel
 import overlap_check
+import collision_detection
 import utils
 import robot
 import robot_props
@@ -40,6 +41,7 @@ importlib.reload(cursorListener)
 importlib.reload(pathEditor)
 importlib.reload(pathEditorPanel)
 importlib.reload(overlap_check)
+importlib.reload(collision_detection)
 importlib.reload(utils)
 importlib.reload(robot)
 importlib.reload(robot_props)

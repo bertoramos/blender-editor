@@ -9,6 +9,7 @@ import pathContainer as pc
 import pathEditorPanel as pep
 import robot as robot_tools
 
+import collision_detection
 
 def autoregister():
     global pd
@@ -87,25 +88,15 @@ class PathDrawer(cl.Observer):
 
         last_action = pc.PathContainer().getLastActionOfRobot(idx)
 
-        print("Selected : ", idx)
-        print("last action I get :", last_action)
-
         if len(pc.PathContainer()) > 0 and last_action is not None:
             # Obtenemos ultima pose como inicio para crear nuevas poses
             loc = last_action.p1.loc
             angle = last_action.p1.rotation
             vel = last_action.speed
-
-            print("LAST ACTION")
         else:
             loc = robot.loc
             angle = robot.rotation
             vel = bpy.context.scene.pose_props.prop_speed
-
-            print("ROBOT")
-            print("idx", idx)
-            print("idn", robot.idn)
-            print("loc", robot.loc)
 
         # Movemos el cursor a la posicion de comienzo
         new_pose = path.Pose.fromVector(loc, angle)
@@ -138,7 +129,7 @@ class SelectRobotForPathOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return len(robot_tools.RobotSet()) > 0 and not cl.isListenerActive()
+        return len(robot_tools.RobotSet()) > 0 and not bpy.context.scene.is_cursor_active
 
     def draw(self, context):
         scene = context.scene
@@ -186,7 +177,42 @@ class SavePoseOperator(bpy.types.Operator):
         p1 = pd.current_action.p1
         vel = bpy.context.scene.pose_props.prop_speed
 
+        idx = bpy.context.scene.selected_robot_props.prop_robot_id
+        robot = robot_tools.RobotSet().getRobot(idx)
+        robot_obj = bpy.data.objects[robot.name]
+        area_robot_obj = bpy.data.objects[robot.area_name]
 
+        obstacles = []
+        for obj in bpy.data.objects:
+            if obj.object_type == "WALL" or obj.object_type == "CEIL":
+                obstacles.append(obj)
+            if obj.object_type == "OBSTACLE_MARGIN":
+                print(obj.parent.name, obj.parent.location)
+                bpy.ops.mesh.primitive_cube_add()
+                o = bpy.context.active_object
+                o.location = obj.parent.location
+                o.dimensions = obj.dimensions.xyz
+                o.object_type = "TEMPORAL"
+                obstacles.append(o)
+
+
+
+        # Check
+        bpy.ops.mesh.primitive_cube_add()
+        area_robot_obj_tmp = bpy.context.active_object
+        area_robot_obj_tmp.location = robot.loc
+        area_robot_obj_tmp.location.z += area_robot_obj.dimensions.z/2
+        area_robot_obj_tmp.dimensions = area_robot_obj.dimensions.xyz
+        area_robot_obj_tmp.rotation_euler.z = robot.rotation.z
+
+
+        res = collision_detection.check_collision(area_robot_obj_tmp, p0.loc, p1.loc, obstacles)
+        print("Collision detection : ", res)
+
+
+        for obj in obstacles:
+            if obj.object_type == "TEMPORAL":
+                bpy.data.objects.remove(obj, do_unlink=True)
 
         # Guardamos nueva action y dibujamos la informacion para la action previa
         pd.current_action.draw_annotation(context)

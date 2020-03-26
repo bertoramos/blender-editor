@@ -129,7 +129,7 @@ class StartPosesListener(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         # Esta activo el listener?
-        return len(robot.RobotSet()) > 0 and context.scene.selected_robot_props.prop_robot_id >= 0 and not isListenerActive()
+        return len(robot.RobotSet()) > 0 and not isListenerActive() and context.scene.selected_robot_props.prop_robot_id >= 0
 
     def execute(self, context):
         # Indica que se activó el cursor

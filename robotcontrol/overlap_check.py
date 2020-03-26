@@ -157,6 +157,8 @@ def are_coplanar(plane1, plane2):
     p2_norm = plane2.normal.normalized()
     points2 = plane2.verts
 
+    if p1_norm.length == 0 or p2_norm.length == 0:
+        return False
     angle = p1_norm.angle(p2_norm) # acos(p1_norm.dot(p2_norm)/(p1_norm.length*p2_norm.length))
 
     are_parallel = abs(angle) <= TOL or abs(angle - pi) <= TOL # planes are parallel or coplanar (normal vector angle: 0 or pi)

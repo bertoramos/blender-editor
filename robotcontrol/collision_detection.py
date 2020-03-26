@@ -4,7 +4,7 @@ from mathutils import Vector
 import bmesh
 
 import utils
-import overlap_check as oc
+import overlap_check
 
 def create_point(loc):
     bpy.ops.object.empty_add(location=loc)
@@ -124,13 +124,16 @@ def check_collision(robot_obj, loc0, loc1, objects):
     objects : object to check collition
     """
     area = generate_area(robot_obj, loc0, loc1)
-    bmarea = utils.create_bmesh(area)
+    bmarea = create_bmesh(area)
 
+    overlap = False
     for obj in objects:
-        bmobj = utils.create_bmesh(obj)
-        if oc.check_overlap(bmobj, bmarea):
-            return True
+        bmobj = create_bmesh(obj)
+        if overlap_check.check_overlap(bmobj, bmarea):
+            overlap = True
         bmobj.free()
+        if overlap:
+            break
     bmarea.free()
     bpy.data.objects.remove(area, do_unlink=True)
-    return False
+    return overlap
