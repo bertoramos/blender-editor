@@ -36,18 +36,15 @@ def add_obstacle(self, context, name, size, margin, r, g, b, a):
     mat.diffuse_color = Vector((r, g, b, a))
 
     # Añadimos margen de seguridad
-    x_dim = size.x + 2.0 * margin.x/100 * size.x
-    y_dim = size.y + 2.0 * margin.y/100 * size.y
-    z_dim = size.z + 2.0 * margin.z/100 * size.z
+    x_dim = size.x + 2.0 * margin.x/100.0 * size.x
+    y_dim = size.y + 2.0 * margin.y/100.0 * size.y
+    z_dim = size.z + 2.0 * margin.z/100.0 * size.z
 
     bpy.ops.mesh.primitive_cube_add()
     area = bpy.context.active_object
     area.name = 'margin' + name
-
-    area.dimensions = Vector((1,1,1))
-    area.dimensions.x *= x_dim
-    area.dimensions.y *= y_dim
-    area.dimensions.z *= z_dim
+    
+    area.dimensions = Vector((x_dim, y_dim, z_dim))
 
     if area.active_material is None:
         mat = bpy.data.materials.new("Material_margin" + name)

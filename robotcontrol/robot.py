@@ -194,7 +194,7 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin):
     # margen
     bpy.ops.mesh.primitive_cube_add(location=myrobot.location.xyz[:])
     myarea = bpy.context.active_object
-    myarea.dimensions.xyz = Vector((dim.x + dim.x*(margin.x/100.0), dim.z + dim.z*(margin.z/100.0), dim.z + dim.z*(margin.z/100.0)))
+    myarea.dimensions.xyz = Vector((dim.x + 2*dim.x*(margin.x/100.0), dim.y + 2*dim.y*(margin.y/100.0), dim.z + 2*dim.z*(margin.z/100.0)))
     myarea.rotation_euler.z = radians(rot)
 
     myarea.lock_location[0:3] = (True, True, True)
@@ -229,6 +229,13 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin):
     myarea.select_set(False)
     myrobot.select_set(False)
 
+    # Set origin
+    myrobot.select_set(True)
+    save_cursor_loc = bpy.context.scene.cursor.location.xyz
+    bpy.context.scene.cursor.location.xyz = Vector((loc.x, loc.y, 0))
+    bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+    bpy.context.scene.cursor.location = save_cursor_loc
+
     # Hierarchy icosphere + robot
     myico.select_set(True)
     myrobot.select_set(True)
@@ -243,6 +250,8 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin):
     bpy.data.objects[note_name].parent = myrobot
 
     myrobot.object_type = "ROBOT"
+
+
 
     return myrobot.name, myarea.name
 

@@ -2,7 +2,7 @@
 import bpy
 import cursorListener as cl
 
-from mathutils import Vector
+from mathutils import Vector, Euler
 from math import pi
 import path
 import pathContainer as pc
@@ -173,9 +173,10 @@ class SavePoseOperator(bpy.types.Operator):
     def execute(self, context):
         global pd
         # validate new action
-        p0 = pd.current_action.p1
-        p1 = pd.current_action.p1
-        vel = bpy.context.scene.pose_props.prop_speed
+        pos0 = pd.current_action.p0
+        pos1 = pd.current_action.p1
+        loc0 = pd.current_action.p0.loc
+        loc1 = pd.current_action.p1.loc
 
         idx = bpy.context.scene.selected_robot_props.prop_robot_id
         robot = robot_tools.RobotSet().getRobot(idx)
@@ -185,41 +186,62 @@ class SavePoseOperator(bpy.types.Operator):
         obstacles = []
         for obj in bpy.data.objects:
             if obj.object_type == "WALL" or obj.object_type == "CEIL":
-                obstacles.append(obj)
-            if obj.object_type == "OBSTACLE_MARGIN":
-                print(obj.parent.name, obj.parent.location)
-                bpy.ops.mesh.primitive_cube_add()
-                o = bpy.context.active_object
-                o.location = obj.parent.location
-                o.dimensions = obj.dimensions.xyz
+                o = obj.copy()
                 o.object_type = "TEMPORAL"
+                bpy.context.scene.collection.objects.link(o)
                 obstacles.append(o)
 
+            if obj.object_type == "OBSTACLE_MARGIN":
+                o = obj.parent.copy()
+                o.object_type = "TEMPORAL"
 
+                o.location = obj.parent.location.xyz
+                o.dimensions = obj.dimensions.xyz
+                o.rotation_euler = obj.parent.rotation_euler
 
-        # Check
+                bpy.context.scene.collection.objects.link(o)
+                obstacles.append(o)
+
+        # Copy robot
         bpy.ops.mesh.primitive_cube_add()
         area_robot_obj_tmp = bpy.context.active_object
-        area_robot_obj_tmp.location = robot.loc
-        area_robot_obj_tmp.location.z += area_robot_obj.dimensions.z/2
-        area_robot_obj_tmp.dimensions = area_robot_obj.dimensions.xyz
-        area_robot_obj_tmp.rotation_euler.z = robot.rotation.z
 
+        area_robot_obj_tmp.location = Vector((0, 0, area_robot_obj_tmp.dimensions.z/2.0))
+        area_robot_obj_tmp.rotation_euler.z = pos0.rotation.z
 
-        res = collision_detection.check_collision(area_robot_obj_tmp, p0.loc, p1.loc, obstacles)
-        print("Collision detection : ", res)
+        bpy.ops.object.select_all(action='DESELECT')
+        area_robot_obj_tmp.select_set(True)
+        save_cursor_loc = bpy.context.scene.cursor.location.xyz
+        bpy.context.scene.cursor.location = Vector((robot.loc.x, robot.loc.y, 0))
+        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+        bpy.context.scene.cursor.location = save_cursor_loc
 
+        area_robot_obj_tmp.location = Vector((robot.loc.x, robot.loc.y, robot.loc.z))
+        area_robot_obj_tmp.dimensions = Vector((area_robot_obj.dimensions.x, area_robot_obj.dimensions.y, area_robot_obj.dimensions.z))
+
+        # Check
+        res = collision_detection.check_collision(area_robot_obj_tmp, pos0, pos1, obstacles)
 
         for obj in obstacles:
             if obj.object_type == "TEMPORAL":
                 bpy.data.objects.remove(obj, do_unlink=True)
+        bpy.data.objects.remove(area_robot_obj_tmp, do_unlink=True)
 
+        if res:
+            self.report({'ERROR_INVALID_INPUT'}, "Robot will collide if takes this path")
+            return {'FINISHED'}
+        else:
+            self.report({'INFO'}, "Collision : " + str(res))
+
+        
         # Guardamos nueva action y dibujamos la informacion para la action previa
         pd.current_action.draw_annotation(context)
         pc.TempPathContainer().appendAction(pd.current_action)
 
         # Siguiente action
-
+        p0 = pd.current_action.p1
+        p1 = pd.current_action.p1
+        vel = bpy.context.scene.pose_props.prop_speed
         pd.current_action = path.Action(p0, p1, vel)
 
         cl.CursorListener.select_cursor()

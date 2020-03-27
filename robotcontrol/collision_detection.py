@@ -1,6 +1,6 @@
 
 import bpy
-from mathutils import Vector
+from mathutils import Vector, Euler
 import bmesh
 
 import utils
@@ -39,7 +39,7 @@ def create_edge_pairs(bm, loc, pos):
     verts = [v + pos for v in verts] # Translate to pos
     return verts, edges_pairs
 
-def generate_area(robot_obj, loc0, loc1):
+def generate_area(robot_obj, pos0, pos1):
     """
     Input:
         - robot_obj : object that represents robot
@@ -48,7 +48,7 @@ def generate_area(robot_obj, loc0, loc1):
     returns:
         - name of mesh created
     """
-    offset = (loc1 - loc0)
+    offset = (pos1.loc - pos0.loc)
 
     bpy.ops.object.select_all(action='DESELECT')
     bpy.context.view_layer.objects.active = robot_obj
@@ -57,8 +57,7 @@ def generate_area(robot_obj, loc0, loc1):
     bpy.ops.object.duplicate()
 
     copy_obj = bpy.context.active_object
-
-    copy_obj.location = loc0
+    copy_obj.location = pos0.loc
 
     bpy.ops.object.editmode_toggle()
 
@@ -116,16 +115,15 @@ def generate_area(robot_obj, loc0, loc1):
 
     return copy_obj
 
-def check_collision(robot_obj, loc0, loc1, objects):
+def check_collision(robot_obj, pos0, pos1, objects):
     """
     robot_obj : object that represents robot
     loc0 : start location
     loc1 : end location
     objects : object to check collition
     """
-    area = generate_area(robot_obj, loc0, loc1)
+    area = generate_area(robot_obj, pos0, pos1)
     bmarea = create_bmesh(area)
-
     overlap = False
     for obj in objects:
         bmobj = create_bmesh(obj)
