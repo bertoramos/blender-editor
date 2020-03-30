@@ -185,11 +185,30 @@ class SavePoseOperator(bpy.types.Operator):
 
         obstacles = []
         for obj in bpy.data.objects:
-            if obj.object_type == "WALL" or obj.object_type == "CEIL":
-                o = obj.copy()
-                o.object_type = "TEMPORAL"
-                bpy.context.scene.collection.objects.link(o)
-                obstacles.append(o)
+            if obj.object_type == "WALL":
+                bpy.ops.mesh.primitive_cube_add()
+                cube = bpy.context.active_object
+
+                cube.dimensions = obj.dimensions.xyz
+
+                cube = bpy.context.active_object
+
+                cube.location = obj.dimensions.xyz/2.0
+
+                save_cursor_loc = bpy.context.scene.cursor.location.xyz
+                bpy.context.scene.cursor.location = Vector((0,0,0))
+                bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+                bpy.context.scene.cursor.location = save_cursor_loc
+
+                cube.location = obj.location.xyz
+                cube.rotation_euler.z = obj.rotation_euler.z
+
+                bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='MEDIAN')
+
+                bpy.context.scene.collection.objects.link(cube)
+
+                obstacles.append((cube, (True, False, True)))
+
 
             if obj.object_type == "OBSTACLE_MARGIN":
                 o = obj.parent.copy()
@@ -200,13 +219,14 @@ class SavePoseOperator(bpy.types.Operator):
                 o.rotation_euler = obj.parent.rotation_euler
 
                 bpy.context.scene.collection.objects.link(o)
-                obstacles.append(o)
+                obstacles.append((o, (True, False, True)))
 
         # Copy robot
         bpy.ops.mesh.primitive_cube_add()
         area_robot_obj_tmp = bpy.context.active_object
-
-        area_robot_obj_tmp.location = Vector((0, 0, area_robot_obj_tmp.dimensions.z/2.0))
+        print(area_robot_obj_tmp.location)
+        area_robot_obj_tmp.dimensions = Vector((area_robot_obj.dimensions.x, area_robot_obj.dimensions.y, area_robot_obj.dimensions.z))
+        area_robot_obj_tmp.location = Vector((robot.loc.x, robot.loc.y, (area_robot_obj.dimensions.z/2.0)))
         area_robot_obj_tmp.rotation_euler.z = pos0.rotation.z
 
         bpy.ops.object.select_all(action='DESELECT')
@@ -216,24 +236,23 @@ class SavePoseOperator(bpy.types.Operator):
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
         bpy.context.scene.cursor.location = save_cursor_loc
 
-        area_robot_obj_tmp.location = Vector((robot.loc.x, robot.loc.y, robot.loc.z))
-        area_robot_obj_tmp.dimensions = Vector((area_robot_obj.dimensions.x, area_robot_obj.dimensions.y, area_robot_obj.dimensions.z))
-
         # Check
         res = collision_detection.check_collision(area_robot_obj_tmp, pos0, pos1, obstacles)
 
-        for obj in obstacles:
+
+        for obj, (b1,b2,b3) in obstacles:
             if obj.object_type == "TEMPORAL":
-                bpy.data.objects.remove(obj, do_unlink=True)
+                bpy.data.objects.remove(obj[0], do_unlink=True)
         bpy.data.objects.remove(area_robot_obj_tmp, do_unlink=True)
 
+        self.report({'INFO'}, "Collision : " + str(res))
         if res:
             self.report({'ERROR_INVALID_INPUT'}, "Robot will collide if takes this path")
             return {'FINISHED'}
         else:
             self.report({'INFO'}, "Collision : " + str(res))
 
-        
+
         # Guardamos nueva action y dibujamos la informacion para la action previa
         pd.current_action.draw_annotation(context)
         pc.TempPathContainer().appendAction(pd.current_action)

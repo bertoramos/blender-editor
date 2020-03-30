@@ -235,7 +235,7 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin):
     bpy.context.scene.cursor.location.xyz = Vector((loc.x, loc.y, 0))
     bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
     bpy.context.scene.cursor.location = save_cursor_loc
-
+    
     # Hierarchy icosphere + robot
     myico.select_set(True)
     myrobot.select_set(True)

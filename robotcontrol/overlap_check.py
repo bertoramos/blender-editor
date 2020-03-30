@@ -79,6 +79,8 @@ def is_inside(bm1, bm2):
     # Check inside
     vertex_tmp2 = [vertex.co for vertex in bm2.verts]
     bool_res = points_inside(vertex_tmp2, bm1)
+    for v, r in zip(vertex_tmp2, bool_res):
+        print(v, r)
     return any(bool_res)
 
 """
@@ -240,17 +242,20 @@ def face_overlap(bm1, bm2):
                 return True
     return False
 
-def check_overlap(bm0, bm1):
+def check_overlap(bm0, bm1, f1,f2,f3):
     """
     Check if two bmesh collides
     """
     # check overlap
     # check inside
     # check face_collision
-    if is_overlapping(bm0, bm1):
+    if f1 and is_overlapping(bm0, bm1):
+        print("OVERLAPPING")
         return True
-    if is_inside(bm0, bm1):
+    if f2 and is_inside(bm1, bm0):
+        print("INSIDE")
         return True
-    if face_overlap(bm0, bm1):
+    if f3 and face_overlap(bm0, bm1):
+        print("FACE OVERLAP")
         return True
     return False
