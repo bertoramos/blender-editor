@@ -12,8 +12,8 @@ def add_bluetooth_panel(layout):
     props = bpy.context.scene.bluetooth_beacon_props
     layout.prop(props, "prop_distance", text="Distance")
 
-def add_infrared_panel(layout):
-    props = bpy.context.scene.infrared_beacon_props
+def add_ultrasound_panel(layout):
+    props = bpy.context.scene.ultrasound_beacon_props
     layout.prop(props, "prop_rotation", text="Rotation")
     layout.prop(props, "prop_distance", text="Distance")
     layout.prop(props, "prop_spot_size", text="Spot size")
@@ -41,8 +41,8 @@ class AddBeaconPanel(bpy.types.Panel):
         self.layout.prop(props, "prop_type_beacon", text="Type")
         if props.prop_type_beacon == "BLUETOOTH":
             add_bluetooth_panel(self.layout)
-        elif props.prop_type_beacon == "INFRARED":
-            add_infrared_panel(self.layout)
+        elif props.prop_type_beacon == "ULTRASOUND":
+            add_ultrasound_panel(self.layout)
         """
         elif props.prop_type_beacon == "TYPE":
             add_type_panel(layout)

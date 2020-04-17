@@ -19,6 +19,7 @@ if not dir in sys.path:
     sys.path.append(dir)
 
 # TODO: Change to from . import MODULE
+import annotation_update
 import wallOperator
 import obstacleOperator
 import envBuilderPanel
@@ -40,8 +41,9 @@ importlib.reload(ceilOperator)
 importlib.reload(hideAreaOperator)
 importlib.reload(beaconOperator)
 importlib.reload(beaconPanel)
+importlib.reload(annotation_update)
 
-operadores = [wallOperator, obstacleOperator, ceilOperator, hideAreaOperator, beaconOperator]
+operadores = [wallOperator, obstacleOperator, ceilOperator, hideAreaOperator, beaconOperator, annotation_update]
 
 paneles = [envBuilderPanel, decoratePanel, beaconPanel]
 

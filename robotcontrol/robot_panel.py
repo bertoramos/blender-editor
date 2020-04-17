@@ -19,7 +19,12 @@ class RobotPropsPanel(bpy.types.Panel):
         props = bpy.context.scene.robot_props
         self.layout.prop(props, "prop_robot_name", text="Name")
         self.layout.prop(props, "prop_robot_loc", text="Location")
+
+        self.layout.prop(props, "prop_ip", text="Ip")
+        self.layout.prop(props, "prop_port", text="Port")
+
         self.layout.prop(props, "prop_robot_type", text="Type")
+        
         type = bpy.context.scene.robot_props.prop_robot_type
         if type == "MYROBOT":
             props = bpy.context.scene.myrobot_props

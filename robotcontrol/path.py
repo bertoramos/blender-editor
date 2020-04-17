@@ -97,33 +97,6 @@ def draw_pose_note(context, name, pose, color, font, font_align):
 
     return loc_note_name, rot_note_name
 
-def draw_speed_note(context, name, action, color, font, font_align):
-    # Draw notes
-    num_dec = len(str(( _TOL - int(_TOL) )))-2
-
-    p0 = action.p0
-    p1 = action.p1
-    x = (p0.x + p1.x)/2.0
-    y = (p0.y + p1.y)/2.0
-    z = (p0.z + p1.z)/2.0
-    loc = Vector((x, y, z))
-
-    vel = action.speed
-
-    txt = ""
-    txt += '{:0.4f}'.format(vel) + ' m/s'
-
-    hint_space = 10
-    rotation = 0
-    pose_note_name = utils.draw_text(context, name, txt, loc, color, hint_space, font, font_align, rotation)
-
-    bpy.data.objects[pose_note_name].lock_location[0:3] = (True, True, True)
-    bpy.data.objects[pose_note_name].lock_rotation[0:3] = (True, True, True)
-    bpy.data.objects[pose_note_name].lock_scale[0:3] = (True, True, True)
-    bpy.data.objects[pose_note_name].protected = True
-
-    return pose_note_name
-
 class Line:
 
     def __init__(self, fixed_loc, current_loc):
@@ -218,8 +191,7 @@ class Pose:
 
     def __eq__(self, other):
         return abs(self._x - other.x) <= TOL and abs(self._y - other.y) <= TOL and abs(self._z - other.z) <= TOL and \
-                abs(self.alpha - other.alpha) <= TOL and abs(self.beta - other.beta) <= TOL and abs(self.gamma - other.gamma) <= TOL and \
-                self.speed == other.speed
+                abs(self.alpha - other.alpha) <= TOL and abs(self.beta - other.beta) <= TOL and abs(self.gamma - other.gamma) <= TOL
 
     def __str__(self):
         return "Location(" + str(self.x) + ", " + str(self.y) + ", " + str(self.z) + ") " + \
@@ -236,21 +208,18 @@ class Pose:
 
 class Action:
 
-    def __init__(self, p0, p1, speed):
+    def __init__(self, p0, p1):
         """
         p0: pose 0
         p1: pose 1
         """
         self._p0 = p0
         self._p1 = p1
-        self._speed = speed
         self._line = draw_line(p0.loc, p1.loc + Vector((_TOL, 0, 0)))
         self._arrow = create_arrow(p1)
 
         self._loc_note_name = ""
         self._rot_note_name = ""
-        self._speed_note_name = ""
-
 
     def move(self, pose):
         self._p1 = pose
@@ -262,7 +231,6 @@ class Action:
         font = 14
         font_align = 'C'
         self._loc_note_name, self._rot_note_name = draw_pose_note(context, "Note_pose", self.p1, color, font, font_align)
-        self._speed_note_name = draw_speed_note(context, "Note_speed", self, color, font, font_align)
 
     def del_annotation(self):
 
@@ -270,17 +238,12 @@ class Action:
             bpy.data.objects.remove(bpy.data.objects[self._loc_note_name], do_unlink=True)
         if self._rot_note_name in bpy.data.objects:
             bpy.data.objects.remove(bpy.data.objects[self._rot_note_name], do_unlink=True)
-        if self._speed_note_name in bpy.data.objects:
-            bpy.data.objects.remove(bpy.data.objects[self._speed_note_name], do_unlink=True)
 
     def get_p0(self):
         return self._p0
 
     def get_p1(self):
         return self._p1
-
-    def get_speed(self):
-        return self._speed
 
     def __del__(self):
         if self._line in bpy.data.objects:
@@ -295,16 +258,12 @@ class Action:
 
     p0 = property(get_p0)
     p1 = property(get_p1)
-    speed = property(get_speed)
 
 class Annotation:
 
     def __init__(self, context, name, action, color, font, font_align):
         self._pose_note_name = draw_pose_note(context, name + "_pose", action.p1, color, font, font_align)
-        self._speed_note_name = draw_speed_note(context, name + "_speed", action, color, font, font_align)
 
     def __del__(self):
         pose_note = bpy.data.objects[self._pose_note_name]
-        speed_note = bpy.data.objects[self._speed_note_name]
         bpy.data.objects.remove(pose_note, do_unlink=True)
-        bpy.data.objects.remove(speed_note, do_unlink=True)

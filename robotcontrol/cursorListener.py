@@ -37,7 +37,6 @@ class CursorListener:
     def __init__(self):
         initial_loc = Vector((0, 0, 0))
         initial_angle = Vector((0, 0, 0))
-        vel = bpy.context.scene.pose_props.prop_speed
         init_pose = path.Pose.fromVector(initial_loc, initial_angle)
         self.current_pose = init_pose
         self._geomCursor = gc.GeometricCursor(init_pose)

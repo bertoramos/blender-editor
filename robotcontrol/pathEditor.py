@@ -16,9 +16,6 @@ def autoregister():
     pd = PathDrawer()
     cl.CursorListener.add_observer(pd)
 
-    bpy.utils.register_class(PoseProps)
-    bpy.types.Scene.pose_props = bpy.props.PointerProperty(type=PoseProps)
-
     bpy.utils.register_class(SavePoseOperator)
     bpy.utils.register_class(UndoPoseOperator)
     bpy.utils.register_class(RemoveLastSavedPoseOperator)
@@ -36,9 +33,6 @@ def autoregister():
 def autounregister():
     global pd
     cl.CursorListener.rm_observer(pd)
-
-    bpy.utils.unregister_class(PoseProps)
-    del bpy.types.Scene.pose_props
 
     bpy.utils.unregister_class(SavePoseOperator)
     bpy.utils.unregister_class(UndoPoseOperator)
@@ -92,17 +86,15 @@ class PathDrawer(cl.Observer):
             # Obtenemos ultima pose como inicio para crear nuevas poses
             loc = last_action.p1.loc
             angle = last_action.p1.rotation
-            vel = last_action.speed
         else:
             loc = robot.loc
             angle = robot.rotation
-            vel = bpy.context.scene.pose_props.prop_speed
 
         # Movemos el cursor a la posicion de comienzo
         new_pose = path.Pose.fromVector(loc, angle)
         cl.CursorListener.set_pose(new_pose)
 
-        self.current_action = path.Action(new_pose, new_pose, vel)
+        self.current_action = path.Action(new_pose, new_pose)
 
         cl.CursorListener.select_cursor()
         hideCeil();
@@ -158,9 +150,6 @@ class SelectRobotForPathOperator(bpy.types.Operator):
 
 #########
 
-class PoseProps(bpy.types.PropertyGroup):
-    prop_speed: bpy.props.FloatProperty(min=0.0, max=100.0, default=5.0)
-
 class SavePoseOperator(bpy.types.Operator):
     bl_idname = "scene.save_pose"
     bl_label = "Save Pose"
@@ -190,9 +179,6 @@ class SavePoseOperator(bpy.types.Operator):
                 cube = bpy.context.active_object
 
                 cube.dimensions = obj.dimensions.xyz
-
-                cube = bpy.context.active_object
-
                 cube.location = obj.dimensions.xyz/2.0
 
                 save_cursor_loc = bpy.context.scene.cursor.location.xyz
@@ -208,6 +194,8 @@ class SavePoseOperator(bpy.types.Operator):
                 bpy.context.scene.collection.objects.link(cube)
 
                 obstacles.append((cube, (True, False, True)))
+
+                cube.object_type = "TEMPORAL"
 
 
             if obj.object_type == "OBSTACLE_MARGIN":
@@ -242,7 +230,7 @@ class SavePoseOperator(bpy.types.Operator):
 
         for obj, (b1,b2,b3) in obstacles:
             if obj.object_type == "TEMPORAL":
-                bpy.data.objects.remove(obj[0], do_unlink=True)
+                bpy.data.objects.remove(obj, do_unlink=True)
         bpy.data.objects.remove(area_robot_obj_tmp, do_unlink=True)
 
         self.report({'INFO'}, "Collision : " + str(res))
@@ -260,8 +248,7 @@ class SavePoseOperator(bpy.types.Operator):
         # Siguiente action
         p0 = pd.current_action.p1
         p1 = pd.current_action.p1
-        vel = bpy.context.scene.pose_props.prop_speed
-        pd.current_action = path.Action(p0, p1, vel)
+        pd.current_action = path.Action(p0, p1)
 
         cl.CursorListener.select_cursor()
         return {'FINISHED'}

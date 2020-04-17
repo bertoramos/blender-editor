@@ -20,7 +20,8 @@ exportable_objects = {"WALL",
                       "CEIL",
                       "OBSTACLE",
                       "OBSTACLE_MARGIN",
-                      "BEACON"}
+                      "BLUETOOTH_BEACON",
+                      "INFRARED_BEACON"}
 
 def export():
     path = bpy.context.scene.file_props.prop_path

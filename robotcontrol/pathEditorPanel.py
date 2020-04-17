@@ -47,9 +47,6 @@ class ToolsPanel(bpy.types.Panel):
     def draw(self, context):
         self.layout.operator(pe.SavePoseOperator.bl_idname, icon="IMPORT")
         self.layout.operator(pe.UndoPoseOperator.bl_idname, icon="LOOP_BACK")
-        box = self.layout.box()
-        props = bpy.context.scene.pose_props
-        box.prop(props, "prop_speed", text="Speed")
         self.layout.operator(pe.MoveCursorToLastPoseOperator.bl_idname, icon="REW")
 
 """

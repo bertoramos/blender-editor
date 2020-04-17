@@ -113,26 +113,20 @@ class RobotSet:
 
 class Robot:
 
-    def __init__(self, idn, name, area_name, loc, rotation, robot_type):
+    def __init__(self, idn, name, area_name, robot_type, ip, port):
         """
         Parameters:
             - id (int) : robot id
             - name (str) : robot name
             - area_name (str) : area name (bounding box)
-            - loc (mathutils.Vector) : location in world
-            - rotation (mathutils.Euler) : rotation in world
             - type (tuple) : robot type. A tuple in robot_types
         """
         assert type(idn) == int, "Error: expected int, get " + str(idn)
         self.__idn = idn
         self.__name = str(name)
         self.__area_name = str(area_name)
-
-        assert type(loc) == Vector, "Error: expected Vector location"
-        self.__loc = loc
-
-        assert type(rotation) == Euler, "Error: expected Euler rotation"
-        self.__rotation = rotation
+        self.__ip = ip
+        self.__port = port
 
         assert robot_type in robot_props.robot_types, "Error: robot_types does not contain " + str(type)
         self.__robot_type = robot_type
@@ -147,21 +141,27 @@ class Robot:
         return self.__area_name
 
     def __get_loc(self):
-        return self.__loc
+        return bpy.data.objects[self.__name].location.xyz
 
     def __set_loc(self, loc):
         assert type(loc) == Vector, "Error: expected Vector location"
-        self.__loc = loc
+        bpy.data.objects[self.__name].location.xyz = loc
 
     def __get_rotation(self):
-        return self.__rotation
+        return bpy.data.objects[self.__name].rotation_euler
 
     def __set_rotation(self, rotation):
         assert type(rotation) == Euler, "Error: expected Euler, get " + str(rotation)
-        self.__rotation = rotation
+        bpy.data.objects[self.__name].rotation_euler = rotation
 
     def __get_robot_type(self):
         return self.__robot_type
+
+    def __get_ip(self):
+        return self.__ip
+
+    def __get_port(self):
+        return self.__port
 
     def __hash__(self):
         return self.__idn
@@ -175,9 +175,11 @@ class Robot:
     loc = property(__get_loc, __set_loc)
     rotation = property(__get_rotation, __set_rotation)
     robot_type = property(__get_robot_type)
+    ip = property(__get_ip)
+    port = property(__get_port)
 
 
-def draw_myrobot(context, name, loc, robot_type, rot, dim, margin):
+def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port):
 
     # Cuerpo
     bpy.ops.mesh.primitive_cube_add(location=(loc.x, loc.y, dim.z/2.0))
@@ -186,8 +188,8 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin):
     myrobot.rotation_euler.z = radians(rot)
     myrobot.name = name
 
-    myrobot.lock_location[0:3] = (True, True, True)
-    myrobot.lock_rotation[0:3] = (True, True, True)
+    myrobot.lock_location[0:3] = (False, False, True)
+    myrobot.lock_rotation[0:3] = (False, False, False)
     myrobot.lock_scale[0:3] = (True, True, True)
     myrobot.protected = True
 
@@ -218,7 +220,7 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin):
     mat.diffuse_color = Vector((0, 0, 1, 0.2))
 
     # Notas
-    note_name = draw_robot_note(context, Vector((0,0,0)), "Datos de mi robot", Vector((255,255,255,255)), 14, "C")
+    note_name = draw_robot_note(context, Vector((0,0,0)), str(ip) + ":" + str(port), Vector((255,255,255,255)), 14, "C")
 
 
     # Hierarchy area+robot
@@ -235,7 +237,7 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin):
     bpy.context.scene.cursor.location.xyz = Vector((loc.x, loc.y, 0))
     bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
     bpy.context.scene.cursor.location = save_cursor_loc
-    
+
     # Hierarchy icosphere + robot
     myico.select_set(True)
     myrobot.select_set(True)
@@ -245,31 +247,27 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin):
     myrobot.select_set(False)
 
     myico.hide_select = True
-    myrobot.hide_select = True
+    #myrobot.hide_select = False
     myarea.hide_select = True
     bpy.data.objects[note_name].parent = myrobot
 
     myrobot.object_type = "ROBOT"
 
-
-
     return myrobot.name, myarea.name
 
 class MyRobot(Robot):
 
-    def __init__(self, idn, name, note_name, loc, rotation, robot_type, dim, margin):
+    def __init__(self, idn, name, note_name, robot_type, dim, margin, ip, port):
         """
         Parameters:
             - idn (int) : robot id
             - name (str) : robot name
             - note_name (str) : note name
-            - loc (mathutils.Vector) : location in world
-            - rotation (mathutils.Vector) : rotation angle
             - type (tuple) : robot type. A tuple in robot_types
             - dim (Vector) : dimension in x, y, z axis
             - margin (Vector) : margin percentage in x, y, z axis
         """
-        super().__init__(idn, name, note_name, loc, rotation, robot_type)
+        super().__init__(idn, name, note_name, robot_type, ip, port)
         self.__dim = dim
         self.__margin = margin
 
@@ -310,6 +308,8 @@ class AddRobotOperator(bpy.types.Operator):
         name = scene.robot_props.prop_robot_name
         loc = scene.robot_props.prop_robot_loc.xyz
         robot_type = scene.robot_props.prop_robot_type
+        ip = scene.robot_props.prop_ip
+        port = scene.robot_props.prop_port
 
         robot_type_tuple = ()
         for ENUM, enum, empty, num in robot_props.robot_types:
@@ -317,15 +317,15 @@ class AddRobotOperator(bpy.types.Operator):
                 robot_type_tuple = (ENUM, enum, empty, num)
 
         robot = None
-        if robot_type == 'MYROBOT':
+        if robot_type == 'ROBOMAP':
             rot = scene.myrobot_props.prop_myrobot_rotation
             dim = scene.myrobot_props.prop_myrobot_dim.xyz
             margin = scene.myrobot_props.prop_myrobot_margin.xyz
             rotation = Euler((0, pi/2, radians(rot)))
             loc.z = 0
-            complete_name, area_name = draw_myrobot(context, name, loc, robot_type, rot, dim, margin)
+            complete_name, area_name = draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port)
 
-            robot = MyRobot(idn, complete_name, area_name, loc, rotation, robot_type_tuple, dim, margin)
+            robot = MyRobot(idn, complete_name, area_name, robot_type_tuple, dim, margin, ip, port)
             RobotSet().addRobot(robot)
 
         if robot is not None:

@@ -17,7 +17,7 @@ def draw_text(context, name, text, loc, color, hint_space, font, font_align, fon
     - hint_space: int
 
     """
-    if context.area.type == 'VIEW_3D':
+    if context.area.type in {'VIEW_3D', 'DOPESHEET_EDITOR'}:
         bpy.ops.object.empty_add(type='PLAIN_AXES')
         myempty = bpy.data.objects[bpy.context.active_object.name]
         myempty.location = loc

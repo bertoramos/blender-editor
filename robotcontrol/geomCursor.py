@@ -19,6 +19,9 @@ def addGeomCursor(initial_pose):
         geomCursor.active_material = mat
     mat.diffuse_color = Vector((0.0, 1.0, 1.0, 1.0))
 
+    geomCursor.lock_location[0:3] = (False, False, True)
+    geomCursor.lock_rotation[0:3] = (False, False, False)
+    geomCursor.lock_scale[0:3] = (True, True, True)
     geomCursor.protected = True
 
     return geomCursor.name
