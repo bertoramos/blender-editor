@@ -3,8 +3,8 @@ import bpy
 from bpy.types import Operator
 from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from mathutils import Vector
-
 from math import sin, cos, asin, atan, radians, degrees, sqrt, pi
+
 import geom_math as gm
 
 def autoregister():

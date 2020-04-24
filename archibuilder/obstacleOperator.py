@@ -3,7 +3,6 @@ import bpy
 from bpy.types import Operator
 from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from mathutils import Vector
-
 from math import sin, cos, atan, radians, degrees, sqrt, pi
 
 def autoregister():
@@ -43,7 +42,7 @@ def add_obstacle(self, context, name, size, margin, r, g, b, a):
     bpy.ops.mesh.primitive_cube_add()
     area = bpy.context.active_object
     area.name = 'margin' + name
-    
+
     area.dimensions = Vector((x_dim, y_dim, z_dim))
 
     if area.active_material is None:

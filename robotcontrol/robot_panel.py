@@ -1,5 +1,6 @@
 
 import bpy
+
 import robot
 
 def autoregister():
@@ -10,7 +11,7 @@ def autounregister():
 
 class RobotPropsPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_RobotPanel"
-    bl_label = "Robot Props"
+    bl_label = "Add Robot"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Robot Control"
@@ -24,9 +25,9 @@ class RobotPropsPanel(bpy.types.Panel):
         self.layout.prop(props, "prop_port", text="Port")
 
         self.layout.prop(props, "prop_robot_type", text="Type")
-        
+
         type = bpy.context.scene.robot_props.prop_robot_type
-        if type == "MYROBOT":
+        if type == "ROBOMAP":
             props = bpy.context.scene.myrobot_props
             self.layout.prop(props, "prop_myrobot_rotation")
             self.layout.prop(props, "prop_myrobot_dim")
@@ -37,6 +38,6 @@ class RobotPropsPanel(bpy.types.Panel):
             scene = context.scene
 
             box.label(text="Available robots")
-            for item in scene.robot_collection:
+            for item in scene.delete_robot_collection:
                 box.prop(item, "selected", text=item.name)
             box.operator(robot.DeleteRobotOperator.bl_idname, icon="TRASH", text = "Delete robot")

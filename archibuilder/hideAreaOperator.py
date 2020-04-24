@@ -8,7 +8,7 @@ def autoregister():
 
 def autounregister():
     bpy.utils.unregister_class(HideAreaOperator)
-    bpy.utils.register_class(HideCeilOperator)
+    bpy.utils.unregister_class(HideCeilOperator)
     bpy.utils.unregister_class(OptionsPanel)
 
 is_hide_area = False

@@ -7,8 +7,10 @@ from bpy.props import BoolProperty
 import geomCursor as gc
 import path
 import pathContainer as pc
-
 import robot
+import utils
+
+_TOL = 0.001
 
 def autoregister():
     bpy.utils.register_class(StartPosesListener)
@@ -16,7 +18,7 @@ def autoregister():
 
 def autounregister():
     bpy.utils.unregister_class(StartPosesListener)
-    bpy.utils.register_class(StopPosesListener)
+    bpy.utils.unregister_class(StopPosesListener)
 
 bpy.types.Scene.is_cursor_active = BoolProperty(name = 'is_cursor_active', default = False)
 

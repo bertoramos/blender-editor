@@ -31,6 +31,8 @@ import utils
 import robot
 import robot_props
 import robot_panel
+import communicationOperator
+import communicationPanel
 
 # Remove
 import importlib
@@ -46,9 +48,11 @@ importlib.reload(utils)
 importlib.reload(robot)
 importlib.reload(robot_props)
 importlib.reload(robot_panel)
+importlib.reload(communicationOperator)
+importlib.reload(communicationPanel)
 
-operadores = [cursorListener, pathEditor, robot, robot_props]
-paneles = [pathEditorPanel, robot_panel]
+operadores = [cursorListener, pathEditor, robot, robot_props, communicationOperator]
+paneles = [robot_panel, pathEditorPanel, communicationPanel]
 
 def register():
     for op in operadores:

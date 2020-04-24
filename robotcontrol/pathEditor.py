@@ -1,15 +1,17 @@
 
 import bpy
-import cursorListener as cl
-
 from mathutils import Vector, Euler
 from math import pi
+
+import cursorListener as cl
 import path
 import pathContainer as pc
 import pathEditorPanel as pep
 import robot as robot_tools
-
 import collision_detection
+import utils
+
+_TOL = 0.001
 
 def autoregister():
     global pd
@@ -28,7 +30,7 @@ def autoregister():
     bpy.types.Scene.selected_robot_props = bpy.props.PointerProperty(type=SelectRobotProps)
     bpy.utils.register_class(SelectRobotForPathOperator)
 
-    bpy.ops.scene.shortcut_path_editor('INVOKE_DEFAULT')
+    #bpy.ops.scene.shortcut_path_editor('INVOKE_DEFAULT')
 
 def autounregister():
     global pd
@@ -87,8 +89,9 @@ class PathDrawer(cl.Observer):
             loc = last_action.p1.loc
             angle = last_action.p1.rotation
         else:
-            loc = robot.loc
+            loc = robot.loc + Vector((_TOL, _TOL, _TOL))
             angle = robot.rotation
+            angle.y = pi/2.0
 
         # Movemos el cursor a la posicion de comienzo
         new_pose = path.Pose.fromVector(loc, angle)
@@ -126,7 +129,7 @@ class SelectRobotForPathOperator(bpy.types.Operator):
     def draw(self, context):
         scene = context.scene
         #self.layout.prop(props, "prop_rpbot_id", text="Robot")
-        for item in scene.robot_collection:
+        for item in scene.select_robot_collection:
             self.layout.prop(item, "selected", text=item.name)
 
     def invoke(self, context, event):
@@ -136,14 +139,14 @@ class SelectRobotForPathOperator(bpy.types.Operator):
     def execute(self, context):
 
         scene = context.scene
-        for item in scene.robot_collection:
+        for item in scene.select_robot_collection:
             if item.selected:
                 idn = item.idn
                 scene.selected_robot_props.prop_robot_id = idn
                 break
         if 'idn' not in locals():
             scene.selected_robot_props.prop_robot_id = -1
-        for item in scene.robot_collection:
+        for item in scene.select_robot_collection:
             item.selected = False
         return {'FINISHED'}
 

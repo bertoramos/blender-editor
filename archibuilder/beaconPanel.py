@@ -1,5 +1,6 @@
 
 import bpy
+
 import beaconOperator as bo
 
 def autoregister():

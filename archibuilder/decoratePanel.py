@@ -1,5 +1,6 @@
 
 import bpy
+
 import obstacleOperator as oo
 
 def autoregister():

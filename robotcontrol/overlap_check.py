@@ -1,7 +1,6 @@
 
 import bpy
 import bmesh
-
 from mathutils.geometry import intersect_line_line
 from mathutils import Vector
 from math import sqrt, acos, degrees, radians, pi

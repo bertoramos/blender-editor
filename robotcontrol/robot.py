@@ -1,24 +1,29 @@
 
 import bpy
 from mathutils import Vector, Euler
+from math import radians, pi
+
 import robot_props
 import cursorListener as cl
-
-from math import radians, pi
 import utils
 
 def autoregister():
     RobotSet()
-    bpy.utils.register_class(RobotItem)
-    bpy.types.Scene.robot_collection = bpy.props.CollectionProperty(type=RobotItem)
+    bpy.utils.register_class(RobotItemForSelect)
+    bpy.utils.register_class(RobotItemForDelete)
+    bpy.types.Scene.select_robot_collection = bpy.props.CollectionProperty(type=RobotItemForSelect)
+    bpy.types.Scene.delete_robot_collection = bpy.props.CollectionProperty(type=RobotItemForDelete)
 
     bpy.utils.register_class(AddRobotOperator)
     bpy.utils.register_class(DeleteRobotOperator)
 
 def autounregister():
     RobotSet().clear()
-    bpy.utils.unregister_class(RobotItem)
-    del bpy.types.Scene.robot_collection
+    bpy.utils.unregister_class(RobotItemForSelect)
+    del bpy.types.Scene.select_robot_collection
+
+    bpy.utils.unregister_class(RobotItemForDelete)
+    del bpy.types.Scene.delete_robot_collection
 
     bpy.utils.unregister_class(AddRobotOperator)
     bpy.utils.unregister_class(DeleteRobotOperator)
@@ -148,7 +153,7 @@ class Robot:
         bpy.data.objects[self.__name].location.xyz = loc
 
     def __get_rotation(self):
-        return bpy.data.objects[self.__name].rotation_euler
+        return Euler(bpy.data.objects[self.__name].rotation_euler[0:3])
 
     def __set_rotation(self, rotation):
         assert type(rotation) == Euler, "Error: expected Euler, get " + str(rotation)
@@ -220,7 +225,7 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port):
     mat.diffuse_color = Vector((0, 0, 1, 0.2))
 
     # Notas
-    note_name = draw_robot_note(context, Vector((0,0,0)), str(ip) + ":" + str(port), Vector((255,255,255,255)), 14, "C")
+    note_name = draw_robot_note(context, Vector((0,0,0)), myrobot.name + " | " + str(ip) + ":" + str(port), Vector((255,255,255,255)), 14, "C")
 
 
     # Hierarchy area+robot
@@ -286,7 +291,19 @@ class MyRobot(Robot):
 Operadores
 """
 
-class RobotItem(bpy.types.PropertyGroup):
+def selectUpdate(self, context):
+    #print("Update ", str(self.name), str(self.idn), str(str(self.selected)))
+    for item in context.scene.select_robot_collection:
+        if item.idn != self.idn and self.selected == True:
+            item.selected = False
+
+
+class RobotItemForSelect(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty(name="Name", default="Unknown")
+    idn: bpy.props.IntProperty(name="Id", default=22)
+    selected: bpy.props.BoolProperty(name="Selected", update=selectUpdate)
+
+class RobotItemForDelete(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="Name", default="Unknown")
     idn: bpy.props.IntProperty(name="Id", default=22)
     selected: bpy.props.BoolProperty(name="Delete")
@@ -331,9 +348,13 @@ class AddRobotOperator(bpy.types.Operator):
         if robot is not None:
             # Añadir item en lista de robots
             scene = context.scene
-            myitem = scene.robot_collection.add()
-            myitem.name = robot.name
-            myitem.idn = robot.idn
+            myitemselect = scene.select_robot_collection.add()
+            myitemselect.name = robot.name
+            myitemselect.idn = robot.idn
+
+            myitemdelete = scene.delete_robot_collection.add()
+            myitemdelete.name = robot.name
+            myitemdelete.idn = robot.idn
 
         return {'FINISHED'}
 
@@ -348,12 +369,16 @@ class DeleteRobotOperator(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        for item in scene.robot_collection:
+        for item in scene.delete_robot_collection:
             if item.selected:
                 idn = item.idn
                 RobotSet().deleteRobot(idn)
-                idx = scene.robot_collection.find(item.name)
-                scene.robot_collection.remove(idx)
+                idx = scene.select_robot_collection.find(item.name)
+                scene.select_robot_collection.remove(idx)
+                idx = scene.delete_robot_collection.find(item.name)
+                scene.delete_robot_collection.remove(idx)
+
+                # Deseleccionar robot
                 if bpy.context.scene.selected_robot_props.prop_robot_id == idn:
                     bpy.context.scene.selected_robot_props.prop_robot_id = -1
         return {'FINISHED'}

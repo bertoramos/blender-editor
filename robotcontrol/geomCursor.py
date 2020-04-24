@@ -37,7 +37,6 @@ class GeometricCursor:
     def _get_pose(self):
         loc = bpy.data.objects[self._cursor_name].location.xyz
         angle = Vector((bpy.data.objects[self._cursor_name].rotation_euler.x, bpy.data.objects[self._cursor_name].rotation_euler.y, bpy.data.objects[self._cursor_name].rotation_euler.z))
-        vel = bpy.context.scene.pose_props.prop_speed
         self._current_pose = path.Pose.fromVector(loc, angle)
         return self._current_pose
 

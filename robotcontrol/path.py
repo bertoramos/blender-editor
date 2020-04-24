@@ -1,7 +1,6 @@
 
 import bpy
 from mathutils import Vector, Euler
-
 from bpy_extras.object_utils import object_data_add
 import bmesh
 

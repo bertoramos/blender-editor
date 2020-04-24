@@ -2,9 +2,9 @@ import bpy
 from bpy.types import Operator
 from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from mathutils import Vector
-
 from math import pi, radians
-from utils import draw_text
+
+import utils
 
 def autoregister():
     bpy.utils.register_class(BeaconProps)
@@ -39,21 +39,6 @@ beacon_types = [("BLUETOOTH", "Bluetooth", "", 1),
                 ("ULTRASOUND", "Ultrasound", "", 2)]
             # ,("TYPE", "Type", "", 3)
 
-def add_beacon(self, context):
-    beacon_props = bpy.context.scene.beacon_props
-    name = beacon_props.prop_beacon_name
-    loc = beacon_props.prop_position.xyz
-    type = beacon_props.prop_type_beacon
-
-    if type == "BLUETOOTH":
-        add_bluetooth_beacon(self, context)
-    elif type == "ULTRASOUND":
-        add_ultrasound_beacon(self, context)
-    """
-    elif type == "TYPE":
-        add_type_beacon(self, context)
-    """
-
 class BeaconProps(bpy.types.PropertyGroup):
     # Propiedades comunes
     prop_beacon_name: bpy.props.StringProperty(name="Name", description="Beacon name",default="Beacon", maxlen=20)
@@ -72,7 +57,7 @@ def draw_bluetooth_note(context, name, loc, distance):
     font_rotation = 0
     text = "Distance : " + "{:.4}".format(distance) + " m "
 
-    nota = draw_text(context, name + "_note", text, loc, color, hint_space, font, font_align, font_rotation)
+    nota = utils.draw_text(context, name + "_note", text, loc, color, hint_space, font, font_align, font_rotation)
 
     bpy.data.objects[nota].lock_location[0:3] = (True, True, True)
     bpy.data.objects[nota].lock_rotation[0:3] = (True, True, True)
@@ -114,7 +99,7 @@ def draw_ultrasound_note(context, name, loc, rotation, distance, spot_size):
            "Distance : " + "{:.4}".format(distance) + " m |" + \
            "Spot : " + "{:.4}".format(spot_size) + " º"
 
-    nota = draw_text(context, name + "_note", text, loc, color, hint_space, font, font_align, font_rotation)
+    nota = utils.draw_text(context, name + "_note", text, loc, color, hint_space, font, font_align, font_rotation)
 
     bpy.data.objects[nota].lock_location[0:3] = (True, True, True)
     bpy.data.objects[nota].lock_rotation[0:3] = (True, True, True)
@@ -161,6 +146,9 @@ def add_type_beacon(self, context):
 
 """
 
+beacon_add_function = {"BLUETOOTH": [add_bluetooth_beacon],
+                       "ULTRASOUND": [add_ultrasound_beacon]}
+
 class AddBeaconOperator(Operator, AddObjectHelper):
     bl_idname = "mesh.add_beacon"
     bl_label = 'Add a beacon'
@@ -168,5 +156,10 @@ class AddBeaconOperator(Operator, AddObjectHelper):
     bl_description = "Add beacon"
 
     def execute(self, context):
-        add_beacon(self, context)
+        beacon_props = bpy.context.scene.beacon_props
+        name = beacon_props.prop_beacon_name
+        loc = beacon_props.prop_position.xyz
+        type = beacon_props.prop_type_beacon
+
+        beacon_add_function.get(type, lambda self, context: self.report({'ERROR'}, type + ' does not exist'))[0](self, context)
         return {'FINISHED'}

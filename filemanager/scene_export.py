@@ -11,10 +11,10 @@ def autoregister():
     bpy.utils.register_class(ExportScenarioPanel)
 
 def autounregister():
-    bpy.utils.register_class(FileProps)
+    bpy.utils.unregister_class(FileProps)
     del bpy.types.Scene.file_props
-    bpy.utils.register_class(ExportScenarioOperator)
-    bpy.utils.register_class(ExportScenarioPanel)
+    bpy.utils.unregister_class(ExportScenarioOperator)
+    bpy.utils.unregister_class(ExportScenarioPanel)
 
 exportable_objects = {"WALL",
                       "CEIL",

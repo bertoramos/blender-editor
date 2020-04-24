@@ -1,13 +1,15 @@
 
 import bpy
-import beaconOperator
 from math import degrees
+
+import beaconOperator
 
 def autoregister():
     bpy.app.handlers.depsgraph_update_post.append(update_annotations)
 
 def autounregister():
-    bpy.app.handlers.depsgraph_update_post.remove(update_annotations)
+    if update_annotations in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.depsgraph_update_post.remove(update_annotations)
 
 
 def update_bluetooth_beacon_annotation(obj):
