@@ -7,8 +7,14 @@ import robot_props
 import cursorListener as cl
 import utils
 
+keymaps = []
+
+classes = [RobotItemForSelect, RobotItemForDelete, AddRobotOperator, DeleteRobotOperator, SelectRobotProps, SelectRobotOperator]
+
 def autoregister():
+
     RobotSet()
+    
     bpy.utils.register_class(RobotItemForSelect)
     bpy.utils.register_class(RobotItemForDelete)
     bpy.types.Scene.select_robot_collection = bpy.props.CollectionProperty(type=RobotItemForSelect)
@@ -16,6 +22,20 @@ def autoregister():
 
     bpy.utils.register_class(AddRobotOperator)
     bpy.utils.register_class(DeleteRobotOperator)
+
+    bpy.utils.register_class(SelectRobotProps)
+    bpy.types.Scene.selected_robot_props = bpy.props.PointerProperty(type=SelectRobotProps)
+    bpy.utils.register_class(SelectRobotOperator)
+
+    # keymap
+    wm = bpy.context.window_manager
+    kc = wm.keyconfigs.addon
+    if kc:
+        km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
+
+        kmi = km.keymap_items.new(SelectRobotOperator.bl_idname, type='S', value='PRESS', ctrl=True, alt=True)
+        keymaps.append((km, kmi))
+
 
 def autounregister():
     RobotSet().clear()
@@ -27,6 +47,15 @@ def autounregister():
 
     bpy.utils.unregister_class(AddRobotOperator)
     bpy.utils.unregister_class(DeleteRobotOperator)
+
+    bpy.utils.unregister_class(SelectRobotProps)
+    del bpy.types.Scene.selected_robot_props
+    bpy.utils.unregister_class(SelectRobotOperator)
+
+    # keymap
+    for km, kmi in keymaps:
+        km.keymap_items.remove(kmi)
+    keymaps.clear()
 
 def drop(obj):
     obj_name = obj.name
@@ -135,6 +164,12 @@ class Robot:
 
         assert robot_type in robot_props.robot_types, "Error: robot_types does not contain " + str(type)
         self.__robot_type = robot_type
+
+    def lock(self):
+        pass
+
+    def unlock(self):
+        pass
 
     def __get_idn(self):
         return self.__idn
@@ -256,6 +291,20 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port):
     myarea.hide_select = True
     bpy.data.objects[note_name].parent = myrobot
 
+    bpy.ops.object.camera_add(location=(loc.x, loc.y, dim.z + 0.1), rotation=(-pi/2, pi, pi/2 + myrobot.rotation_euler.z))
+    camera = bpy.context.active_object
+    camera.scale = Vector((0.25, 0.25, 0.25))
+
+    camera.select_set(True)
+    myrobot.select_set(True)
+    bpy.context.view_layer.objects.active = myrobot
+    bpy.ops.object.parent_set()
+    camera.select_set(False)
+    myrobot.select_set(False)
+
+    camera.hide_select = True
+    camera.name = myrobot.name_full + "_camera"
+
     myrobot.object_type = "ROBOT"
 
     return myrobot.name, myarea.name
@@ -276,6 +325,21 @@ class MyRobot(Robot):
         self.__dim = dim
         self.__margin = margin
 
+    def lock(self):
+        myrobot = bpy.data.objects[super().name]
+        myrobot.lock_location[0:3] = (True, True, True)
+        myrobot.lock_rotation[0:3] = (True, True, True)
+        myrobot.lock_scale[0:3] = (True, True, True)
+
+        camera = bpy.data.objects[super().name + "_camera"]
+        bpy.context.scene.camera = camera
+
+    def unlock(self):
+        myrobot = bpy.data.objects[super().name]
+        myrobot.lock_location[0:3] = (False, False, True)
+        myrobot.lock_rotation[0:3] = (False, False, False)
+        myrobot.lock_scale[0:3] = (True, True, True)
+
     def __get_dim(self):
         return self.__dim
 
@@ -290,6 +354,46 @@ class MyRobot(Robot):
 """
 Operadores
 """
+
+
+class SelectRobotProps(bpy.types.PropertyGroup):
+    prop_robot_id: bpy.props.IntProperty(default=-1)
+
+class SelectRobotOperator(bpy.types.Operator):
+    bl_idname = "scene.select_robot"
+    bl_label = "Select active robot"
+    bl_description = "Choose current active robot"
+
+    @classmethod
+    def poll(cls, context):
+        import communicationOperator as co
+        in_rob_mode = bpy.context.scene.com_props.prop_mode == co.robot_modes_summary.index("ROBOT_MODE")
+        return not in_rob_mode and len(RobotSet()) > 0 and not bpy.context.scene.is_cursor_active
+
+    def draw(self, context):
+        scene = context.scene
+
+        for item in scene.select_robot_collection:
+            self.layout.prop(item, "selected", text=item.name)
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+    def execute(self, context):
+
+        scene = context.scene
+        for item in scene.select_robot_collection:
+            if item.selected:
+                idn = item.idn
+                scene.selected_robot_props.prop_robot_id = idn
+                break
+        if 'idn' not in locals():
+            scene.selected_robot_props.prop_robot_id = -1
+        for item in scene.select_robot_collection:
+            item.selected = False
+        return {'FINISHED'}
+
 
 def selectUpdate(self, context):
     #print("Update ", str(self.name), str(self.idn), str(str(self.selected)))
@@ -315,7 +419,9 @@ class AddRobotOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return True
+        import communicationOperator as co
+        in_rob_mode = bpy.context.scene.com_props.prop_mode == co.robot_modes_summary.index("ROBOT_MODE")
+        return not in_rob_mode
 
     def execute(self, context):
         scene = context.scene
@@ -365,7 +471,9 @@ class DeleteRobotOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return len(RobotSet()) > 0 and not cl.isListenerActive()
+        import communicationOperator as co
+        in_rob_mode = bpy.context.scene.com_props.prop_mode == co.robot_modes_summary.index("ROBOT_MODE")
+        return not in_rob_mode and len(RobotSet()) > 0 and not cl.isListenerActive()
 
     def execute(self, context):
         scene = context.scene

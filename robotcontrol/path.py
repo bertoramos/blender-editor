@@ -85,9 +85,7 @@ def draw_pose_note(context, name, pose, color, font, font_align):
 
     rot_note_name = utils.draw_text(context, name, txt, loc, color, hint_space, font, font_align, rotation)
 
-    euler_rot = Euler(rot)
-
-    bpy.data.objects[rot_note_name].location += euler_rot.to_matrix().col[2]
+    bpy.data.objects[rot_note_name].location += rot.to_matrix().col[2]
 
     bpy.data.objects[rot_note_name].lock_location[0:3] = (True, True, True)
     bpy.data.objects[rot_note_name].lock_rotation[0:3] = (True, True, True)
@@ -186,7 +184,7 @@ class Pose:
         return Vector((self.x, self.y, self.z))
 
     def get_rotation(self):
-        return Vector((self._a, self._b, self._g))
+        return Euler((self._a, self._b, self._g))
 
     def __eq__(self, other):
         return abs(self._x - other.x) <= TOL and abs(self._y - other.y) <= TOL and abs(self._z - other.z) <= TOL and \
@@ -249,10 +247,8 @@ class Action:
             bpy.data.objects.remove(bpy.data.objects[self._line], do_unlink=True)
         if self._line in bpy.data.meshes:
             bpy.data.meshes.remove(bpy.data.meshes[self._line], do_unlink=True)
-
         if self._arrow in bpy.data.objects:
             bpy.data.objects.remove(bpy.data.objects[self._arrow], do_unlink=True)
-
         self.del_annotation()
 
     p0 = property(get_p0)

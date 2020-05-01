@@ -13,6 +13,8 @@ import utils
 
 _TOL = 0.001
 
+keymaps = []
+
 def autoregister():
     global pd
     pd = PathDrawer()
@@ -21,16 +23,24 @@ def autoregister():
     bpy.utils.register_class(SavePoseOperator)
     bpy.utils.register_class(UndoPoseOperator)
     bpy.utils.register_class(RemoveLastSavedPoseOperator)
-    bpy.utils.register_class(ShortcutPathEditor)
 
     bpy.utils.register_class(PathEditorLog)
     bpy.utils.register_class(MoveCursorToLastPoseOperator)
 
-    bpy.utils.register_class(SelectRobotProps)
-    bpy.types.Scene.selected_robot_props = bpy.props.PointerProperty(type=SelectRobotProps)
-    bpy.utils.register_class(SelectRobotForPathOperator)
+    # keymap
+    wm = bpy.context.window_manager
+    kc = wm.keyconfigs.addon
+    if kc:
+        km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
 
-    #bpy.ops.scene.shortcut_path_editor('INVOKE_DEFAULT')
+        kmi = km.keymap_items.new(SavePoseOperator.bl_idname, type='A', value='PRESS', ctrl=True, shift=True)
+        keymaps.append((km, kmi))
+
+        kmi = km.keymap_items.new(UndoPoseOperator.bl_idname, type='U', value='PRESS', ctrl=True, shift=True)
+        keymaps.append((km, kmi))
+
+        kmi = km.keymap_items.new(MoveCursorToLastPoseOperator.bl_idname, type='M', value='PRESS', ctrl=True, shift=True)
+        keymaps.append((km, kmi))
 
 def autounregister():
     global pd
@@ -39,14 +49,13 @@ def autounregister():
     bpy.utils.unregister_class(SavePoseOperator)
     bpy.utils.unregister_class(UndoPoseOperator)
     bpy.utils.unregister_class(RemoveLastSavedPoseOperator)
-    bpy.utils.unregister_class(ShortcutPathEditor)
 
     bpy.utils.unregister_class(PathEditorLog)
     bpy.utils.unregister_class(MoveCursorToLastPoseOperator)
 
-    bpy.utils.unregister_class(SelectRobotProps)
-    del bpy.types.Scene.selected_robot_props
-    bpy.utils.unregister_class(SelectRobotForPathOperator)
+    for km, kmi in keymaps:
+        km.keymap_items.remove(kmi)
+    keymaps.clear()
 
 
 def hideCeil():
@@ -73,7 +82,6 @@ class PathDrawer(cl.Observer):
 
         del self.current_action
         self.current_action = None
-        bpy.ops.scene.shortcut_path_editor('INVOKE_DEFAULT')
         showCeil()
 
     def notifyStart(self, operator):
@@ -111,51 +119,9 @@ class PathDrawer(cl.Observer):
         if self.current_action is not None:
             self.current_action.move(current_pose)
 
-#########
-
-
-class SelectRobotProps(bpy.types.PropertyGroup):
-    prop_robot_id: bpy.props.IntProperty(default=-1)
-
-class SelectRobotForPathOperator(bpy.types.Operator):
-    bl_idname = "scene.select_robot_path"
-    bl_label = "Select robot for path"
-    bl_description = "Select Robot for a created path"
-
-    @classmethod
-    def poll(cls, context):
-        return len(robot_tools.RobotSet()) > 0 and not bpy.context.scene.is_cursor_active
-
-    def draw(self, context):
-        scene = context.scene
-        #self.layout.prop(props, "prop_rpbot_id", text="Robot")
-        for item in scene.select_robot_collection:
-            self.layout.prop(item, "selected", text=item.name)
-
-    def invoke(self, context, event):
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self)
-
-    def execute(self, context):
-
-        scene = context.scene
-        for item in scene.select_robot_collection:
-            if item.selected:
-                idn = item.idn
-                scene.selected_robot_props.prop_robot_id = idn
-                break
-        if 'idn' not in locals():
-            scene.selected_robot_props.prop_robot_id = -1
-        for item in scene.select_robot_collection:
-            item.selected = False
-        return {'FINISHED'}
-
-
-#########
-
 class SavePoseOperator(bpy.types.Operator):
     bl_idname = "scene.save_pose"
-    bl_label = "Save Pose"
+    bl_label = "Append Pose"
     bl_description = "Save pose"
 
     @classmethod
@@ -304,39 +270,6 @@ class MoveCursorToLastPoseOperator(bpy.types.Operator):
         cl.CursorListener.set_pose(pose0)
         return {'FINISHED'}
 
-class ShortcutPathEditor(bpy.types.Operator):
-    bl_idname = "scene.shortcut_path_editor"
-    bl_label = "Shortcut Path Editor"
-    bl_description = "Shortcut"
-
-    def __init__(self):
-        pass
-
-    def __del__(self):
-        pass
-
-    def execute(self, context):
-        return {'FINISHED'}
-
-    def modal(self, context, event):
-        if event.ctrl and event.type == 'U':
-            self.report({'INFO'}, "Undo save")
-            if len(pc.TempPathContainer()) > 0:
-                pc.bpy.ops.scene.undo_pose()
-        elif event.ctrl and event.type == 'R':
-            self.report({'INFO'}, "Remove path")
-            bpy.ops.scene.remove_last_saved_pose()
-        elif event.ctrl and event.type == 'D':
-            self.report({'INFO'}, "Save pose")
-            bpy.ops.scene.save_pose()
-        elif event.type == 'ESC':
-            return {'FINISHED'}
-        return {'PASS_THROUGH'}
-
-    def invoke(self, context, event):
-        self.execute(context)
-        context.window_manager.modal_handler_add(self)
-        return {'RUNNING_MODAL'}
 
 class PathEditorLog(bpy.types.Operator):
     bl_idname = "screen.patheditor_log"

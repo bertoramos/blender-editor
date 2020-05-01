@@ -1,7 +1,8 @@
 
 import bpy
 
-import communicationOperator
+import communicationOperator as co
+import robot as r
 
 def autoregister():
     bpy.utils.register_class(CommunicationPanel)
@@ -15,18 +16,32 @@ class CommunicationPanel(bpy.types.Panel):
     bl_label = "Control Panel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "CommunicationPanel"
+    bl_category = "Robot Control"
 
     def draw(self, context):
-        props = bpy.context.scene.mode_props
 
         icon_mode = ""
-        mode = props.prop_mode
-        if mode == "EDITOR_MODE":
+        mode = context.scene.com_props.prop_mode
+
+        if mode == co.robot_modes_summary.index("EDITOR_MODE"):
             icon_mode = "FILE_BLEND"
-        elif mode == "ROBOMAP_MODE":
+        if mode == co.robot_modes_summary.index("ROBOT_MODE"):
             icon_mode = "SYSTEM"
 
-        self.layout.operator(communicationOperator.ChangeModeOperator.bl_idname, icon=icon_mode, text="Change mode")
-        #self.layout.prop(props, "prop_speed", text="Name")
-        #self.layout.operator(UpdateSpeedOperator.bl_idname, text = "Update speed")
+        box = self.layout.box()
+
+        idx = context.scene.selected_robot_props.prop_robot_id
+        txt = "Robot selected : " + str(r.RobotSet().getRobot(idx).name) if idx >= 0 else "No robot selected"
+        txt = txt if len(r.RobotSet()) > 0 else "No robot available"
+
+        box.label(text=txt)
+        box.operator(r.SelectRobotOperator.bl_idname, icon="CURVE_PATH", text="Select robot")
+
+        self.layout.operator(co.ChangeModeOperator.bl_idname, icon = icon_mode, text="Change mode")
+
+
+        playing = context.scene.com_props.prop_playing
+        icon_play = "PAUSE" if playing else "PLAY"
+
+        box2 = self.layout.box()
+        box2.operator(co.PlayPauseOperator.bl_idname, icon = icon_play, text="")

@@ -16,6 +16,7 @@ def autoregister():
     bpy.utils.register_class(StartPosesListener)
     bpy.utils.register_class(StopPosesListener)
 
+
 def autounregister():
     bpy.utils.unregister_class(StartPosesListener)
     bpy.utils.unregister_class(StopPosesListener)
@@ -130,7 +131,9 @@ class StartPosesListener(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         # Esta activo el listener?
-        return len(robot.RobotSet()) > 0 and not isListenerActive() and context.scene.selected_robot_props.prop_robot_id >= 0
+        import communicationOperator as co
+        in_rob_mode = bpy.context.scene.com_props.prop_mode == co.robot_modes_summary.index("ROBOT_MODE")
+        return in_rob_mode and len(robot.RobotSet()) > 0 and not isListenerActive() and context.scene.selected_robot_props.prop_robot_id >= 0
 
     def execute(self, context):
         # Indica que se activó el cursor
