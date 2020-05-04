@@ -3,14 +3,20 @@ import bpy
 import re
 
 def autoregister():
-    bpy.utils.register_class(RobotProps)
-    bpy.utils.register_class(MyRobotProps)
+    global classes
+    classes = [RobotProps, MyRobotProps]
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
     bpy.types.Scene.robot_props = bpy.props.PointerProperty(type=RobotProps)
     bpy.types.Scene.myrobot_props = bpy.props.PointerProperty(type=MyRobotProps)
 
 def autounregister():
-    bpy.utils.unregister_class(RobotProps)
-    bpy.utils.unregister_class(MyRobotProps)
+    global classes
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+
+
     del bpy.types.Scene.robot_props
     del bpy.types.Scene.myrobot_props
 

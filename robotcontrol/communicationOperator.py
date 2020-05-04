@@ -11,12 +11,13 @@ import robot
 keymaps = []
 
 def autoregister():
-    bpy.utils.register_class(CommunicationProps)
+    global classes
+    classes = [CommunicationProps, SocketModalOperator, ChangeModeOperator, PlayPauseOperator]
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
     bpy.types.Scene.com_props = bpy.props.PointerProperty(type=CommunicationProps)
 
-    bpy.utils.register_class(SocketModalOperator)
-    bpy.utils.register_class(ChangeModeOperator)
-    bpy.utils.register_class(PlayPauseOperator)
 
     wm = bpy.context.window_manager
     kc = wm.keyconfigs.addon
@@ -31,12 +32,11 @@ def autoregister():
 
 
 def autounregister():
-    bpy.utils.unregister_class(CommunicationProps)
+    global classes
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+    
     del bpy.types.Scene.com_props
-
-    bpy.utils.unregister_class(SocketModalOperator)
-    bpy.utils.unregister_class(ChangeModeOperator)
-    bpy.utils.unregister_class(PlayPauseOperator)
 
     for km, kmi in addon_keymaps:
         km.keymap_items.remove(kmi)

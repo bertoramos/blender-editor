@@ -4,17 +4,23 @@ from bpy.types import Operator
 from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from mathutils import Vector
 
+
+
 def autoregister():
-    bpy.utils.register_class(CeilProps)
+    global classes
+    classes = [CeilProps, CreateAbsoluteCeilOperator, CreateRelativeCeilOperator]
+
+    for cls in classes:
+        bpy.utils.register_class(cls)
     bpy.types.Scene.ceil_props = bpy.props.PointerProperty(type=CeilProps)
-    bpy.utils.register_class(CreateAbsoluteCeilOperator)
-    bpy.utils.register_class(CreateRelativeCeilOperator)
+
 
 def autounregister():
-    bpy.utils.unregister_class(CeilProps)
+    global classes
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
     del bpy.types.Scene.ceil_props
-    bpy.utils.unregister_class(CreateAbsoluteCeilOperator)
-    bpy.utils.unregister_class(CreateRelativeCeilOperator)
+
 
 def create_ceil(cursor):
     scene = bpy.context.scene
@@ -26,7 +32,7 @@ def create_ceil(cursor):
     save_cursor_loc = bpy.context.scene.cursor.location.xyz
     bpy.context.scene.cursor.location = cursor
     bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-
+    
     # Location
     x = scene.ceil_props.prop_loc.x
     y = scene.ceil_props.prop_loc.y

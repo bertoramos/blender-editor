@@ -8,22 +8,22 @@ from math import sin, cos, asin, atan, radians, degrees, sqrt, pi
 import geom_math as gm
 
 def autoregister():
-    bpy.utils.register_class(WallProps)
+    global classes
+    classes = [WallProps, RoomProps, CreateAbsoluteWallOperator, CreateRelativeWallOperator, CreateAbsoluteRoomOperator]
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
     bpy.types.Scene.wall_props = bpy.props.PointerProperty(type=WallProps)
-    bpy.utils.register_class(RoomProps)
     bpy.types.Scene.room_props = bpy.props.PointerProperty(type=RoomProps)
-    bpy.utils.register_class(CreateAbsoluteWallOperator)
-    bpy.utils.register_class(CreateRelativeWallOperator)
-    bpy.utils.register_class(CreateAbsoluteRoomOperator)
 
 def autounregister():
-    bpy.utils.unregister_class(WallProps)
+    global classes
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
     del bpy.types.Scene.wall_props
-    bpy.utils.unregister_class(RoomProps)
     del bpy.types.Scene.room_props
-    bpy.utils.unregister_class(CreateAbsoluteWallOperator)
-    bpy.utils.unregister_class(CreateRelativeWallOperator)
-    bpy.utils.unregister_class(CreateAbsoluteRoomOperator)
+
 
 def create_wall(self, context, cursor):
     """

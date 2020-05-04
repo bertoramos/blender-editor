@@ -2,14 +2,16 @@ import bpy
 from bpy.types import Operator
 
 def autoregister():
-    bpy.utils.register_class(HideAreaOperator)
-    bpy.utils.register_class(HideCeilOperator)
-    bpy.utils.register_class(OptionsPanel)
+    global classes
+    classes = [HideAreaOperator, HideCeilOperator, OptionsPanel]
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
 
 def autounregister():
-    bpy.utils.unregister_class(HideAreaOperator)
-    bpy.utils.unregister_class(HideCeilOperator)
-    bpy.utils.unregister_class(OptionsPanel)
+    global classes
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
 
 is_hide_area = False
 

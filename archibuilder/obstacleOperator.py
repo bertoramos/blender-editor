@@ -6,14 +6,19 @@ from mathutils import Vector
 from math import sin, cos, atan, radians, degrees, sqrt, pi
 
 def autoregister():
-    bpy.utils.register_class(ObstacleProps)
+    global classes
+    classes = [ObstacleProps, AddObstacleOperator]
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
     bpy.types.Scene.obstacle_props = bpy.props.PointerProperty(type=ObstacleProps)
-    bpy.utils.register_class(AddObstacleOperator)
 
 def autounregister():
-    bpy.utils.unregister_class(ObstacleProps)
+    global classes
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
     del bpy.types.Scene.obstacle_props
-    bpy.utils.unregister_class(AddObstacleOperator)
+
 
 def add_obstacle(self, context, name, size, margin, r, g, b, a):
     bpy.ops.mesh.primitive_cube_add()

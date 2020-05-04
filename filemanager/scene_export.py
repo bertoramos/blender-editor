@@ -5,16 +5,20 @@ import os
 import re
 
 def autoregister():
-    bpy.utils.register_class(FileProps)
+    global classes
+    classes = [FileProps, ExportScenarioOperator, ExportScenarioPanel]
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
     bpy.types.Scene.file_props = bpy.props.PointerProperty(type=FileProps)
-    bpy.utils.register_class(ExportScenarioOperator)
-    bpy.utils.register_class(ExportScenarioPanel)
 
 def autounregister():
-    bpy.utils.unregister_class(FileProps)
+    global classes
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+    
     del bpy.types.Scene.file_props
-    bpy.utils.unregister_class(ExportScenarioOperator)
-    bpy.utils.unregister_class(ExportScenarioPanel)
+
 
 exportable_objects = {"WALL",
                       "CEIL",

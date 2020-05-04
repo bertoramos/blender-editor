@@ -2,11 +2,16 @@ import bpy
 from bpy.props import BoolProperty
 
 
+def autoregister():
+    bpy.utils.register_class(DeleteOverrideOperator)
+
+def autounregister():
+    bpy.utils.unregister_class(DeleteOverrideOperator)
+
 """
 Overrides Delete Operator
 Avoid delete protected objects
 """
-
 bpy.types.Object.protected = BoolProperty(name = 'protected', default = False)
 
 
@@ -86,9 +91,3 @@ class DeleteOverrideOperator(bpy.types.Operator):
 
     def draw(self, context):
         self.layout.prop(self, "delete_children", text="Delete children")
-
-def autoregister():
-    bpy.utils.register_class(DeleteOverrideOperator)
-
-def autounregister():
-    bpy.utils.unregister_class(DeleteOverrideOperator)

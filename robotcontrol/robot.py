@@ -9,23 +9,17 @@ import utils
 
 keymaps = []
 
-classes = [RobotItemForSelect, RobotItemForDelete, AddRobotOperator, DeleteRobotOperator, SelectRobotProps, SelectRobotOperator]
-
 def autoregister():
+    global classes
+    classes = [RobotItemForSelect, RobotItemForDelete, AddRobotOperator, DeleteRobotOperator, SelectRobotProps, SelectRobotOperator]
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
-    RobotSet()
-    
-    bpy.utils.register_class(RobotItemForSelect)
-    bpy.utils.register_class(RobotItemForDelete)
     bpy.types.Scene.select_robot_collection = bpy.props.CollectionProperty(type=RobotItemForSelect)
     bpy.types.Scene.delete_robot_collection = bpy.props.CollectionProperty(type=RobotItemForDelete)
-
-    bpy.utils.register_class(AddRobotOperator)
-    bpy.utils.register_class(DeleteRobotOperator)
-
-    bpy.utils.register_class(SelectRobotProps)
     bpy.types.Scene.selected_robot_props = bpy.props.PointerProperty(type=SelectRobotProps)
-    bpy.utils.register_class(SelectRobotOperator)
+
+    RobotSet()
 
     # keymap
     wm = bpy.context.window_manager
@@ -38,19 +32,15 @@ def autoregister():
 
 
 def autounregister():
-    RobotSet().clear()
-    bpy.utils.unregister_class(RobotItemForSelect)
+    global classes
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+
     del bpy.types.Scene.select_robot_collection
-
-    bpy.utils.unregister_class(RobotItemForDelete)
     del bpy.types.Scene.delete_robot_collection
-
-    bpy.utils.unregister_class(AddRobotOperator)
-    bpy.utils.unregister_class(DeleteRobotOperator)
-
-    bpy.utils.unregister_class(SelectRobotProps)
     del bpy.types.Scene.selected_robot_props
-    bpy.utils.unregister_class(SelectRobotOperator)
+
+    RobotSet().clear()
 
     # keymap
     for km, kmi in keymaps:

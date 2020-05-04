@@ -6,12 +6,17 @@ import pathEditor as pe
 import robot as robot_tools
 
 def autoregister():
-    bpy.utils.register_class(PathCreationPanel)
-    bpy.utils.register_class(ToolsPanel)
+    global classes
+    classes = [PathCreationPanel, ToolsPanel]
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
 
 def autounregister():
-    bpy.utils.unregister_class(PathCreationPanel)
-    bpy.utils.unregister_class(ToolsPanel)
+    global classes
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+
 
 class PathCreationPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_PathCreationPanel"

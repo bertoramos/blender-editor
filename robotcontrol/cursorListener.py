@@ -13,13 +13,16 @@ import utils
 _TOL = 0.001
 
 def autoregister():
-    bpy.utils.register_class(StartPosesListener)
-    bpy.utils.register_class(StopPosesListener)
+    global classes
+    classes = [StartPosesListener, StopPosesListener]
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
 
 def autounregister():
-    bpy.utils.unregister_class(StartPosesListener)
-    bpy.utils.unregister_class(StopPosesListener)
+    global classes
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
 
 bpy.types.Scene.is_cursor_active = BoolProperty(name = 'is_cursor_active', default = False)
 

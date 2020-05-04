@@ -16,16 +16,15 @@ _TOL = 0.001
 keymaps = []
 
 def autoregister():
+    global classes
+    classes = [SavePoseOperator, UndoPoseOperator, RemoveLastSavedPoseOperator, PathEditorLog, MoveCursorToLastPoseOperator]
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
     global pd
     pd = PathDrawer()
     cl.CursorListener.add_observer(pd)
-
-    bpy.utils.register_class(SavePoseOperator)
-    bpy.utils.register_class(UndoPoseOperator)
-    bpy.utils.register_class(RemoveLastSavedPoseOperator)
-
-    bpy.utils.register_class(PathEditorLog)
-    bpy.utils.register_class(MoveCursorToLastPoseOperator)
 
     # keymap
     wm = bpy.context.window_manager
@@ -43,15 +42,13 @@ def autoregister():
         keymaps.append((km, kmi))
 
 def autounregister():
+    global classes
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+
+
     global pd
     cl.CursorListener.rm_observer(pd)
-
-    bpy.utils.unregister_class(SavePoseOperator)
-    bpy.utils.unregister_class(UndoPoseOperator)
-    bpy.utils.unregister_class(RemoveLastSavedPoseOperator)
-
-    bpy.utils.unregister_class(PathEditorLog)
-    bpy.utils.unregister_class(MoveCursorToLastPoseOperator)
 
     for km, kmi in keymaps:
         km.keymap_items.remove(kmi)

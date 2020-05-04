@@ -7,33 +7,25 @@ from math import pi, radians
 import utils
 
 def autoregister():
-    bpy.utils.register_class(BeaconProps)
+    global classes
+    classes = [BeaconProps, BluetoothBeaconProps, UltrasoundBeaconProps, AddBeaconOperator]
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
     bpy.types.Scene.beacon_props = bpy.props.PointerProperty(type=BeaconProps)
-
-    bpy.utils.register_class(BluetoothBeaconProps)
     bpy.types.Scene.bluetooth_beacon_props = bpy.props.PointerProperty(type=BluetoothBeaconProps)
-
-    bpy.utils.register_class(UltrasoundBeaconProps)
     bpy.types.Scene.ultrasound_beacon_props = bpy.props.PointerProperty(type=UltrasoundBeaconProps)
 
-    """
-    bpy.utils.register_class(TypeBeaconProps)
-    bpy.types.Scene.type_beacon_props = bpy.props.PointerProperty(type=TypeBeaconProps)
-    """
-
-    bpy.utils.register_class(AddBeaconOperator)
 
 def autounregister():
-    bpy.utils.unregister_class(BeaconProps)
+    global classes
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+
     del bpy.types.Scene.beacon_props
-
-    bpy.utils.unregister_class(BluetoothBeaconProps)
     del bpy.types.Scene.bluetooth_beacon_props
-
-    bpy.utils.unregister_class(UltrasoundBeaconProps)
     del bpy.types.Scene.ultrasound_beacon_props
 
-    bpy.utils.unregister_class(AddBeaconOperator)
 
 beacon_types = [("BLUETOOTH", "Bluetooth", "", 1),
                 ("ULTRASOUND", "Ultrasound", "", 2)]
