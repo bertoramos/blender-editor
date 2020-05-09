@@ -9,6 +9,7 @@ items = [("OTHER", "Other", "", 0),
          ("BLUETOOTH_BEACON", "Bluetooth_Beacon", "", 5),
          ("ULTRASOUND_BEACON", "Ultrasound_Beacon", "", 6),
          ("ROBOT", "Robot", "", 7),
-         ("TEMPORAL", "Temporal", "", 8)]
+         ("ROBOT_MARGIN", "Robot_margin", "", 8),
+         ("TEMPORAL", "Temporal", "", 9)]
 
 bpy.types.Object.object_type = bpy.props.EnumProperty(items=items, default="OTHER")

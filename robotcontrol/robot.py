@@ -239,6 +239,8 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port):
         myarea.active_material = mat
     mat.diffuse_color = Vector((1, 1, 1, 0.2))
 
+    myarea.object_type = "ROBOT_MARGIN"
+
     # icosphere
     minx = min(dim.x, dim.y)
     bpy.ops.mesh.primitive_ico_sphere_add(radius=minx/(2*1.5), location=(loc.x, loc.y, dim.z))

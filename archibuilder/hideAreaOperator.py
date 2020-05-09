@@ -1,17 +1,35 @@
 import bpy
 from bpy.types import Operator
 
+keymaps = []
+
 def autoregister():
     global classes
     classes = [HideAreaOperator, HideCeilOperator, OptionsPanel]
     for cls in classes:
         bpy.utils.register_class(cls)
 
+    # keymap
+    wm = bpy.context.window_manager
+    kc = wm.keyconfigs.addon
+    if kc:
+        km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
+
+        kmi = km.keymap_items.new(HideAreaOperator.bl_idname, type='A', value='PRESS', ctrl=True, alt=True)
+        kmi = km.keymap_items.new(HideCeilOperator.bl_idname, type='C', value='PRESS', ctrl=True, alt=True)
+        keymaps.append((km, kmi))
+
 
 def autounregister():
     global classes
     for cls in classes:
         bpy.utils.unregister_class(cls)
+
+    # keymap
+    for km, kmi in keymaps:
+        km.keymap_items.remove(kmi)
+    keymaps.clear()
+
 
 is_hide_area = False
 

@@ -123,7 +123,7 @@ class SavePoseOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return True
+        return context.scene.is_cursor_active
 
     def execute(self, context):
         global pd
