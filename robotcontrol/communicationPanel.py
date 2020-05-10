@@ -39,9 +39,9 @@ class CommunicationPanel(bpy.types.Panel):
 
         self.layout.operator(co.ChangeModeOperator.bl_idname, icon = icon_mode, text="Change mode")
 
-
-        playing = context.scene.com_props.prop_playing
-        icon_play = "PAUSE" if playing else "PLAY"
+        rendering = context.scene.com_props.prop_rendering
+        rendering_txt = "Rendering active" if rendering else "Rendering inactive"
+        icon_play = "RESTRICT_RENDER_OFF" if rendering else "RESTRICT_RENDER_ON"
 
         box2 = self.layout.box()
-        box2.operator(co.PlayPauseOperator.bl_idname, icon = icon_play, text="")
+        box2.operator(co.PlayPauseRenderOperator.bl_idname, icon = icon_play, text=rendering_txt)

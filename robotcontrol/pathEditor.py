@@ -138,6 +138,8 @@ class SavePoseOperator(bpy.types.Operator):
         robot_obj = bpy.data.objects[robot.name]
         area_robot_obj = bpy.data.objects[robot.area_name]
 
+        rs = robot_tools.RobotSet()
+
         obstacles = []
         for obj in bpy.data.objects:
             if obj.object_type == "WALL":
@@ -165,7 +167,8 @@ class SavePoseOperator(bpy.types.Operator):
 
 
             if obj.object_type == "OBSTACLE_MARGIN":
-                o = obj.parent.copy()
+                o = obj.copy()
+                o.parent = None
                 o.object_type = "TEMPORAL"
 
                 o.location = obj.parent.location.xyz
@@ -174,6 +177,26 @@ class SavePoseOperator(bpy.types.Operator):
 
                 bpy.context.scene.collection.objects.link(o)
                 obstacles.append((o, (True, False, True)))
+
+
+            # get area
+
+            if obj.object_type == "ROBOT": # Search other robots
+                for c in obj.children:
+                    if c.object_type == "ROBOT_MARGIN": # Get robot margin
+                        robot = rs.getRobotByName(obj.name_full)
+                        if robot.idn != idx:
+                            margin = c
+                            o = margin.copy()
+                            o.parent = None
+                            o.object_type = "TEMPORAL"
+
+                            o.location = margin.parent.location.xyz
+                            o.dimensions = margin.dimensions.xyz
+                            o.rotation_euler = margin.parent.rotation_euler
+
+                            bpy.context.scene.collection.objects.link(o)
+                            obstacles.append((o, (True, False, True)))
 
         # Copy robot
         bpy.ops.mesh.primitive_cube_add()

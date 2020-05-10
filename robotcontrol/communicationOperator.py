@@ -12,7 +12,7 @@ keymaps = []
 
 def autoregister():
     global classes
-    classes = [CommunicationProps, SocketModalOperator, ChangeModeOperator, PlayPauseOperator]
+    classes = [CommunicationProps, SocketModalOperator, ChangeModeOperator, PlayPauseRenderOperator]
     for cls in classes:
         bpy.utils.register_class(cls)
 
@@ -27,7 +27,7 @@ def autoregister():
         kmi = km.keymap_items.new(ChangeModeOperator.bl_idname, type='M', value='PRESS', ctrl=True)
         keymaps.append((km, kmi))
 
-        kmi = km.keymap_items.new(PlayPauseOperator.bl_idname, type='P', value='PRESS', ctrl=True, alt=True, shift=False)
+        kmi = km.keymap_items.new(PlayPauseRenderOperator.bl_idname, type='P', value='PRESS', ctrl=True, alt=True, shift=False)
         keymaps.append((km, kmi))
 
 
@@ -35,7 +35,7 @@ def autounregister():
     global classes
     for cls in classes:
         bpy.utils.unregister_class(cls)
-    
+
     del bpy.types.Scene.com_props
 
     for km, kmi in addon_keymaps:
@@ -48,7 +48,7 @@ robot_modes_summary = ["EDITOR_MODE", # 0
                       ]
 
 class CommunicationProps(bpy.types.PropertyGroup):
-    prop_playing: bpy.props.BoolProperty(name="Playing", default=False)
+    prop_rendering: bpy.props.BoolProperty(name="Rendering", default=True)
 
     prop_mode : bpy.props.IntProperty(name="mode", default=0, min=0, max=len(robot_modes_summary)-1)
     prop_last_recv_packet : bpy.props.IntProperty(name="last_recv_packet", default=-1, min=-1)
@@ -140,7 +140,7 @@ class SocketModalOperator(bpy.types.Operator):
                 trace_packet = cnh.ConnectionHandler().receive_trace_packet()
                 n_fail_recv = 0 # Reset no received trace packets count
 
-                if bpy.context.scene.com_props.prop_playing:
+                if bpy.context.scene.com_props.prop_rendering:
                     # get selected robot
                     # place in current position if playing is active
                     sel_rob_id = bpy.context.scene.selected_robot_props.prop_robot_id
@@ -235,9 +235,9 @@ class ChangeModeOperator(bpy.types.Operator):
             SocketModalOperator.running = False
         return {'FINISHED'}
 
-class PlayPauseOperator(bpy.types.Operator):
-    bl_idname = "wm.play_pause"
-    bl_label = "Play/Pause robot movement"
+class PlayPauseRenderOperator(bpy.types.Operator):
+    bl_idname = "wm.play_pause_render"
+    bl_label = "Play/Pause rendering position"
     bl_description = "Play/Pause"
 
     @classmethod
@@ -245,5 +245,5 @@ class PlayPauseOperator(bpy.types.Operator):
         return context.scene.selected_robot_props.prop_robot_id >= 0 and not SocketModalOperator.switching and SocketModalOperator.running
 
     def execute(self, context):
-        context.scene.com_props.prop_playing = not context.scene.com_props.prop_playing
+        context.scene.com_props.prop_rendering = not context.scene.com_props.prop_rendering
         return {'FINISHED'}

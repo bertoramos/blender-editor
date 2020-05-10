@@ -1,11 +1,27 @@
 
 import bpy
 
+keymaps = []
+
 def autoregister():
     bpy.utils.register_class(ShowAnnotationPanel)
 
+    # keymap
+    wm = bpy.context.window_manager
+    kc = wm.keyconfigs.addon
+    if kc:
+        km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
+
+        kmi = km.keymap_items.new("measureit.runopengl", type='N', value='PRESS', ctrl=True, alt=True)
+        keymaps.append((km, kmi))
+
 def autounregister():
     bpy.utils.unregister_class(ShowAnnotationPanel)
+
+    for km, kmi in keymaps:
+        km.keymap_items.remove(kmi)
+    keymaps.clear()
+
 
 class ShowAnnotationPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_ShowAnnotation"

@@ -5,4 +5,3 @@
 2. Ventanas de error personalizadas:
   4.1. Ventanas flotantes custom ??
 3. Barra de progreso en la exportación
-4. Comprobar colision con otras plataformas
