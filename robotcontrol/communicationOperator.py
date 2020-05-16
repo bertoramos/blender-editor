@@ -38,7 +38,7 @@ def autounregister():
 
     del bpy.types.Scene.com_props
 
-    for km, kmi in addon_keymaps:
+    for km, kmi in keymaps:
         km.keymap_items.remove(kmi)
     keymaps.clear()
 
@@ -124,6 +124,9 @@ class SocketModalOperator(bpy.types.Operator):
 
                 update_gui()
                 toggle_deactivate_options(robot_modes_summary.index("EDITOR_MODE"))
+
+                if context.scene.is_cursor_active:
+                    bpy.ops.scene.stop_cursor_listener() # Paramos el editor de rutas si está activo
                 return {'FINISHED'}
         return {'PASS_THROUGH'}
 

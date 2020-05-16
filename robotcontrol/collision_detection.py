@@ -90,7 +90,9 @@ def generate_area(robot_obj, pos0, pos1):
     bpy.ops.mesh.extrude_edges_move(MESH_OT_extrude_edges_indiv={"use_normal_flip":False, "mirror":False},
                                     TRANSFORM_OT_translate={"value":(-offset)[:],
                                                             "orient_type":'GLOBAL',
-                                                            "orient_matrix":((1, 0, 0), (0, 1, 0), (0, 0, 1)),
+                                                            "orient_matrix":((1, 0, 0),
+                                                                             (0, 1, 0),
+                                                                             (0, 0, 1)),
                                                             "orient_matrix_type":'GLOBAL',
                                                             "constraint_axis":(False, False, False),
                                                             "mirror":False,
@@ -125,9 +127,9 @@ def check_collision(robot_obj, pos0, pos1, objects):
     area = generate_area(robot_obj, pos0, pos1)
     bmarea = create_bmesh(area)
     overlap = False
-    for obj, (f1, f2, f3) in objects:
+    for obj in objects:
         bmobj = create_bmesh(obj)
-        if overlap_check.check_overlap(bmobj, bmarea, f1,f2,f3):
+        if overlap_check.check_overlap(bmobj, bmarea):
             print(obj.name)
             overlap = True
         bmobj.free()

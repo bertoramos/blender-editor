@@ -17,7 +17,7 @@ keymaps = []
 
 def autoregister():
     global classes
-    classes = [SavePoseOperator, UndoPoseOperator, RemoveLastSavedPoseOperator, PathEditorLog, MoveCursorToLastPoseOperator]
+    classes = [SavePoseOperator, UndoPoseOperator, RemoveLastSavedPoseOperator, PathEditorLog, MoveCursorToLastPoseOperator, SelectCursorOperator]
     for cls in classes:
         bpy.utils.register_class(cls)
 
@@ -116,6 +116,90 @@ class PathDrawer(cl.Observer):
         if self.current_action is not None:
             self.current_action.move(current_pose)
 
+def is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1):
+    rs = robot_tools.RobotSet()
+
+    obstacles = []
+    for obj in bpy.data.objects:
+        if obj.object_type == "WALL":
+            bpy.ops.mesh.primitive_cube_add()
+            cube = bpy.context.active_object
+
+            cube.dimensions = obj.dimensions.xyz
+            cube.location = obj.dimensions.xyz/2.0
+
+            save_cursor_loc = bpy.context.scene.cursor.location.xyz
+            bpy.context.scene.cursor.location = Vector((0,0,0))
+            bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+            bpy.context.scene.cursor.location = save_cursor_loc
+
+            cube.location = obj.location.xyz
+            cube.rotation_euler.z = obj.rotation_euler.z
+
+            bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='MEDIAN')
+
+            bpy.context.scene.collection.objects.link(cube)
+
+            obstacles.append(cube)
+
+            cube.object_type = "TEMPORAL"
+
+
+        if obj.object_type == "OBSTACLE_MARGIN":
+            o = obj.copy()
+            o.parent = None
+            o.object_type = "TEMPORAL"
+
+            o.location = obj.parent.location.xyz
+            o.dimensions = obj.dimensions.xyz
+            o.rotation_euler = obj.parent.rotation_euler
+
+            bpy.context.scene.collection.objects.link(o)
+            obstacles.append(o)
+
+        if obj.object_type == "ROBOT": # Search other robots
+            for c in obj.children:
+                if c.object_type == "ROBOT_MARGIN": # Get robot margin
+                    robot = rs.getRobotByName(obj.name_full)
+                    if robot.idn != idx:
+                        margin = c
+                        o = margin.copy()
+                        o.parent = None
+                        o.object_type = "TEMPORAL"
+
+                        o.location = margin.parent.location.xyz
+                        o.dimensions = margin.dimensions.xyz
+                        o.rotation_euler = margin.parent.rotation_euler
+
+                        bpy.context.scene.collection.objects.link(o)
+                        obstacles.append(o)
+
+    # Copy robot
+    bpy.ops.mesh.primitive_cube_add()
+    area_robot_obj_tmp = bpy.context.active_object
+    print(area_robot_obj_tmp.location)
+    area_robot_obj_tmp.dimensions = Vector((area_robot_obj.dimensions.x, area_robot_obj.dimensions.y, area_robot_obj.dimensions.z))
+    area_robot_obj_tmp.location = Vector((robot.loc.x, robot.loc.y, (area_robot_obj.dimensions.z/2.0)))
+    area_robot_obj_tmp.rotation_euler.z = pos0.rotation.z
+
+    bpy.ops.object.select_all(action='DESELECT')
+    area_robot_obj_tmp.select_set(True)
+    save_cursor_loc = bpy.context.scene.cursor.location.xyz
+    bpy.context.scene.cursor.location = Vector((robot.loc.x, robot.loc.y, 0))
+    bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+    bpy.context.scene.cursor.location = save_cursor_loc
+
+    # Check
+    res = collision_detection.check_collision(area_robot_obj_tmp, pos0, pos1, obstacles)
+
+    # Remove all objects
+    for obj in obstacles:
+        if obj.object_type == "TEMPORAL":
+            bpy.data.objects.remove(obj, do_unlink=True)
+    bpy.data.objects.remove(area_robot_obj_tmp, do_unlink=True)
+
+    return res
+
 class SavePoseOperator(bpy.types.Operator):
     bl_idname = "scene.save_pose"
     bl_label = "Append Pose"
@@ -138,93 +222,11 @@ class SavePoseOperator(bpy.types.Operator):
         robot_obj = bpy.data.objects[robot.name]
         area_robot_obj = bpy.data.objects[robot.area_name]
 
-        rs = robot_tools.RobotSet()
-
-        obstacles = []
-        for obj in bpy.data.objects:
-            if obj.object_type == "WALL":
-                bpy.ops.mesh.primitive_cube_add()
-                cube = bpy.context.active_object
-
-                cube.dimensions = obj.dimensions.xyz
-                cube.location = obj.dimensions.xyz/2.0
-
-                save_cursor_loc = bpy.context.scene.cursor.location.xyz
-                bpy.context.scene.cursor.location = Vector((0,0,0))
-                bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-                bpy.context.scene.cursor.location = save_cursor_loc
-
-                cube.location = obj.location.xyz
-                cube.rotation_euler.z = obj.rotation_euler.z
-
-                bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='MEDIAN')
-
-                bpy.context.scene.collection.objects.link(cube)
-
-                obstacles.append((cube, (True, False, True)))
-
-                cube.object_type = "TEMPORAL"
-
-
-            if obj.object_type == "OBSTACLE_MARGIN":
-                o = obj.copy()
-                o.parent = None
-                o.object_type = "TEMPORAL"
-
-                o.location = obj.parent.location.xyz
-                o.dimensions = obj.dimensions.xyz
-                o.rotation_euler = obj.parent.rotation_euler
-
-                bpy.context.scene.collection.objects.link(o)
-                obstacles.append((o, (True, False, True)))
-
-
-            # get area
-
-            if obj.object_type == "ROBOT": # Search other robots
-                for c in obj.children:
-                    if c.object_type == "ROBOT_MARGIN": # Get robot margin
-                        robot = rs.getRobotByName(obj.name_full)
-                        if robot.idn != idx:
-                            margin = c
-                            o = margin.copy()
-                            o.parent = None
-                            o.object_type = "TEMPORAL"
-
-                            o.location = margin.parent.location.xyz
-                            o.dimensions = margin.dimensions.xyz
-                            o.rotation_euler = margin.parent.rotation_euler
-
-                            bpy.context.scene.collection.objects.link(o)
-                            obstacles.append((o, (True, False, True)))
-
-        # Copy robot
-        bpy.ops.mesh.primitive_cube_add()
-        area_robot_obj_tmp = bpy.context.active_object
-        print(area_robot_obj_tmp.location)
-        area_robot_obj_tmp.dimensions = Vector((area_robot_obj.dimensions.x, area_robot_obj.dimensions.y, area_robot_obj.dimensions.z))
-        area_robot_obj_tmp.location = Vector((robot.loc.x, robot.loc.y, (area_robot_obj.dimensions.z/2.0)))
-        area_robot_obj_tmp.rotation_euler.z = pos0.rotation.z
-
-        bpy.ops.object.select_all(action='DESELECT')
-        area_robot_obj_tmp.select_set(True)
-        save_cursor_loc = bpy.context.scene.cursor.location.xyz
-        bpy.context.scene.cursor.location = Vector((robot.loc.x, robot.loc.y, 0))
-        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        bpy.context.scene.cursor.location = save_cursor_loc
-
-        # Check
-        res = collision_detection.check_collision(area_robot_obj_tmp, pos0, pos1, obstacles)
-
-
-        for obj, (b1,b2,b3) in obstacles:
-            if obj.object_type == "TEMPORAL":
-                bpy.data.objects.remove(obj, do_unlink=True)
-        bpy.data.objects.remove(area_robot_obj_tmp, do_unlink=True)
+        res = is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1)
 
         self.report({'INFO'}, "Collision : " + str(res))
         if res:
-            self.report({'ERROR_INVALID_INPUT'}, "Robot will collide if takes this path")
+            self.report({'ERROR'}, "Robot will collide if takes this path")
             return {'FINISHED'}
         else:
             self.report({'INFO'}, "Collision : " + str(res))
@@ -288,6 +290,19 @@ class MoveCursorToLastPoseOperator(bpy.types.Operator):
         pose0 = pd.current_action.p0
         pd.current_action.move(pose0)
         cl.CursorListener.set_pose(pose0)
+        return {'FINISHED'}
+
+class SelectCursorOperator(bpy.types.Operator):
+    bl_idname = "scene.select_geomcursor"
+    bl_label = "Select geometric cursor"
+    bl_description = "Select geometric cursor"
+
+    @classmethod
+    def poll(cls, context):
+        return context.scene.is_cursor_active
+
+    def execute(self, context):
+        cl.CursorListener.select_cursor()
         return {'FINISHED'}
 
 

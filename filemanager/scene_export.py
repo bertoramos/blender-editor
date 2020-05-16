@@ -16,7 +16,7 @@ def autounregister():
     global classes
     for cls in classes:
         bpy.utils.unregister_class(cls)
-    
+
     del bpy.types.Scene.file_props
 
 
@@ -25,7 +25,7 @@ exportable_objects = {"WALL",
                       "OBSTACLE",
                       "OBSTACLE_MARGIN",
                       "BLUETOOTH_BEACON",
-                      "INFRARED_BEACON"}
+                      "ULTRASOUND_BEACON"}
 
 def export():
     path = bpy.context.scene.file_props.prop_path
@@ -35,6 +35,11 @@ def export():
     bpy.ops.scene.new(type='FULL_COPY')
     current_scene = bpy.context.scene
 
+    wm = bpy.context.window_manager
+
+    wm.progress_begin(0, len(current_scene.objects))
+
+    i = 0
     for obj in current_scene.objects:
         if obj.object_type not in exportable_objects:
             dat = obj.data
@@ -44,11 +49,15 @@ def export():
                 bpy.data.meshes.remove(dat)
             if mat is not None:
                 bpy.data.materials.remove(mat)
+        wm.progress_update(i)
+        i += 1
     # write scene
     data_blocks = {current_scene}
     bpy.data.libraries.write(filepath, data_blocks)
 
     bpy.data.scenes.remove(current_scene)
+
+    wm.progress_end()
 
 def update_filename(self, context):
     pass

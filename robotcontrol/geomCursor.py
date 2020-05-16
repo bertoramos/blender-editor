@@ -57,6 +57,7 @@ class GeometricCursor:
     def select(self):
         # Seleccionamos solamente el cursor
         bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.view_layer.objects.active = bpy.data.objects[self._cursor_name]
         bpy.data.objects[self._cursor_name].select_set(True)
 
     def redraw(self):

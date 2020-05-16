@@ -146,7 +146,6 @@ class Arrow:
     def __del__(self):
         arrow = bpy.data.objects[self._arrow_name]
         bpy.data.objects.remove(bpy.data.objects[self._arrow_name], do_unlink=True)
-        #bpy.data.meshes.remove(bpy.data.meshes[self._arrow_name], do_unlink=True)
 
 class Pose:
 
