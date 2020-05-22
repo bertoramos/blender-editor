@@ -75,19 +75,24 @@ class PathDrawer(cl.Observer):
         pathContainer = pc.PathContainer()
         temp = pc.TempPathContainer()
 
-        temp.pushActions(bpy.context.scene.selected_robot_props.prop_robot_id)
+        temp.pushActions()
 
         del self.current_action
         self.current_action = None
         showCeil()
 
     def notifyStart(self, operator):
+        if len(robot_tools.RobotSet()) <= 0:
+            operator.report({'ERROR'}, 'No robot available : add a robot to create a path')
+            bpy.ops.scene.stop_cursor_listener('INVOKE_DEFAULT')
+            return
+
         idx = bpy.context.scene.selected_robot_props.prop_robot_id
         assert idx >= 0 and idx in robot_tools.RobotSet(), "Error : no robot selected or not in list"
 
         robot = robot_tools.RobotSet().getRobot(idx)
 
-        last_action = pc.PathContainer().getLastActionOfRobot(idx)
+        last_action = pc.PathContainer().getLastAction()
 
         if len(pc.PathContainer()) > 0 and last_action is not None:
             # Obtenemos ultima pose como inicio para crear nuevas poses
@@ -107,10 +112,7 @@ class PathDrawer(cl.Observer):
         cl.CursorListener.select_cursor()
         hideCeil();
 
-        if len(robot_tools.RobotSet()) <= 0:
-            operator.report({'ERROR'}, 'No robot available : add a robot to create a path')
-            bpy.ops.scene.stop_cursor_listener('INVOKE_DEFAULT')
-            return
+
 
     def notifyChange(self, current_pose):
         if self.current_action is not None:
@@ -270,7 +272,7 @@ class RemoveLastSavedPoseOperator(bpy.types.Operator):
     def poll(cls, context):
         if len(pc.PathContainer()) == 0:
             return False
-        return len(pc.PathContainer().getLastPath()) > 0
+        return len(pc.PathContainer()) > 0
 
     def execute(self, context):
         action = pc.PathContainer().removeLastAction()

@@ -3,7 +3,7 @@ import bpy
 
 import socket
 import time
-import pipe_serialization as ps
+import msgpack_serialization as ms
 import datapacket as dp
 
 import connection_exceptions as exc
@@ -43,13 +43,14 @@ class ConnectionHandler:
         :raise: NotReceivedPacket if not receive an AckPacket
         :returns: AckPacket associated to mode_packet
         """
-
-        ConnectionHandler.client_socket.sendto(ps.PipeSerializator.cipher(mode_packet), ConnectionHandler.serverAddr)
+        print("pre sendto")
+        ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.cipher(mode_packet), ConnectionHandler.serverAddr)
+        print("post sendto")
         start_time = time.time()
         while abs(time.time() - start_time) < 3.0:
             try:
                 msgFromServer = ConnectionHandler.client_socket.recvfrom(bufferSize)
-                ack_packet = ps.PipeSerializator.decipher(msgFromServer[0])
+                ack_packet = ms.MsgPackSerializator.decipher(msgFromServer[0])
                 if type(ack_packet) == dp.AckPacket:
                     if ack_packet.pid > bpy.context.scene.com_props.prop_last_recv_packet and ack_packet.ack_packet == mode_packet.pid:
                         bpy.context.scene.com_props.prop_last_recv_packet = ack_packet.pid
@@ -68,7 +69,7 @@ class ConnectionHandler:
         while abs(time.time() - start_time) < 3.0:
             try:
                 msgFromServer = ConnectionHandler.client_socket.recvfrom(bufferSize)
-                trace_packet = ps.PipeSerializator.decipher(msgFromServer[0])
+                trace_packet = ms.MsgPackSerializator.decipher(msgFromServer[0])
                 if trace_packet.pid > bpy.context.scene.com_props.prop_last_recv_packet and type(trace_packet) == dp.TracePacket:
                     bpy.context.scene.com_props.prop_last_recv_packet = trace_packet.pid
                     return trace_packet

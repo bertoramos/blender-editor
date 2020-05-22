@@ -8,6 +8,8 @@ import connection_handler as cnh
 import datapacket as dp
 import robot
 
+import pathContainer as pc
+
 keymaps = []
 
 def autoregister():
@@ -53,6 +55,9 @@ class CommunicationProps(bpy.types.PropertyGroup):
     prop_mode : bpy.props.IntProperty(name="mode", default=0, min=0, max=len(robot_modes_summary)-1)
     prop_last_recv_packet : bpy.props.IntProperty(name="last_recv_packet", default=-1, min=-1)
     prop_last_sent_packet : bpy.props.IntProperty(name="last_sent_packet", default=-1, min=-1)
+
+    prop_running_nav: bpy.props.BoolProperty(name="Running nav", default=False)
+    prop_paused_nav: bpy.props.BoolProperty(name="Paused nav", default=False)
 
 # SOLUTION BUG: Create and drop a cube to update gui buttons
 def update_gui():
@@ -249,4 +254,43 @@ class PlayPauseRenderOperator(bpy.types.Operator):
 
     def execute(self, context):
         context.scene.com_props.prop_rendering = not context.scene.com_props.prop_rendering
+        return {'FINISHED'}
+
+class StartNavegationOperator(bpy.types.Operator):
+    bl_idname = "wm.start_navegation"
+    bl_label = "Start navegation operator"
+    bl_description = "Start - Pause/Resume navegation plan"
+
+    @classmethod
+    def poll(cls, context):
+        active_com = context.scene.selected_robot_props.prop_robot_id >= 0 and not SocketModalOperator.switching and SocketModalOperator.running
+        path_exists = len(pc.PathContainer()) > 0
+        editing_path = context.scene.is_cursor_active
+        return active_com and path_exists and not editing_path
+
+    def execute(self, context):
+        if not context.scene.com_props.prop_running_nav: # First execute
+            context.scene.com_props.prop_running_nav = True
+            context.scene.com_props.prop_paused_nav = False
+            # Send plan
+        else: # Other execute
+            context.scene.com_props.prop_paused_nav = not context.scene.com_props.prop_paused_nav
+            # Pause msg
+        return {'FINISHED'}
+
+class StopNavegationOperator(bpy.types.Operator):
+    bl_idname = "wm.stop_navegation"
+    bl_label = "Stop navegation"
+    bl_description = "Stop navegation"
+
+    @classmethod
+    def poll(cls, context):
+        active_com = context.scene.selected_robot_props.prop_robot_id >= 0 and not SocketModalOperator.switching and SocketModalOperator.running
+        path_exists = len(pc.PathContainer()) > 0
+        editing_path = context.scene.is_cursor_active
+        running_nav = context.scene.com_props.prop_running_nav
+        return active_com and path_exists and not editing_path and running_nav
+
+    def execute(self, context):
+        context.scene.com_props.prop_running_nav = False
         return {'FINISHED'}

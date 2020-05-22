@@ -2,8 +2,9 @@
 import serialization as st
 import datapacket
 import path
+import msgpack
 
-class ModePacketPipeSerialization(st.Serialization):
+class ModePacketMsgPackSerialization(st.Serialization):
     """
     Defines an algorithm to cipher-decipher a packet
     """
@@ -14,8 +15,7 @@ class ModePacketPipeSerialization(st.Serialization):
         Apply a serialization method to packet to cipher
         """
         l = list(iter(packet))
-        s = "|".join(map(str, l))
-        return bytes(s, encoding='utf-8')
+        return msgpack.packb(l, use_bin_type=True)
 
     @staticmethod
     def decipher(list_packet):
@@ -26,7 +26,7 @@ class ModePacketPipeSerialization(st.Serialization):
         assert int(list_packet[1]) == 2, "Error: byte_packet is not a mode packet"
         return datapacket.ModePacket(int(list_packet[0]), int(list_packet[2]))
 
-class AckPacketPipeSerialization(st.Serialization):
+class AckPacketMsgPackSerialization(st.Serialization):
     """
     Defines an algorithm to cipher-decipher a packet
     """
@@ -37,8 +37,7 @@ class AckPacketPipeSerialization(st.Serialization):
         Apply a serialization method to packet to cipher
         """
         l = list(iter(packet))
-        s = "|".join(map(str, l))
-        return bytes(s, encoding='utf-8')
+        return msgpack.packb(l, use_bin_type=True)
 
     @staticmethod
     def decipher(list_packet):
@@ -49,7 +48,7 @@ class AckPacketPipeSerialization(st.Serialization):
         assert int(list_packet[1]) == 1, "Error: byte_packet is not a ack packet"
         return datapacket.AckPacket(int(list_packet[0]), int(list_packet[2]), int(list_packet[3]))
 
-class TracePacketPipeSerialization(st.Serialization):
+class TracePacketMsgPackSerialization(st.Serialization):
     """
     Defines an algorithm to cipher-decipher a packet
     """
@@ -60,8 +59,7 @@ class TracePacketPipeSerialization(st.Serialization):
         Apply a serialization method to packet to cipher
         """
         l = list(iter(packet))
-        s = "|".join(map(str, l))
-        return bytes(s, encoding='utf-8')
+        return msgpack.packb(l, use_bin_type=True)
 
     @staticmethod
     def decipher(list_packet):
@@ -73,21 +71,11 @@ class TracePacketPipeSerialization(st.Serialization):
         pose = path.Pose(float(list_packet[2]), float(list_packet[3]), 0, 0, 0, float(list_packet[4]))
         return datapacket.TracePacket(int(list_packet[0]), pose)
 
+choose_serialization = {1: AckPacketMsgPackSerialization,
+                        2: ModePacketMsgPackSerialization,
+                        3: TracePacketMsgPackSerialization}
 
-
-choose_serialization = {1: AckPacketPipeSerialization,
-                        2: ModePacketPipeSerialization,
-                        3: TracePacketPipeSerialization}
-
-def clear(sbyte: bytes) -> bytes:
-    r = bytes()
-    i = 0
-    while i < len(sbyte) and sbyte[i] != 0:
-        r += bytes([sbyte[i]])
-        i+=1
-    return r
-
-class PipeSerializator(st.Serializator):
+class MsgPackSerializator(st.Serializator):
 
     @staticmethod
     def cipher(packet: st.Packet) -> bytes:
@@ -99,9 +87,8 @@ class PipeSerializator(st.Serializator):
 
     @staticmethod
     def decipher(byte_packet: bytes) -> st.Packet:
-        bpacket = clear(byte_packet)
-        values = bpacket.decode().split("|")
-        ptype = int(values[1])
+        values = msgpack.unpackb(byte_packet)
+        ptype = values[1]
         decipher_method = choose_serialization.get(ptype)
         if decipher_method is None:
             raise "Error: Serialization method not found (decipher). Check packet type identification"
