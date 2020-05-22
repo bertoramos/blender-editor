@@ -13,3 +13,4 @@ class ModeNotSwitched(Exception):
     def __init__(self, frommode, tomode):
         Exception.__init__(self, "could not be switched from mode {0} to mode {1}".format(frommode, tomode))
         self.args = {frommode, tomode}
+ 

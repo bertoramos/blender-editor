@@ -11,7 +11,7 @@ import robot
 import pathContainer as pc
 
 keymaps = []
-
+ 
 def autoregister():
     global classes
     classes = [CommunicationProps, SocketModalOperator, ChangeModeOperator, PlayPauseRenderOperator]

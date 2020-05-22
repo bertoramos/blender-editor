@@ -9,7 +9,7 @@ import datapacket as dp
 import connection_exceptions as exc
 
 bufferSize = 128
-
+ 
 class ConnectionHandler:
     __instance = None
     running = False

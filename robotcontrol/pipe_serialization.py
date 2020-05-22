@@ -6,7 +6,7 @@ import path
 class ModePacketPipeSerialization(st.Serialization):
     """
     Defines an algorithm to pack-unpack a packet
-    """
+    """ 
 
     @staticmethod
     def pack(packet):
