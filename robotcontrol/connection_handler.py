@@ -37,42 +37,138 @@ class ConnectionHandler:
     def hasSocket(self):
         return ConnectionHandler.client_socket is not None
 
-    def send_mode_packet(self, mode_packet):
+    def send_mode_packet(self, pid, mode):
         """
         Send a mode packet
-        :raise: NotReceivedPacket if not receive an AckPacket
-        :returns: AckPacket associated to mode_packet
+        :raise: NotReceivedPacket if not receive an AckPacket or recognized_packet != pid
+        :returns: tuple ack (status, recognized_packet)
         """
-        print("pre sendto")
-        ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.cipher(mode_packet), ConnectionHandler.serverAddr)
-        print("post sendto")
+        mode_packet = dp.ModePacket(pid, mode)
+
+        ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(mode_packet), ConnectionHandler.serverAddr)
         start_time = time.time()
         while abs(time.time() - start_time) < 3.0:
             try:
                 msgFromServer = ConnectionHandler.client_socket.recvfrom(bufferSize)
-                ack_packet = ms.MsgPackSerializator.decipher(msgFromServer[0])
+                ack_packet = ms.MsgPackSerializator.unpack(msgFromServer[0])
                 if type(ack_packet) == dp.AckPacket:
                     if ack_packet.pid > bpy.context.scene.com_props.prop_last_recv_packet and ack_packet.ack_packet == mode_packet.pid:
                         bpy.context.scene.com_props.prop_last_recv_packet = ack_packet.pid
-                        return ack_packet
+                        return (ack_packet.status, ack_packet.ack_packet)
             except Exception as e:
                 pass
         raise exc.NotReceivedPacket(dp.AckPacket)
 
     def receive_trace_packet(self):
         """
-        Receive a trace packet
+        Receive a trace packet or reached pose
         :raise: NotReceivedPacket if not receive a TracePacket
-        :returns: TracePacket
+        :returns: (pid, pose)
         """
         start_time = time.time()
         while abs(time.time() - start_time) < 3.0:
             try:
                 msgFromServer = ConnectionHandler.client_socket.recvfrom(bufferSize)
-                trace_packet = ms.MsgPackSerializator.decipher(msgFromServer[0])
-                if trace_packet.pid > bpy.context.scene.com_props.prop_last_recv_packet and type(trace_packet) == dp.TracePacket:
+                trace_packet = ms.MsgPackSerializator.unpack(msgFromServer[0])
+                if trace_packet.pid > bpy.context.scene.com_props.prop_last_recv_packet and type(trace_packet) in {dp.TracePacket, dp.ReachedPosePacket}:
                     bpy.context.scene.com_props.prop_last_recv_packet = trace_packet.pid
                     return trace_packet
             except Exception as e:
                 pass
         raise exc.NotReceivedPacket(dp.TracePacket)
+
+    def send_plan(self, pid_start, poses):
+        """
+        Send a plan to robot
+        :raise: NotReceivedPacket if not receive some AckPacket
+        :returns: True if plan was sent correctly
+        """
+        pass
+
+    def send_start_plan_packet(self, pid):
+        """
+        Send a start plan packet
+        :raise: NotReceivedPacket if not receive an AckPacket
+        :returns: tuple ack (status, recognized_packet)
+        """
+        start_packet = dp.StartPlanPacket(pid)
+
+        ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(start_packet), ConnectionHandler.serverAddr)
+        start_time = time.time()
+        while abs(time.time() - start_time) < 3.0:
+            try:
+                msgFromServer = ConnectionHandler.client_socket.recvfrom(bufferSize)
+                ack_packet = ms.MsgPackSerializator.unpack(msgFromServer[0])
+                if type(ack_packet) == dp.AckPacket:
+                    if ack_packet.pid > bpy.context.scene.com_props.prop_last_recv_packet and ack_packet.ack_packet == start_packet.pid:
+                        bpy.context.scene.com_props.prop_last_recv_packet = ack_packet.pid
+                        return (ack_packet.status, ack_packet.ack_packet)
+            except Exception as e:
+                pass
+        raise exc.NotReceivedPacket(dp.AckPacket)
+
+    def send_pause_plan_packet(self, pid):
+        """
+        Send a pause plan packet
+        :raise: NotReceivedPacket if not receive an AckPacket
+        :returns: tuple ack (status, recognized_packet)
+        """
+        pause_packet = dp.PausePlanPacket(pid)
+
+        ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(start_packet), ConnectionHandler.serverAddr)
+        start_time = time.time()
+        while abs(time.time() - start_time) < 3.0:
+            try:
+                msgFromServer = ConnectionHandler.client_socket.recvfrom(bufferSize)
+                ack_packet = ms.MsgPackSerializator.unpack(msgFromServer[0])
+                if type(ack_packet) == dp.AckPacket:
+                    if ack_packet.pid > bpy.context.scene.com_props.prop_last_recv_packet and ack_packet.ack_packet == pause_packet.pid:
+                        bpy.context.scene.com_props.prop_last_recv_packet = ack_packet.pid
+                        return (ack_packet.status, ack_packet.ack_packet)
+            except Exception as e:
+                pass
+        raise exc.NotReceivedPacket(dp.AckPacket)
+
+    def send_resume_plan_packet(self, pid):
+        """
+        Send resume plan packet
+        :raise: NotReceivedPacket if not receive an AckPacket
+        :returns: tuple ack (status, recognized_packet)
+        """
+        resume_packet = dp.ResumePlanPacket(pid)
+
+        ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(start_packet), ConnectionHandler.serverAddr)
+        start_time = time.time()
+        while abs(time.time() - start_time) < 3.0:
+            try:
+                msgFromServer = ConnectionHandler.client_socket.recvfrom(bufferSize)
+                ack_packet = ms.MsgPackSerializator.unpack(msgFromServer[0])
+                if type(ack_packet) == dp.AckPacket:
+                    if ack_packet.pid > bpy.context.scene.com_props.prop_last_recv_packet and ack_packet.ack_packet == resume_packet.pid:
+                        bpy.context.scene.com_props.prop_last_recv_packet = ack_packet.pid
+                        return (ack_packet.status, ack_packet.ack_packet)
+            except Exception as e:
+                pass
+        raise exc.NotReceivedPacket(dp.AckPacket)
+
+    def send_stop_plan_packet(self, pid):
+        """
+        Send stop plan packet
+        :raise: NotReceivedPacket if not receive an AckPacket
+        :returns: tuple ack (status, recognized_packet)
+        """
+        stop_packet = dp.StopPlanPacket(pid)
+
+        ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(start_packet), ConnectionHandler.serverAddr)
+        start_time = time.time()
+        while abs(time.time() - start_time) < 3.0:
+            try:
+                msgFromServer = ConnectionHandler.client_socket.recvfrom(bufferSize)
+                ack_packet = ms.MsgPackSerializator.unpack(msgFromServer[0])
+                if type(ack_packet) == dp.AckPacket:
+                    if ack_packet.pid > bpy.context.scene.com_props.prop_last_recv_packet and ack_packet.ack_packet == stop_packet.pid:
+                        bpy.context.scene.com_props.prop_last_recv_packet = ack_packet.pid
+                        return (ack_packet.status, ack_packet.ack_packet)
+            except Exception as e:
+                pass
+        raise exc.NotReceivedPacket(dp.AckPacket)

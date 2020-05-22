@@ -5,22 +5,22 @@ import path
 
 class ModePacketPipeSerialization(st.Serialization):
     """
-    Defines an algorithm to cipher-decipher a packet
+    Defines an algorithm to pack-unpack a packet
     """
 
     @staticmethod
-    def cipher(packet):
+    def pack(packet):
         """
-        Apply a serialization method to packet to cipher
+        Apply a serialization method to pack
         """
         l = list(iter(packet))
         s = "|".join(map(str, l))
         return bytes(s, encoding='utf-8')
 
     @staticmethod
-    def decipher(list_packet):
+    def unpack(list_packet):
         """
-        Apply a deserialization method to packet to decipher
+        Apply a deserialization method to unpack
         """
         assert len(list_packet) == 3, "Error: No valid mode packet"
         assert int(list_packet[1]) == 2, "Error: byte_packet is not a mode packet"
@@ -28,22 +28,22 @@ class ModePacketPipeSerialization(st.Serialization):
 
 class AckPacketPipeSerialization(st.Serialization):
     """
-    Defines an algorithm to cipher-decipher a packet
+    Defines an algorithm to pack-unpack a packet
     """
 
     @staticmethod
-    def cipher(packet):
+    def pack(packet):
         """
-        Apply a serialization method to packet to cipher
+        Apply a serialization method to pack
         """
         l = list(iter(packet))
         s = "|".join(map(str, l))
         return bytes(s, encoding='utf-8')
 
     @staticmethod
-    def decipher(list_packet):
+    def unpack(list_packet):
         """
-        Apply a deserialization method to packet to decipher
+        Apply a deserialization method to unpack
         """
         assert len(list_packet) == 4, "Error: No valid ack packet"
         assert int(list_packet[1]) == 1, "Error: byte_packet is not a ack packet"
@@ -51,22 +51,22 @@ class AckPacketPipeSerialization(st.Serialization):
 
 class TracePacketPipeSerialization(st.Serialization):
     """
-    Defines an algorithm to cipher-decipher a packet
+    Defines an algorithm to pack-unpack a packet
     """
 
     @staticmethod
-    def cipher(packet):
+    def pack(packet):
         """
-        Apply a serialization method to packet to cipher
+        Apply a serialization method to pack
         """
         l = list(iter(packet))
         s = "|".join(map(str, l))
         return bytes(s, encoding='utf-8')
 
     @staticmethod
-    def decipher(list_packet):
+    def unpack(list_packet):
         """
-        Apply a deserialization method to packet to decipher
+        Apply a deserialization method to unpack
         """
         assert len(list_packet) == 5, "Error: No valid trace packet"
         assert int(list_packet[1]) == 3, "Error: byte_packet is not a ack packet"
@@ -90,19 +90,19 @@ def clear(sbyte: bytes) -> bytes:
 class PipeSerializator(st.Serializator):
 
     @staticmethod
-    def cipher(packet: st.Packet) -> bytes:
+    def pack(packet: st.Packet) -> bytes:
         ptype = packet.ptype
         cipher_method = choose_serialization.get(ptype)
         if cipher_method is None:
-            raise "Error: Serialization method not found (cipher). Check packet type identification"
-        return cipher_method.cipher(packet)
+            raise "Error: Serialization method not found (pack). Check packet type identification"
+        return cipher_method.pack(packet)
 
     @staticmethod
-    def decipher(byte_packet: bytes) -> st.Packet:
+    def unpack(byte_packet: bytes) -> st.Packet:
         bpacket = clear(byte_packet)
         values = bpacket.decode().split("|")
         ptype = int(values[1])
         decipher_method = choose_serialization.get(ptype)
         if decipher_method is None:
-            raise "Error: Serialization method not found (decipher). Check packet type identification"
-        return decipher_method.decipher(values)
+            raise "Error: Serialization method not found (unpack). Check packet type identification"
+        return decipher_method.unpack(values)

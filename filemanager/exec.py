@@ -2,5 +2,5 @@
 import bpy
 import os
 
-filename = "D:\\PE\\Desarrollo\\filemanager\\__init__.py"
+filename = "D:\\alberto\\TFT\\desarrollo\\blender-editor\\filemanager\\__init__.py"
 exec(compile(open(filename).read(), filename, 'exec'))

@@ -13,3 +13,11 @@ items = [("OTHER", "Other", "", 0),
          ("TEMPORAL", "Temporal", "", 9)]
 
 bpy.types.Object.object_type = bpy.props.EnumProperty(items=items, default="OTHER")
+
+def update_nop(self, context):
+    pass
+
+def set_nop(self, value):
+    self["TOL"] = 0.001
+
+bpy.types.Scene.TOL = bpy.props.FloatProperty(name="TOL", set=set_nop, default=0.001)

@@ -10,7 +10,6 @@ import pathContainer as pc
 import robot
 import utils
 
-_TOL = 0.001
 
 def autoregister():
     global classes

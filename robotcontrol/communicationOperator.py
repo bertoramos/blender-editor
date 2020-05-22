@@ -113,9 +113,11 @@ class SocketModalOperator(bpy.types.Operator):
                 """
                 SocketModalOperator.switching = True
 
-                mode_packet = dp.ModePacket(bpy.context.scene.com_props.prop_last_sent_packet, robot_modes_summary.index("EDITOR_MODE"))
+                bpy.context.scene.com_props.prop_last_sent_packet += 1
+                new_pid = bpy.context.scene.com_props.prop_last_sent_packet
+                new_mode = robot_modes_summary.index("EDITOR_MODE")
                 try:
-                    ack_packet = cnh.ConnectionHandler().send_mode_packet(mode_packet)
+                    ack_packet = cnh.ConnectionHandler().send_mode_packet(new_pid, new_mode)
                     if ack_packet.status != 1:
                         raise Exception("status != 1")
                 except Exception as e:
@@ -145,7 +147,7 @@ class SocketModalOperator(bpy.types.Operator):
                 if no receive packets close thread
             """
             try:
-                trace_packet = cnh.ConnectionHandler().receive_trace_packet()
+                trace = cnh.ConnectionHandler().receive_trace_packet()
                 n_fail_recv = 0 # Reset no received trace packets count
 
                 if bpy.context.scene.com_props.prop_rendering:
@@ -154,10 +156,9 @@ class SocketModalOperator(bpy.types.Operator):
                     sel_rob_id = bpy.context.scene.selected_robot_props.prop_robot_id
                     if sel_rob_id < 0:
                         continue
-                    pose = trace_packet.pose
-                    x = pose.x
-                    y = pose.y
-                    g = pose.gamma
+                    x = trace.pose.x
+                    y = trace.pose.y
+                    g = trace.pose.gamma
 
                     r = robot.RobotSet().getRobot(sel_rob_id)
                     r.loc = Vector((x, y, 0))
@@ -197,14 +198,15 @@ class SocketModalOperator(bpy.types.Operator):
             return {'RUNNING_MODAL'}
 
         bpy.context.scene.com_props.prop_last_sent_packet += 1
-        mode_packet = dp.ModePacket(bpy.context.scene.com_props.prop_last_sent_packet, robot_modes_summary.index("ROBOT_MODE"))
+        new_pid = bpy.context.scene.com_props.prop_last_sent_packet
+        new_mode = robot_modes_summary.index("ROBOT_MODE")
         try:
-            ack_packet = cnh.ConnectionHandler().send_mode_packet(mode_packet)
-            if ack_packet.status != 1:
+            status, rec_packet = cnh.ConnectionHandler().send_mode_packet(new_pid, new_mode)
+            if status != 1:
                 raise Exception("status != 1")
             bpy.context.scene.com_props.prop_mode = robot_modes_summary.index("ROBOT_MODE")
         except Exception as e:
-            SocketModalOperator.error = "server unavailable"
+            SocketModalOperator.error = "server unavailable : " + str(e)
 
             SocketModalOperator.switching = False
             return {'RUNNING_MODAL'}
@@ -269,13 +271,22 @@ class StartNavegationOperator(bpy.types.Operator):
         return active_com and path_exists and not editing_path
 
     def execute(self, context):
-        if not context.scene.com_props.prop_running_nav: # First execute
-            context.scene.com_props.prop_running_nav = True
-            context.scene.com_props.prop_paused_nav = False
-            # Send plan
-        else: # Other execute
-            context.scene.com_props.prop_paused_nav = not context.scene.com_props.prop_paused_nav
-            # Pause msg
+        # context.scene.com_props.prop_running_nav
+        # context.scene.com_props.prop_paused_nav
+        change_path_status = False
+        if context.scene.com_props.prop_running_nav:
+            if context.scene.com_props.prop_paused_nav:
+                if change_path_status:
+                    pass
+                else:
+                    pass
+            else:
+                pass
+        else:
+            if context.scene.com_props.prop_paused_nav:
+                pass
+            else:
+                pass
         return {'FINISHED'}
 
 class StopNavegationOperator(bpy.types.Operator):
@@ -293,4 +304,6 @@ class StopNavegationOperator(bpy.types.Operator):
 
     def execute(self, context):
         context.scene.com_props.prop_running_nav = False
+        cnh.ConnectionHandler().send_stop_plan_packet(context.scene.com_props.prop_last_sent_packet+1)
+        context.scene.com_props.last_sent_packet += 1
         return {'FINISHED'}

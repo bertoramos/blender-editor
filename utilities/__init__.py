@@ -14,7 +14,7 @@ import sys
 import bpy
 
 # For testing
-dir = "D:\\PE\\Desarrollo\\utilities\\"
+dir = "D:\\alberto\\TFT\\desarrollo\\blender-editor\\utilities\\"
 if not dir in sys.path:
     sys.path.append(dir)
 

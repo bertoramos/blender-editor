@@ -1,6 +1,22 @@
 
 import serialization as st
 
+"""
+Paquete desconocido (0)
+Paquete de reconocimiento (1)
+Paquete de “modo” (2): Modo robomap ON (1) / Modo robomap OFF (0)
+Paquete de seguimiento (3)
+Paquete abrir plan (4)
+Paquete agregar pose de ruta (5)
+Paquete cerrar plan (6)
+Paquete iniciar plan de navegación (7)
+Paquete de detener (8)
+Paquete de pausa (9)
+Paquete continuar (10)
+Paquete pose de ruta alcanzado (11)
+Paquete de velocidad (12)
+"""
+
 class ModePacket(st.Packet):
 
     def __init__(self, pid, mode, ptype=2):
@@ -72,7 +88,7 @@ class OpenPlanPacket(st.Packet):
     def __iter__(self):
         return iter([self.pid, self.ptype, self.__n_poses])
 
-class AddPosePacket(st.Packet):
+class AddPosePlanPacket(st.Packet):
 
     def __init__(self, pid, pose, ptype=5):
         super().__init__(pid, ptype)

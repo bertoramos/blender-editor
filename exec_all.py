@@ -1,14 +1,14 @@
 
 import os
 
-filename = "D:\\PE\\Desarrollo\\utilities\\exec.py"
+filename = "D:\\alberto\\TFT\\desarrollo\\blender-editor\\utilities\\exec.py"
 exec(compile(open(filename).read(), filename, 'exec'))
 
-filename = "D:\\PE\\Desarrollo\\archibuilder\\exec.py"
+filename = "D:\\alberto\\TFT\\desarrollo\\blender-editor\\archibuilder\\exec.py"
 exec(compile(open(filename).read(), filename, 'exec'))
 
-filename = "D:\\PE\\Desarrollo\\robotcontrol\\exec.py"
+filename = "D:\\alberto\\TFT\\desarrollo\\blender-editor\\robotcontrol\\exec.py"
 exec(compile(open(filename).read(), filename, 'exec'))
 
-filename = "D:\\PE\\Desarrollo\\filemanager\\exec.py"
+filename = "D:\\alberto\\TFT\\desarrollo\\blender-editor\\filemanager\\exec.py"
 exec(compile(open(filename).read(), filename, 'exec'))

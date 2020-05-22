@@ -19,42 +19,42 @@ class Packet(abc.ABC):
 
 class Serialization:
     """
-    Defines an algorithm to cipher-decipher a packet
+    Defines an algorithm to pack-unpack a packet
     """
 
     @staticmethod
     @abc.abstractmethod
-    def cipher(cls, packet):
+    def pack(cls, packet):
         """
-        Apply a serialization method to packet to cipher
+        Apply a serialization method to pack
         """
-        raise NotImplementedError("Cipher not implemented. Use subclasses")
+        raise NotImplementedError("Pack not implemented. Use subclasses")
 
     @staticmethod
     @abc.abstractmethod
-    def decipher(cls, byte_packet):
+    def unpack(cls, byte_packet):
         """
-        Apply a deserialization method to packet to decipher
+        Apply a deserialization method to unpack
         """
-        raise NotImplementedError("Decipher not implemented. Use subclasses")
+        raise NotImplementedError("Unpack not implemented. Use subclasses")
 
 class Serializator:
     """
-    Choose an Serialization method to cipher-decipher a received packet
+    Choose an Serialization method to pack-unpack a received packet
     """
 
     @staticmethod
     @abc.abstractmethod
-    def cipher(cls, packet):
+    def pack(cls, packet):
         """
-        Convert Packet to byte using __bytes__ magic method
+        Convert Packet to byte
         """
-        raise NotImplementedError("Cipher not implemented. Use subclasses")
+        raise NotImplementedError("Pack not implemented. Use subclasses")
 
     @staticmethod
     @abc.abstractmethod
-    def decipher(cls, byte_packet):
+    def unpack(cls, byte_packet):
         """
         Convert a bytes to Packet, selecting a serialization method
         """
-        raise NotImplementedError("Decipher not implemented. Use subclasses")
+        raise NotImplementedError("Unpack not implemented. Use subclasses")

@@ -8,7 +8,6 @@ import utils
 
 from math import degrees, pi
 
-_TOL = 0.001
 
 def draw_line(p1, p2):
     verts = [p1, p2]
@@ -186,8 +185,8 @@ class Pose:
         return Euler((self._a, self._b, self._g))
 
     def __eq__(self, other):
-        return abs(self._x - other.x) <= TOL and abs(self._y - other.y) <= TOL and abs(self._z - other.z) <= TOL and \
-                abs(self.alpha - other.alpha) <= TOL and abs(self.beta - other.beta) <= TOL and abs(self.gamma - other.gamma) <= TOL
+        return abs(self._x - other.x) <= bpy.context.scene.TOL and abs(self._y - other.y) <= bpy.context.scene.TOL and abs(self._z - other.z) <= bpy.context.scene.TOL and \
+                abs(self.alpha - other.alpha) <= bpy.context.scene.TOL and abs(self.beta - other.beta) <= bpy.context.scene.TOL and abs(self.gamma - other.gamma) <= bpy.context.scene.TOL
 
     def __str__(self):
         return "Location(" + str(self.x) + ", " + str(self.y) + ", " + str(self.z) + ") " + \

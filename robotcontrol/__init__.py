@@ -14,7 +14,7 @@ import sys
 import bpy
 
 # For testing
-dir = "D:\\PE\\Desarrollo\\robotcontrol\\"
+dir = "D:\\alberto\\TFT\\desarrollo\\blender-editor\\robotcontrol\\"
 if not dir in sys.path:
     sys.path.append(dir)
 
@@ -33,6 +33,7 @@ import robot_props
 import robot_panel
 import communicationOperator
 import communicationPanel
+import connection_handler
 
 # Remove
 import importlib
@@ -50,6 +51,7 @@ importlib.reload(robot_props)
 importlib.reload(robot_panel)
 importlib.reload(communicationOperator)
 importlib.reload(communicationPanel)
+importlib.reload(connection_handler)
 
 operadores = [cursorListener, pathEditor, robot, robot_props, communicationOperator]
 paneles = [robot_panel, pathEditorPanel, communicationPanel]

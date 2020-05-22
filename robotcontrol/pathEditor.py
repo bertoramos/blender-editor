@@ -11,7 +11,6 @@ import robot as robot_tools
 import collision_detection
 import utils
 
-_TOL = 0.001
 
 keymaps = []
 

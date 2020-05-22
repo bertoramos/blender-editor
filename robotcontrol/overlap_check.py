@@ -6,7 +6,6 @@ from mathutils import Vector
 from math import sqrt, acos, degrees, radians, pi
 from mathutils.bvhtree import BVHTree
 
-TOL = 0.0001
 
 """
 Check a mesh overlap other mesh
@@ -91,7 +90,7 @@ def point_in_segment(point, line):
     D = dist(line[0], line[1])
     d1 = dist(line[0], point)
     d2 = dist(point, line[1])
-    return abs(D - (d1 + d2)) <= TOL
+    return abs(D - (d1 + d2)) <= bpy.context.scene.TOL
 
 def segments_intersect(line1, line2):
     """
@@ -110,7 +109,7 @@ def segments_intersect(line1, line2):
         r0 = res[0]
         r1 = res[1]
         # puntos mas cercanos de en una linea a otra linea deben ser iguales
-        if dist(r0, r1) <= TOL:
+        if dist(r0, r1) <= bpy.context.scene.TOL:
             # comprobar que el punto de cruce pertenece a ambos segmentos
             if point_in_segment(r0, line1) and point_in_segment(r0, line2):
                 return True
@@ -132,7 +131,7 @@ def point_inside_infinite_plane(point, plane):
     # point
     x0, y0, z0 = point.x, point.y, point.z
 
-    return abs(plane_f(x0, y0, z0)) <= TOL
+    return abs(plane_f(x0, y0, z0)) <= bpy.context.scene.TOL
 
 def point_inside_finite_plane(point, plane):
     """
@@ -142,7 +141,7 @@ def point_inside_finite_plane(point, plane):
     """
     contain = point_inside_infinite_plane(point, plane) # Infinite plane contains point
     reflect = bmesh.geometry.intersect_face_point(plane, (point.x, point.y, point.z)) # Point reflects over plane
-    any_vertex_equal = any([(v.co.xyz - point).length <= TOL for v in plane.verts]) # Any vertex equals point
+    any_vertex_equal = any([(v.co.xyz - point).length <= bpy.context.scene.TOL for v in plane.verts]) # Any vertex equals point
 
     return (contain and reflect) or any_vertex_equal
 
@@ -162,7 +161,7 @@ def are_coplanar(plane1, plane2):
         return False
     angle = p1_norm.angle(p2_norm) # acos(p1_norm.dot(p2_norm)/(p1_norm.length*p2_norm.length))
 
-    are_parallel = abs(angle) <= TOL or abs(angle - pi) <= TOL # planes are parallel or coplanar (normal vector angle: 0 or pi)
+    are_parallel = abs(angle) <= bpy.context.scene.TOL or abs(angle - pi) <= bpy.context.scene.TOL # planes are parallel or coplanar (normal vector angle: 0 or pi)
     P = points1[0].co.xyz
     contains = point_inside_infinite_plane(P, plane2) # plane2 contains a point of plane1
     return are_parallel and contains
@@ -173,7 +172,7 @@ def infinite_plane_contains_line(plane, line):
 
     # Infinite plane contains line
     prod = norm.dot(v_line)
-    parallel = prod == 0 or abs(prod) <= TOL
+    parallel = prod == 0 or abs(prod) <= bpy.context.scene.TOL
     contains_point = point_inside_infinite_plane(line[0], plane)
     return parallel and contains_point
 
