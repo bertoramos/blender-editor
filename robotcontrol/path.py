@@ -65,7 +65,7 @@ def update_arrow(arrow_name, pose):
 
 def draw_pose_note(context, name, pose, color, font, font_align):
     # Draw notes
-    num_dec = len(str(( _TOL - int(_TOL) )))-2
+    num_dec = len(str(( bpy.context.scene.TOL - int(bpy.context.scene.TOL) )))-2
     loc = pose.loc
     rot = pose.rotation
 
@@ -98,7 +98,7 @@ class Line:
     def __init__(self, fixed_loc, current_loc):
         self._fixed_loc = fixed_loc
         self._current_loc = current_loc
-        self._line_name = draw_line(self._fixed_loc, self._current_loc + Vector((_TOL, 0, 0)))
+        self._line_name = draw_line(self._fixed_loc, self._current_loc + Vector((bpy.context.scene.TOL, 0, 0)))
 
     def move(self, loc):
         self._current_loc = loc
@@ -210,7 +210,7 @@ class Action:
         """
         self._p0 = p0
         self._p1 = p1
-        self._line = draw_line(p0.loc, p1.loc + Vector((_TOL, 0, 0)))
+        self._line = draw_line(p0.loc, p1.loc + Vector((bpy.context.scene.TOL, 0, 0)))
         self._arrow = create_arrow(p1)
 
         self._loc_note_name = ""

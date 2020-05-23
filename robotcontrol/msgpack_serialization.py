@@ -84,7 +84,7 @@ class OpenPlanPacketMsgPackSerialization(st.Serialization):
         """
         Apply a serialization method to pack
         """
-        assert type(packet) == datapacket.ModePacket, "Error : packet is not a ModePacket"
+        assert type(packet) == datapacket.OpenPlanPacket, "Error : packet is not a ModePacket"
         l = list(iter(packet))
         return msgpack.packb(l, use_bin_type=True)
 

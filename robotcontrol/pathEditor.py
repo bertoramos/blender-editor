@@ -98,7 +98,7 @@ class PathDrawer(cl.Observer):
             loc = last_action.p1.loc
             angle = last_action.p1.rotation
         else:
-            loc = robot.loc + Vector((_TOL, _TOL, _TOL))
+            loc = robot.loc + Vector((bpy.context.scene.TOL, bpy.context.scene.TOL, bpy.context.scene.TOL))
             angle = robot.rotation
             angle.y = pi/2.0
 

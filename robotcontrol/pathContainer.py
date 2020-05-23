@@ -5,6 +5,9 @@ import path
 import utils
 from mathutils import Vector
 
+import datetime
+
+
 def draw_path_id(context, loc, name, txt, color, font, font_align):
     # Draw notes
     hint_space = 10
@@ -25,24 +28,30 @@ class PathContainer:
         if cls.__instance is None:
             cls.__list = []
             cls.__instance = object.__new__(cls)
+            cls.__timestamp = datetime.datetime.now()
         return cls.__instance
 
-    def getLastPath(self):
-        assert len(PathContainer.__instance.__list) > 0
-        return PathContainer.__instance.__list[-1]
-
     def getLastAction(self):
-        return PathContainer.__instance.__list[-1].get(-1) if len(PathContainer.__instance.__list) > 0 else None
+        return PathContainer.__instance.__list[-1] if len(PathContainer.__instance.__list) > 0 else None
 
     def removeLastAction(self):
+        PathContainer.__instance.__timestamp = datetime.datetime.now() # update timestamp
         return PathContainer.__instance.__list.pop() if len(PathContainer.__instance.__list) > 0 else None
 
     def clear(self):
+        PathContainer.__instance.__timestamp = datetime.datetime.now() # update timestamp
         PathContainer.__instance.__list.clear()
 
     def extendActions(self, actions):
+        PathContainer.__instance.__timestamp = datetime.datetime.now() # update timestamp
         idx = len(PathContainer.__instance.__list)
         PathContainer.__instance.__list.extend(actions)
+
+    def get_last_timestamp(self):
+        """
+        Return time last update
+        """
+        return PathContainer.__instance.__timestamp
 
     def __str__(self):
         return str(PathContainer.__instance.__list)
