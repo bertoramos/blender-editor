@@ -38,11 +38,10 @@ class CommunicationPanel(bpy.types.Panel):
         box.operator(r.SelectRobotOperator.bl_idname, icon="CURVE_PATH", text="Select robot")
 
         self.layout.operator(co.ChangeModeOperator.bl_idname, icon = icon_mode, text="Change mode")
-        """
+
         rendering = context.scene.com_props.prop_rendering
         rendering_txt = "Rendering active" if rendering else "Rendering inactive"
         icon_play = "RESTRICT_RENDER_OFF" if rendering else "RESTRICT_RENDER_ON"
 
         box2 = self.layout.box()
-        box2.operator(co.PlayPauseRenderOperator.bl_idname, icon = icon_play, text=rendering_txt)
-        """
+        box2.operator(co.ToggleRenderingOperator.bl_idname, icon = icon_play, text=rendering_txt)
