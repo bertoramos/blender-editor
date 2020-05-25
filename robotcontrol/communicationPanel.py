@@ -41,7 +41,13 @@ class CommunicationPanel(bpy.types.Panel):
 
         rendering = context.scene.com_props.prop_rendering
         rendering_txt = "Rendering active" if rendering else "Rendering inactive"
-        icon_play = "RESTRICT_RENDER_OFF" if rendering else "RESTRICT_RENDER_ON"
+        icon_rendering = "RESTRICT_RENDER_OFF" if rendering else "RESTRICT_RENDER_ON"
 
         box2 = self.layout.box()
-        box2.operator(co.ToggleRenderingOperator.bl_idname, icon = icon_play, text=rendering_txt)
+        box2.operator(co.ToggleRenderingOperator.bl_idname, icon = icon_rendering, text=rendering_txt)
+
+
+        icon_play = "PAUSE" if context.scene.com_props.prop_running_nav and not context.scene.com_props.prop_paused_nav else "PLAY"
+        play_row = box2.split()
+        play_row.operator(co.StartPauseResumePlanOperator.bl_idname, icon=icon_play, text="")
+        play_row.operator(co.StopPlanOperator.bl_idname, icon="CANCEL", text="")

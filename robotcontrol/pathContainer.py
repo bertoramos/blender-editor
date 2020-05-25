@@ -5,17 +5,7 @@ import path
 import utils
 from mathutils import Vector
 
-import datetime
-
-
-def draw_path_id(context, loc, name, txt, color, font, font_align):
-    # Draw notes
-    hint_space = 10
-    rotation = 0
-
-    path_note_name = utils.draw_text(context, name, txt, loc, color, hint_space, font, font_align, rotation)
-    bpy.data.objects[path_note_name].protected = True
-    return path_note_name
+import time
 
 class PathContainer:
     """
@@ -28,30 +18,53 @@ class PathContainer:
         if cls.__instance is None:
             cls.__list = []
             cls.__instance = object.__new__(cls)
-            cls.__timestamp = datetime.datetime.now()
         return cls.__instance
 
     def getLastAction(self):
         return PathContainer.__instance.__list[-1] if len(PathContainer.__instance.__list) > 0 else None
 
     def removeLastAction(self):
-        PathContainer.__instance.__timestamp = datetime.datetime.now() # update timestamp
         return PathContainer.__instance.__list.pop() if len(PathContainer.__instance.__list) > 0 else None
 
+    def getActionByTimestamp(self, timestamp):
+        for a in PathContainer.__instance.__list:
+            if a.timestamp == timestamp:
+                return a
+
+    def findPose(self, pose):
+        """
+        incoming_action ----> pose ----> outgoing_action
+            if incoming_action is None -> 'pose' is first pose
+            if outgoing_action is None -> 'pose' is last pose
+            if incoming_action and outgoing_action is not None -> incoming_action.p1 == outgoing_action.p0 == pose
+            if incoming_action and outgoing_action is None -> pose not in PathContainer
+        """
+        incoming_action = None
+        outgoing_action = None
+
+        action_tmp = None
+        index_action = -1
+        for i, a in enumerate(PathContainer.__instance.__list):
+            if a.p0 == pose or a.p1 == pose:
+                index_action = i # action location in list
+                action_tmp = a
+                break
+        if action_tmp is None:
+            return None, None # pose not found
+        if action_tmp.p0 == pose:
+            return None, action_tmp # First pose
+        if action_tmp.p1 == pose:
+            if index_action == len(PathContainer.__instance.__list)-1:
+                return action_tmp, None # Last pose
+            return action_tmp, PathContainer.__instance.__list[index_action] # midpoint
+        return None, None
+
     def clear(self):
-        PathContainer.__instance.__timestamp = datetime.datetime.now() # update timestamp
         PathContainer.__instance.__list.clear()
 
     def extendActions(self, actions):
-        PathContainer.__instance.__timestamp = datetime.datetime.now() # update timestamp
         idx = len(PathContainer.__instance.__list)
         PathContainer.__instance.__list.extend(actions)
-
-    def get_last_timestamp(self):
-        """
-        Return time last update
-        """
-        return PathContainer.__instance.__timestamp
 
     def __str__(self):
         return str(PathContainer.__instance.__list)

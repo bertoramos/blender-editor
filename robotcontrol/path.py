@@ -8,6 +8,8 @@ import utils
 
 from math import degrees, pi
 
+import time
+
 
 def draw_line(p1, p2):
     verts = [p1, p2]
@@ -212,6 +214,7 @@ class Action:
         self._p1 = p1
         self._line = draw_line(p0.loc, p1.loc + Vector((bpy.context.scene.TOL, 0, 0)))
         self._arrow = create_arrow(p1)
+        self._timestamp = int(time.time())
 
         self._loc_note_name = ""
         self._rot_note_name = ""
@@ -240,6 +243,9 @@ class Action:
     def get_p1(self):
         return self._p1
 
+    def _get_timestamp(self):
+        return self._timestamp
+
     def __del__(self):
         if self._line in bpy.data.objects:
             bpy.data.objects.remove(bpy.data.objects[self._line], do_unlink=True)
@@ -251,6 +257,7 @@ class Action:
 
     p0 = property(get_p0)
     p1 = property(get_p1)
+    timestamp = property(_get_timestamp)
 
 class Annotation:
 

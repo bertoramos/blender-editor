@@ -15,7 +15,7 @@ keymaps = []
 def autoregister():
     global classes
     classes = [CommunicationProps, SocketModalOperator, ChangeModeOperator,
-                ToggleRenderingOperator, StartPauseResumePlanOperator,
+                ToggleRenderingOperator, StartPauseResumePlanOperator, StopPlanOperator,
                 SendPathTemporalOperator]
     for cls in classes:
         bpy.utils.register_class(cls)
@@ -30,10 +30,6 @@ def autoregister():
 
         kmi = km.keymap_items.new(ChangeModeOperator.bl_idname, type='M', value='PRESS', ctrl=True)
         keymaps.append((km, kmi))
-
-        #kmi = km.keymap_items.new(PlayPauseRenderOperator.bl_idname, type='P', value='PRESS', ctrl=True, alt=True, shift=False)
-        #keymaps.append((km, kmi))
-
 
 def autounregister():
     global classes
@@ -57,6 +53,9 @@ class CommunicationProps(bpy.types.PropertyGroup):
     prop_mode : bpy.props.IntProperty(name="mode", default=0, min=0, max=len(robot_modes_summary)-1)
     prop_last_recv_packet : bpy.props.IntProperty(name="last_recv_packet", default=-1, min=-1)
     prop_last_sent_packet : bpy.props.IntProperty(name="last_sent_packet", default=-1, min=-1)
+
+    prop_last_path_update: bpy.props.IntProperty(name="last_path_update", default=-1, min=-1)
+    prop_last_action_done: bpy.props.IntProperty(name="last_action_done", default=-1, min=-1)
 
     prop_running_nav: bpy.props.BoolProperty(name="Running nav", default=False)
     prop_paused_nav: bpy.props.BoolProperty(name="Paused nav", default=False)
@@ -122,7 +121,7 @@ class SocketModalOperator(bpy.types.Operator):
                     new_mode = robot_modes_summary.index("EDITOR_MODE")
                     bpy.context.scene.com_props.prop_mode = robot_modes_summary.index("EDITOR_MODE")
 
-                    if not cnh.ConnectionHandler().send_mode_packet(new_pid, new_mode):
+                    if not cnh.ConnectionHandler().send_change_mode(new_pid, new_mode):
                         self.report({'ERROR'}, "Changed to editor mode but not in server : ack not received")
                         SocketModalOperator.switching = False
                         cnh.ConnectionHandler().remove_socket()
@@ -140,6 +139,9 @@ class SocketModalOperator(bpy.types.Operator):
                 SocketModalOperator.switching = False
                 self.report({'INFO'}, "Socket closed")
 
+                context.scene.com_props.prop_running_nav = False
+                context.scene.com_props.prop_paused_nav = False
+
                 return {'FINISHED'}
 
         return {'PASS_THROUGH'}
@@ -150,12 +152,10 @@ class SocketModalOperator(bpy.types.Operator):
         while SocketModalOperator.running:
             if cnh.ConnectionHandler().hasSocket():
                 cnh.ConnectionHandler().receive_packet()
-            print("thread")
-        print("thread dead")
 
     def execute(self, context):
         wm = context.window_manager
-        self._timer = wm.event_timer_add(0.5, window=context.window)
+        self._timer = wm.event_timer_add(0.1, window=context.window)
         wm.modal_handler_add(self)
 
         SocketModalOperator.switching = True
@@ -173,7 +173,7 @@ class SocketModalOperator(bpy.types.Operator):
         context.scene.com_props.prop_last_sent_packet += 1
         new_pid = context.scene.com_props.prop_last_sent_packet
         new_mode = robot_modes_summary.index("ROBOT_MODE")
-        if not cnh.ConnectionHandler().send_mode_packet(new_pid, new_mode):
+        if not cnh.ConnectionHandler().send_change_mode(new_pid, new_mode):
             SocketModalOperator.error = "server not available : could not be switched to robot mode / no ack received"
             SocketModalOperator.switching = False
             self.closed = True
@@ -196,7 +196,7 @@ class ChangeModeOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.selected_robot_props.prop_robot_id >= 0 and not SocketModalOperator.switching
+        return not context.scene.com_props.prop_running_nav and context.scene.selected_robot_props.prop_robot_id >= 0 and not SocketModalOperator.switching
 
     def execute(self, context):
         if SocketModalOperator.closed:
@@ -225,12 +225,53 @@ class StartPauseResumePlanOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return True
+        return context.scene.com_props.prop_mode == robot_modes_summary.index("ROBOT_MODE")
 
     def execute(self, context):
+        """
         bpy.context.scene.com_props.prop_last_sent_packet += 1
         pid = bpy.context.scene.com_props.prop_last_sent_packet
         status = cnh.ConnectionHandler().send_start_plan(pid)
+        """
+        com_props = context.scene.com_props
+        path_changed = False
+        def send_plan():
+            # send plan
+            bpy.ops.wm.send_path()
+            # update path status
+
+            com_props.prop_last_sent_packet += 1
+            pid = com_props.prop_last_sent_packet
+            cnh.ConnectionHandler().send_start_plan(pid)
+
+            com_props.prop_running_nav = True
+            com_props.prop_paused_nav = False
+
+        if com_props.prop_running_nav:
+            if com_props.prop_paused_nav:
+                if path_changed:
+                    send_plan()
+                else:
+                    com_props.prop_last_sent_packet += 1
+                    pid = com_props.prop_last_sent_packet
+
+                    cnh.ConnectionHandler().send_resume_plan(pid)
+                    com_props.prop_running_nav = True
+                    com_props.prop_paused_nav = False
+            else:
+                com_props.prop_last_sent_packet += 1
+                pid = com_props.prop_last_sent_packet
+
+                cnh.ConnectionHandler().send_pause_plan(pid)
+                com_props.prop_running_nav = True
+                com_props.prop_paused_nav = True
+        else:
+            if com_props.prop_paused_nav:
+                self.report({'ERROR'}, "not running and paused")
+                com_props.prop_running_nav = False
+                com_props.prop_paused_nav = False
+            else:
+                send_plan()
         return {'FINISHED'}
 
 class StopPlanOperator(bpy.types.Operator):
@@ -240,9 +281,15 @@ class StopPlanOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return not SocketModalOperator.closed
+        return context.scene.com_props.prop_running_nav
 
     def execute(self, context):
+        context.scene.com_props.prop_last_sent_packet += 1
+        pid = context.scene.com_props.prop_last_sent_packet
+        cnh.ConnectionHandler().send_stop_plan(pid)
+
+        context.scene.com_props.prop_running_nav = False
+        context.scene.com_props.prop_paused_nav = False
         return {'FINISHED'}
 
 # TEMPORAL

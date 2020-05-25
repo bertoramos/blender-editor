@@ -92,7 +92,7 @@ class ConnectionHandler:
             ack_packet = Buffer().get_ack_packet(pid)
         return ack_packet.status == 1 if ack_packet is not None else False
 
-    def send_mode_packet(self, pid, mode):
+    def send_change_mode(self, pid, mode):
         """
         Send a mode packet
         :returns: False if send mode operation fails or status != 1
@@ -161,7 +161,7 @@ class ConnectionHandler:
         Send pause plan packet
         :returns: False if send pause plan operation fails or status != 1
         """
-        pause_plan_packet = dp.StartPlanPacket(pid)
+        pause_plan_packet = dp.PausePlanPacket(pid)
         ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(pause_plan_packet), ConnectionHandler.serverAddr)
         return self.receive_ack_packet(pid)
 
@@ -170,6 +170,6 @@ class ConnectionHandler:
         Send resume plan packet
         :returns: False if send resume plan operation fails or status != 1
         """
-        resume_plan_packet = dp.StartPlanPacket(pid)
+        resume_plan_packet = dp.ResumePlanPacket(pid)
         ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(resume_plan_packet), ConnectionHandler.serverAddr)
         return self.receive_ack_packet(pid)
