@@ -255,6 +255,9 @@ class Action:
             bpy.data.objects.remove(bpy.data.objects[self._arrow], do_unlink=True)
         self.del_annotation()
 
+    def __str__(self):
+        return str(self.p0) + "--" + str(self.p1)
+
     p0 = property(get_p0)
     p1 = property(get_p1)
     timestamp = property(_get_timestamp)

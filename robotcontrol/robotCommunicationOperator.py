@@ -79,6 +79,36 @@ def toggle_deactivate_options(mode):
         r.unlock()
 
 
+"""
+def tmpfindPose(pose):
+    " ""
+    incoming_action ----> pose ----> outgoing_action
+        if incoming_action is None -> 'pose' is first pose
+        if outgoing_action is None -> 'pose' is last pose
+        if incoming_action and outgoing_action is not None -> incoming_action.p1 == outgoing_action.p0 == pose
+        if incoming_action and outgoing_action is None -> pose not in PathContainer
+    " ""
+    incoming_action = None
+    outgoing_action = None
+
+    action_tmp = None
+    index_action = -1
+    for i, a in enumerate(actionpath):
+        if a.p0 == pose or a.p1 == pose:
+            index_action = i # action location in list
+            action_tmp = a
+            break
+    if action_tmp is None:
+        return None, None # pose not found
+    if action_tmp.p0 == pose:
+        return None, action_tmp # First pose
+    if action_tmp.p1 == pose:
+        if index_action == len(actionpath) - 1:
+            return action_tmp, None # Last pose
+        return action_tmp, actionpath[index_action] # midpoint
+    return None, None
+"""
+
 class SocketModalOperator(bpy.types.Operator):
     bl_idname = "wm.socket_modal"
     bl_label = "Modal Socket Operator"
@@ -103,16 +133,26 @@ class SocketModalOperator(bpy.types.Operator):
                 else:
                     r = robot.RobotSet().getRobot(sel_robot_id)
                     trace = cnh.Buffer().get_last_trace_packet()
+                    """
+                    #incoming_action, outgoing_action = pc.PathContainer().findPose(trace.pose)
+                    incoming_action, outgoing_action = tmpfindPose(trace.pose)
+                    if incoming_action is not None or outgoing_action is not None:
+                        print("Actions pose (", str(incoming_action), "-->", str(outgoing_action), ")")
+                    if incoming_action is not None and outgoing_action is None and context.scene.com_props.prop_running_nav:
+                        context.scene.com_props.prop_running_nav = False
+                        context.scene.com_props.prop_paused_nav = False
+                    """
                     if trace is not None:
                         pose = trace.pose
                         r.loc = Vector((pose.x, pose.y, 0))
                         r.rotation = Euler((0, 0, radians(pose.gamma)))
 
+
             if SocketModalOperator.closed:
                 SocketModalOperator.switching = True
 
                 if SocketModalOperator.error != "":
-                    self.report({'ERROR'}, "mode could not be switched : " + self.error)
+                    self.report({'ERROR'}, self.error)
                     cnh.ConnectionHandler().remove_socket()
                     SocketModalOperator.running = False
                 else:
@@ -162,9 +202,14 @@ class SocketModalOperator(bpy.types.Operator):
 
         sel_rob_id = context.scene.selected_robot_props.prop_robot_id
         if sel_rob_id < 0:
-            return
+            SocketModalOperator.error = "Robot not selected"
+            return {'RUNNING_MODAL'}
         r = robot.RobotSet().getRobot(sel_rob_id)
-        cnh.ConnectionHandler().create_socket(("127.0.0.1", 1500), (r.ip, r.port))
+        try:
+            cnh.ConnectionHandler().create_socket(("127.0.0.1", 1500), (r.ip, r.port))
+        except:
+            SocketModalOperator.error = "error in socket creation"
+            return {'RUNNING_MODAL'}
 
         import threading
         self.thread = threading.Thread(target=SocketModalOperator.run, args=(self,))
@@ -225,7 +270,7 @@ class StartPauseResumePlanOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.com_props.prop_mode == robot_modes_summary.index("ROBOT_MODE")
+        return context.scene.com_props.prop_mode == robot_modes_summary.index("ROBOT_MODE") and not context.scene.is_cursor_active
 
     def execute(self, context):
         """
@@ -237,15 +282,28 @@ class StartPauseResumePlanOperator(bpy.types.Operator):
         path_changed = False
         def send_plan():
             # send plan
-            bpy.ops.wm.send_path()
+            if len(pc.PathContainer()) > 0:
+                p = pc.PathContainer().poses
+
+                bpy.context.scene.com_props.prop_last_sent_packet += 1
+                pid = bpy.context.scene.com_props.prop_last_sent_packet
+                status = cnh.ConnectionHandler().send_plan(pid, p)
+
+                self.report({"INFO"}, "Plan was sent" if status == len(p) else "Plan fail {0}".format(status))
+
+                if status == len(p):
+                    com_props.prop_last_sent_packet += 1
+                    pid = com_props.prop_last_sent_packet
+                    cnh.ConnectionHandler().send_start_plan(pid)
+
+                    com_props.prop_running_nav = True
+                    com_props.prop_paused_nav = False
+
+            else:
+                self.report({"INFO"}, "There is not plan created : Please, design a plan to execute")
             # update path status
 
-            com_props.prop_last_sent_packet += 1
-            pid = com_props.prop_last_sent_packet
-            cnh.ConnectionHandler().send_start_plan(pid)
 
-            com_props.prop_running_nav = True
-            com_props.prop_paused_nav = False
 
         if com_props.prop_running_nav:
             if com_props.prop_paused_nav:
@@ -304,18 +362,5 @@ class SendPathTemporalOperator(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        p = []
-        p.append(path.Pose(+0.0, +0.0, 0.0, 0.0, 0.0,  45.0))
-        p.append(path.Pose(+4.0, +0.0, 0.0, 0.0, 0.0,  90.0))
-        p.append(path.Pose(+3.0, +4.0, 0.0, 0.0, 0.0, 180.0))
-        p.append(path.Pose(-5.0, +1.0, 0.0, 0.0, 0.0, 270.0))
-        p.append(path.Pose(+0.0, -4.0, 0.0, 0.0, 0.0,   0.0))
-        p.append(path.Pose(+0.0, +0.0, 0.0, 0.0, 0.0,  45.0))
-        p.append(path.Pose(+0.0, +0.0, 0.0, 0.0, 0.0,   0.0))
 
-        bpy.context.scene.com_props.prop_last_sent_packet += 1
-        pid = bpy.context.scene.com_props.prop_last_sent_packet
-        status = cnh.ConnectionHandler().send_plan(pid, p)
-
-        self.report({"INFO"}, "Plan was sent" if status == len(p) else "Plan fail {0}".format(status))
         return {'FINISHED'}

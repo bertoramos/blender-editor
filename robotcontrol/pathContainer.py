@@ -66,11 +66,22 @@ class PathContainer:
         idx = len(PathContainer.__instance.__list)
         PathContainer.__instance.__list.extend(actions)
 
+    def _get_poses(self):
+        poses = []
+        for action in PathContainer.__instance.__list:
+            poses.append(action.p0)
+        last_action = self.getLastAction()
+        if last_action is not None:
+            poses.append(last_action.p1)
+        return poses
+
     def __str__(self):
         return str(PathContainer.__instance.__list)
 
     def __len__(self):
         return len(PathContainer.__instance.__list)
+
+    poses = property(_get_poses)
 
 class TempPathContainer:
 
