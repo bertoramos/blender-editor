@@ -22,12 +22,14 @@ if not dir in sys.path:
 import delete_override
 import object_properties
 import opengl_activate
+import safe_exit
 
 # Remove
 import importlib
 importlib.reload(delete_override)
 importlib.reload(object_properties)
 importlib.reload(opengl_activate)
+importlib.reload(safe_exit)
 
 operadores = [delete_override, opengl_activate]
 

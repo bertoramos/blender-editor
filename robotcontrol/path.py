@@ -47,11 +47,18 @@ def update_line(line_mesh_name, p1, p2):
     line_mesh.update()
 
 def create_arrow(pose):
-    bpy.ops.object.empty_add(type='SINGLE_ARROW')
+    #bpy.ops.object.empty_add(type='SINGLE_ARROW')
+    bpy.ops.object.armature_add()
     arrow = bpy.context.selected_objects[0]
+
+    arrow.rotation_euler = Vector((0, pi/2, 0))
+    arrow.scale /= 2
+
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
     arrow_mesh_name = arrow.name
     arrow.location = pose.loc
-    arrow.rotation_euler = Vector((pose.rotation.x, pose.rotation.y + pi/2, pose.rotation.z))
+    arrow.rotation_euler = Vector((pose.rotation.x, pose.rotation.y, pose.rotation.z))
 
     arrow.lock_location[0:3] = (True, True, True)
     arrow.lock_rotation[0:3] = (True, True, True)

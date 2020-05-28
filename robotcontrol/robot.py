@@ -7,6 +7,8 @@ import robot_props
 import cursorListener as cl
 import utils
 
+import path
+
 keymaps = []
 
 def autoregister():
@@ -193,6 +195,9 @@ class Robot:
     def __get_port(self):
         return self.__port
 
+    def __get_pose(self):
+        return path.Pose.fromVector(self.loc, self.rotation)
+
     def __hash__(self):
         return self.__idn
 
@@ -207,6 +212,7 @@ class Robot:
     robot_type = property(__get_robot_type)
     ip = property(__get_ip)
     port = property(__get_port)
+    pose = property(__get_pose)
 
 
 def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port):
@@ -358,7 +364,7 @@ class SelectRobotOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        import communicationOperator as co
+        import robotCommunicationOperator as co
         in_rob_mode = bpy.context.scene.com_props.prop_mode == co.robot_modes_summary.index("ROBOT_MODE")
         return not in_rob_mode and len(RobotSet()) > 0 and not bpy.context.scene.is_cursor_active
 
@@ -411,7 +417,7 @@ class AddRobotOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        import communicationOperator as co
+        import robotCommunicationOperator as co
         in_rob_mode = bpy.context.scene.com_props.prop_mode == co.robot_modes_summary.index("ROBOT_MODE")
         return not in_rob_mode
 
@@ -463,7 +469,7 @@ class DeleteRobotOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        import communicationOperator as co
+        import robotCommunicationOperator as co
         in_rob_mode = bpy.context.scene.com_props.prop_mode == co.robot_modes_summary.index("ROBOT_MODE")
         return not in_rob_mode and len(RobotSet()) > 0 and not cl.isListenerActive()
 

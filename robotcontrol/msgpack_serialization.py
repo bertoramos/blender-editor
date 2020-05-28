@@ -110,7 +110,9 @@ class AddPosePlanPacketMsgPackSerialization(st.Serialization):
         """
         assert type(packet) == datapacket.AddPosePlanPacket, "Error: packet is not an AddPosePlanPacket"
         l = list(iter(packet))
-        res = [l[0], l[1], l[2].x, l[2].y, l[2].gamma]
+
+        from math import degrees
+        res = [l[0], l[1], l[2].x, l[2].y, degrees(l[2].gamma)]
         return msgpack.packb(res, use_bin_type=True)
 
     @staticmethod

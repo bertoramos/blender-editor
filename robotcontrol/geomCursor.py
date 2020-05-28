@@ -12,15 +12,17 @@ def addGeomCursor(initial_pose):
     geomCursor.name = 'geom_cursor'
     geomCursor.location = Vector((initial_pose.x, initial_pose.y, initial_pose.z))
     geomCursor.rotation_euler = Vector((initial_pose.alpha, initial_pose.beta + pi/2, initial_pose.gamma))
-
     geomCursor.dimensions.xyz = Vector((0.5, 1.0, 1.0))
+
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
     if geomCursor.active_material is None:
         mat = bpy.data.materials.new("Material_cursor")
         geomCursor.active_material = mat
     mat.diffuse_color = Vector((0.0, 1.0, 1.0, 1.0))
 
     geomCursor.lock_location[0:3] = (False, False, True)
-    geomCursor.lock_rotation[0:3] = (False, False, False)
+    geomCursor.lock_rotation[0:3] = (True, True, False)
     geomCursor.lock_scale[0:3] = (True, True, True)
     geomCursor.protected = True
 

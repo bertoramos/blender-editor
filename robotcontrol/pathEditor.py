@@ -16,7 +16,7 @@ keymaps = []
 
 def autoregister():
     global classes
-    classes = [SavePoseOperator, UndoPoseOperator, RemoveLastSavedPoseOperator, PathEditorLog, MoveCursorToLastPoseOperator, SelectCursorOperator]
+    classes = [SavePoseOperator, UndoPoseOperator, RemoveLastSavedPoseOperator, PathEditorLog, MoveCursorToLastPoseOperator, SelectCursorOperator, ClearPathOperator]
     for cls in classes:
         bpy.utils.register_class(cls)
 
@@ -100,7 +100,7 @@ class PathDrawer(cl.Observer):
         else:
             loc = robot.loc + Vector((bpy.context.scene.TOL, bpy.context.scene.TOL, bpy.context.scene.TOL))
             angle = robot.rotation
-            angle.y = pi/2.0
+            #angle.y = pi/2.0
 
         # Movemos el cursor a la posicion de comienzo
         new_pose = path.Pose.fromVector(loc, angle)
@@ -109,7 +109,7 @@ class PathDrawer(cl.Observer):
         self.current_action = path.Action(new_pose, new_pose)
 
         cl.CursorListener.select_cursor()
-        hideCeil();
+        hideCeil()
 
 
 
@@ -178,7 +178,6 @@ def is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1):
     # Copy robot
     bpy.ops.mesh.primitive_cube_add()
     area_robot_obj_tmp = bpy.context.active_object
-    print(area_robot_obj_tmp.location)
     area_robot_obj_tmp.dimensions = Vector((area_robot_obj.dimensions.x, area_robot_obj.dimensions.y, area_robot_obj.dimensions.z))
     area_robot_obj_tmp.location = Vector((robot.loc.x, robot.loc.y, (area_robot_obj.dimensions.z/2.0)))
     area_robot_obj_tmp.rotation_euler.z = pos0.rotation.z
@@ -269,13 +268,24 @@ class RemoveLastSavedPoseOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if len(pc.PathContainer()) == 0:
-            return False
         return len(pc.PathContainer()) > 0
 
     def execute(self, context):
         action = pc.PathContainer().removeLastAction()
         del action
+        return {'FINISHED'}
+
+class ClearPathOperator(bpy.types.Operator):
+    bl_idname = "scene.clear_path"
+    bl_label = "Clear all path"
+    bl_description = "Clear path"
+
+    @classmethod
+    def poll(cls, context):
+        return len(pc.PathContainer()) > 0
+
+    def execute(self, context):
+        pc.PathContainer().clear()
         return {'FINISHED'}
 
 class MoveCursorToLastPoseOperator(bpy.types.Operator):
@@ -321,6 +331,8 @@ class PathEditorLog(bpy.types.Operator):
         date = str(dt.datetime.now())
         log = "PathEditor | " + date + "\n"
         log += "\tPathContainer : " + str(len(pc.PathContainer())) + "\n"
+        for p in pc.PathContainer().poses:
+            log += "\t\t" + str(p) + "\n"
         log += "\tTempPathContainer : " + str(len(pc.TempPathContainer())) + "\n"
         self.report({'INFO'}, log)
         return {'FINISHED'}

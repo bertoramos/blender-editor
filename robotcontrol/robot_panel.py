@@ -41,3 +41,12 @@ class RobotPropsPanel(bpy.types.Panel):
             for item in scene.delete_robot_collection:
                 box.prop(item, "selected", text=item.name)
             box.operator(robot.DeleteRobotOperator.bl_idname, icon="TRASH", text = "Delete robot")
+
+        box = self.layout.box()
+
+        idx = context.scene.selected_robot_props.prop_robot_id
+        txt = "Robot selected : " + str(robot.RobotSet().getRobot(idx).name) if idx >= 0 else "No robot selected"
+        txt = txt if len(robot.RobotSet()) > 0 else "No robot available"
+
+        box.label(text=txt)
+        box.operator(robot.SelectRobotOperator.bl_idname, icon="CURVE_PATH", text="Select robot")

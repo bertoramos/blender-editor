@@ -68,9 +68,10 @@ class ConnectionHandler:
         ConnectionHandler.serverAddr = serverAddr
 
     def remove_socket(self):
-        ConnectionHandler.client_socket.close()
-        ConnectionHandler.client_socket = None
-        Buffer().clear()
+        if ConnectionHandler.client_socket is not None:
+            ConnectionHandler.client_socket.close()
+            ConnectionHandler.client_socket = None
+            Buffer().clear()
         #bpy.context.scene.com_props.prop_last_recv_packet = -1
 
     def hasSocket(self):
@@ -120,6 +121,7 @@ class ConnectionHandler:
 
         # Add pose
         for n, pose in enumerate(poses):
+            print("Sent : " , str(pose))
             pid += 1
             bpy.context.scene.com_props.prop_last_sent_packet = pid
             add_pose_packet = dp.AddPosePlanPacket(pid, pose)
