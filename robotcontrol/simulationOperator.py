@@ -18,27 +18,13 @@ def autounregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
-
-def reached_rot(start_rot, end_rot, current_rot):
-
-    start_z = start_rot.z % 2*pi
-    end_z   = end_rot.z % 2*pi
-    curr_z  = current_rot.z % 2*pi
-    curr_ang_dist = min(abs(end_z - curr_z), 2*pi - abs(end_z - curr_z))
-    print("\t", start_rot.z, end_rot.z, current_rot.z)
-    print(start_z, end_z, curr_z, (end_z-curr_z), curr_ang_dist)
-
-    return curr_ang_dist <= 0.01
-    #curr_ang_dist = min(end_z - curr_z, 360 - (end_z - curr_z))
-    #return prev_ang_dist < curr_ang_dist, curr_ang_dist
-
-def reached_loc(start_loc, end_loc, current_loc):
+def is_loc_reached(start_loc, end_loc, current_loc):
     current_dir = (end_loc - current_loc).normalized()
     running_dir = (end_loc - start_loc).normalized()
     return current_dir.dot(running_dir) <= 0
 
-speed = 1/1 # m/s
-angle_speed = 2*pi/(100*2*pi) # m/s
+speed = 1/10 # m/s
+angle_speed = 0.25 # %
 
 class SimulationOperator(bpy.types.Operator):
     bl_idname = "wm.simulate_plan"
@@ -50,7 +36,9 @@ class SimulationOperator(bpy.types.Operator):
     last_reached = -1
     current_pose = None
     direction = Vector((0,0,0))
-    rot_dir = +1
+
+    loc_reached = False
+    rot_reached = False
 
     ang_dist = None
 
@@ -67,6 +55,9 @@ class SimulationOperator(bpy.types.Operator):
         SimulationOperator.current_pose = None
         SimulationOperator.direction = Vector((0,0,0))
 
+        SimulationOperator.loc_reached = False
+        SimulationOperator.rot_reached = False
+
     def modal(self, context, event):
         if event.type == 'ESC':
             sel_rob_id = context.scene.selected_robot_props.prop_robot_id
@@ -80,6 +71,9 @@ class SimulationOperator(bpy.types.Operator):
             SimulationOperator.start_pose = None
             SimulationOperator.current_pose = None
             SimulationOperator.direction = Vector((0,0,0))
+
+            SimulationOperator.loc_reached = False
+            SimulationOperator.rot_reached = False
             return {'FINISHED'}
 
         if event.type == 'TIMER':
@@ -89,16 +83,17 @@ class SimulationOperator(bpy.types.Operator):
                 return {'CANCELLED'}
 
             r = robot.RobotSet().getRobot(sel_rob_id)
-            start_pose = SimulationOperator.poses[SimulationOperator.last_reached]
+            start_pose = SimulationOperator.poses[SimulationOperator.last_reached] if SimulationOperator.last_reached >= 0 else SimulationOperator.start_pose
             end_pose = SimulationOperator.poses[SimulationOperator.last_reached + 1]
 
-            res_reached_loc = reached_loc(start_pose.loc, end_pose.loc, r.pose.loc)
-            res_reached_rot = reached_rot(start_pose.rotation, end_pose.rotation, r.pose.rotation)
+            if SimulationOperator.loc_reached and SimulationOperator.rot_reached:
 
-            if res_reached_loc and res_reached_rot:
+                SimulationOperator.loc_reached = False
+                SimulationOperator.rot_reached = False
 
                 if SimulationOperator.last_reached + 1 == len(SimulationOperator.poses) - 1:
                     r.loc = SimulationOperator.start_pose.loc
+                    r.rotation = SimulationOperator.start_pose.rotation
                     SimulationOperator.poses.clear()
                     SimulationOperator.last_reached = -1
                     SimulationOperator.start_pose = None
@@ -111,35 +106,44 @@ class SimulationOperator(bpy.types.Operator):
                     r.rot = end_pose.rotation
                     SimulationOperator.last_reached += 1
 
-                    self.report({'INFO'}, "New direction : " + str(SimulationOperator.last_reached) + "/" + str(len(SimulationOperator.poses)))
+                    #self.report({'INFO'}, "New direction : " + str(SimulationOperator.last_reached) + "/" + str(len(SimulationOperator.poses)))
                     SimulationOperator.direction = (SimulationOperator.poses[SimulationOperator.last_reached+1].loc - \
                                                         SimulationOperator.poses[SimulationOperator.last_reached].loc).normalized()
+                    start_pose = SimulationOperator.poses[SimulationOperator.last_reached] if SimulationOperator.last_reached >= 0 else SimulationOperator.start_pose
+                    end_pose = SimulationOperator.poses[SimulationOperator.last_reached + 1]
 
-            if not res_reached_loc:
+            if not SimulationOperator.loc_reached:
                 global speed
                 loc = SimulationOperator.current_pose.loc + speed * SimulationOperator.direction
                 p = path.Pose.fromVector(loc, SimulationOperator.current_pose.rotation)
                 SimulationOperator.current_pose = p
                 r.loc = loc
+
+                SimulationOperator.loc_reached = is_loc_reached(start_pose.loc, end_pose.loc, loc)
             else:
-                p = path.Pose.fromVector(end_pose.loc, SimulationOperator.current_pose.rotation)
-                SimulationOperator.current_pose = p
-                r.loc = p.loc
+                SimulationOperator.current_pose = path.Pose.fromVector(end_pose.loc, SimulationOperator.current_pose.rotation)
+                r.loc = end_pose.loc
+            # print(start_pose.loc, end_pose.loc, SimulationOperator.direction)
 
-            if not res_reached_rot:
-                cur_rotz = SimulationOperator.current_pose.rotation.z
-                end_rotz = SimulationOperator.poses[SimulationOperator.last_reached + 1].rotation.z
-                dist = min(abs(cur_rotz-end_rotz), 2*pi - abs(cur_rotz-end_rotz))
+            if not SimulationOperator.rot_reached:
+                global angle_speed
+                SimulationOperator.rot_reached = True
+                current_z = SimulationOperator.current_pose.rotation.z
+                target_z = end_pose.rotation.z
 
-                cur_rotz += 0.05 * dist
+                error = target_z - current_z
+                error = min(error, 2*pi - error)
 
-                rot = Euler((SimulationOperator.current_pose.rotation.x, SimulationOperator.current_pose.rotation.y, cur_rotz))
+                update_z = SimulationOperator.current_pose.rotation.z + angle_speed*error
+                rot = Euler((SimulationOperator.current_pose.rotation.x, SimulationOperator.current_pose.rotation.y, update_z))
                 SimulationOperator.current_pose = path.Pose.fromVector(SimulationOperator.current_pose.loc, rot)
                 r.rotation = rot
+
+                SimulationOperator.loc_reached = abs(error) < context.scene.TOL*10
             else:
-                p = path.Pose.fromVector(SimulationOperator.current_pose.loc, end_pose.rotation)
-                SimulationOperator.current_pose = p
-                r.rotation = p.rotation
+                rot = Euler((SimulationOperator.current_pose.rotation.x, SimulationOperator.current_pose.rotation.y, end_pose.rotation.z))
+                SimulationOperator.current_pose = path.Pose.fromVector(SimulationOperator.current_pose.loc, rot)
+                r.rotation = rot
 
         return {'PASS_THROUGH'}
 
@@ -154,9 +158,28 @@ class SimulationOperator(bpy.types.Operator):
         r = robot.RobotSet().getRobot(sel_rob_id)
 
         SimulationOperator.poses.extend(pc.PathContainer().poses)
-        SimulationOperator.last_reached = -1
-        SimulationOperator.current_pose = r.pose
-        SimulationOperator.direction = (SimulationOperator.poses[0].loc - r.pose.loc).normalized()
+
+        dist = (r.pose.loc - SimulationOperator.poses[0].loc).length
+
+        current_z = r.rotation.z
+        target_z = SimulationOperator.poses[0].rotation.z
+
+        error = target_z - current_z
+        error = min(error, 2*pi - error)
+
+        if dist >= context.scene.TOL or abs(error) >= 10*context.scene.TOL:
+            if dist < context.scene.TOL:
+                SimulationOperator.loc_reached = True
+            if abs(error) < 10*context.scene.TOL:
+                SimulationOperator.rot_reached = True
+
+            SimulationOperator.last_reached = -1
+            SimulationOperator.current_pose = r.pose
+            SimulationOperator.direction = (SimulationOperator.poses[0].loc - r.pose.loc).normalized()
+        else:
+            SimulationOperator.last_reached = 0
+            SimulationOperator.current_pose = SimulationOperator.poses[0]
+            SimulationOperator.direction = (SimulationOperator.poses[1].loc - SimulationOperator.poses[0].loc).normalized()
 
         SimulationOperator.start_pose = r.pose
 
