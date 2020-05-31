@@ -4,6 +4,8 @@ import bpy
 import robotCommunicationOperator as co
 import robot as r
 
+import simulationOperator as so
+
 def autoregister():
     bpy.utils.register_class(CommunicationPanel)
 
@@ -34,11 +36,17 @@ class CommunicationPanel(bpy.types.Panel):
         rendering_txt = "Rendering active" if rendering else "Rendering inactive"
         icon_rendering = "RESTRICT_RENDER_OFF" if rendering else "RESTRICT_RENDER_ON"
 
-        box2 = self.layout.box()
-        box2.operator(co.ToggleRenderingOperator.bl_idname, icon = icon_rendering, text=rendering_txt)
+        box_com = self.layout.box()
+        box_com.operator(co.ToggleRenderingOperator.bl_idname, icon = icon_rendering, text=rendering_txt)
 
 
         icon_play = "PAUSE" if context.scene.com_props.prop_running_nav and not context.scene.com_props.prop_paused_nav else "PLAY"
-        play_row = box2.split()
+        play_row = box_com.split()
         play_row.operator(co.StartPauseResumePlanOperator.bl_idname, icon=icon_play, text="")
         play_row.operator(co.StopPlanOperator.bl_idname, icon="CANCEL", text="")
+
+        icon_sim = "PLAY" if not so.SimulationOperator.active else "PAUSE"
+        text_sim = "Simulate" if not so.SimulationOperator.active else "Press esc to stop"
+
+        box_sim = self.layout.box()
+        box_sim.operator(so.SimulationOperator.bl_idname, icon=icon_sim, text=text_sim)

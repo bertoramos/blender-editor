@@ -21,7 +21,8 @@ def autounregister():
 def is_loc_reached(start_loc, end_loc, current_loc):
     current_dir = (end_loc - current_loc).normalized()
     running_dir = (end_loc - start_loc).normalized()
-    return current_dir.dot(running_dir) <= 0
+    print("Reached : ", current_dir.dot(running_dir), "Current_dir:", current_dir, "Running_dir:", running_dir)
+    return current_dir.dot(running_dir) <= 0.0
 
 speed = 1/10 # m/s
 angle_speed = 0.25 # %
@@ -35,12 +36,21 @@ class SimulationOperator(bpy.types.Operator):
     poses = []
     last_reached = -1
     current_pose = None
-    direction = Vector((0,0,0))
+    direction = Vector((0.0,0.0,0.0))
 
     loc_reached = False
     rot_reached = False
 
     ang_dist = None
+
+    active = False
+
+    @classmethod
+    def poll(cls, context):
+        running_plan = context.scene.com_props.prop_running_nav
+        selected_robot = context.scene.selected_robot_props.prop_robot_id >= 0
+        active_editor = context.scene.is_cursor_active
+        return not running_plan and selected_robot and not active_editor and not SimulationOperator.active
 
     def cancel(self, context):
         sel_rob_id = context.scene.selected_robot_props.prop_robot_id
@@ -58,6 +68,8 @@ class SimulationOperator(bpy.types.Operator):
         SimulationOperator.loc_reached = False
         SimulationOperator.rot_reached = False
 
+        SimulationOperator.active = False
+
     def modal(self, context, event):
         if event.type == 'ESC':
             sel_rob_id = context.scene.selected_robot_props.prop_robot_id
@@ -74,6 +86,8 @@ class SimulationOperator(bpy.types.Operator):
 
             SimulationOperator.loc_reached = False
             SimulationOperator.rot_reached = False
+
+            SimulationOperator.active = False
             return {'FINISHED'}
 
         if event.type == 'TIMER':
@@ -98,7 +112,9 @@ class SimulationOperator(bpy.types.Operator):
                     SimulationOperator.last_reached = -1
                     SimulationOperator.start_pose = None
                     SimulationOperator.current_pose = None
-                    SimulationOperator.direction = Vector((0,0,0))
+                    SimulationOperator.direction = Vector((0.0,0.0,0.0))
+
+                    SimulationOperator.active = False
                     self.report({'INFO'}, "Finish simulation")
                     return {'FINISHED'}
                 else:
@@ -123,7 +139,7 @@ class SimulationOperator(bpy.types.Operator):
             else:
                 SimulationOperator.current_pose = path.Pose.fromVector(end_pose.loc, SimulationOperator.current_pose.rotation)
                 r.loc = end_pose.loc
-            # print(start_pose.loc, end_pose.loc, SimulationOperator.direction)
+            print(start_pose.loc, end_pose.loc, SimulationOperator.direction, SimulationOperator.loc_reached)
 
             if not SimulationOperator.rot_reached:
                 global angle_speed
@@ -139,7 +155,7 @@ class SimulationOperator(bpy.types.Operator):
                 SimulationOperator.current_pose = path.Pose.fromVector(SimulationOperator.current_pose.loc, rot)
                 r.rotation = rot
 
-                SimulationOperator.loc_reached = abs(error) < context.scene.TOL*10
+                SimulationOperator.rot_reached = abs(error) < context.scene.TOL*10
             else:
                 rot = Euler((SimulationOperator.current_pose.rotation.x, SimulationOperator.current_pose.rotation.y, end_pose.rotation.z))
                 SimulationOperator.current_pose = path.Pose.fromVector(SimulationOperator.current_pose.loc, rot)
@@ -186,4 +202,6 @@ class SimulationOperator(bpy.types.Operator):
         wm = context.window_manager
         self._timer = wm.event_timer_add(1, window=context.window)
         wm.modal_handler_add(self)
+
+        SimulationOperator.active = True
         return {'RUNNING_MODAL'}

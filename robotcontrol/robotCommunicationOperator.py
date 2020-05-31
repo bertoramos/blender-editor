@@ -314,9 +314,7 @@ class StartPauseResumePlanOperator(bpy.types.Operator):
             else:
                 self.report({"INFO"}, "There is not plan created : Please, design a plan to execute")
             # update path status
-
-
-
+        
         if com_props.prop_running_nav:
             if com_props.prop_paused_nav:
                 if path_changed:

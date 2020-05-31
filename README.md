@@ -1,6 +1,8 @@
 
 # Aparte
 
-1. Arreglar rotaciones
-2. Crear panel de simulaciones
-3. Revisar eliminación de varios robots de Roboset
+1. Revisar eliminación de varios robots de Roboset
+2. Añadir pausa a simulacion
+3. Enviar rutas solamente cuando sean actualizadas o creadas
+4. Añadir flecha a la primera pose de un plan
+5. Añadir opcion de cambiar ip del cliente
