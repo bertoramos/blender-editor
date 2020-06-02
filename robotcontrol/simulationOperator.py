@@ -6,10 +6,11 @@ from math import pi, copysign
 import pathContainer as pc
 import robot
 import path
+import robotCommunicationOperator as rco
 
 def autoregister():
     global classes
-    classes = [SimulationOperator]
+    classes = [SimulationOperator, PauseResumeSimulation]
     for cls in classes:
         bpy.utils.register_class(cls)
 
@@ -45,12 +46,15 @@ class SimulationOperator(bpy.types.Operator):
 
     active = False
 
+    pause = False
+
     @classmethod
     def poll(cls, context):
-        running_plan = context.scene.com_props.prop_running_nav
+        robot_mode = context.scene.com_props.prop_mode == rco.robot_modes_summary.index("ROBOT_MODE")
+        #running_plan = context.scene.com_props.prop_running_nav
         selected_robot = context.scene.selected_robot_props.prop_robot_id >= 0
         active_editor = context.scene.is_cursor_active
-        return not running_plan and selected_robot and not active_editor and not SimulationOperator.active
+        return not robot_mode and selected_robot and not active_editor and not SimulationOperator.active
 
     def cancel(self, context):
         sel_rob_id = context.scene.selected_robot_props.prop_robot_id
@@ -67,6 +71,8 @@ class SimulationOperator(bpy.types.Operator):
 
         SimulationOperator.loc_reached = False
         SimulationOperator.rot_reached = False
+
+        SimulationOperator.pause = False
 
         SimulationOperator.active = False
 
@@ -87,10 +93,16 @@ class SimulationOperator(bpy.types.Operator):
             SimulationOperator.loc_reached = False
             SimulationOperator.rot_reached = False
 
+            SimulationOperator.pause = False
+
             SimulationOperator.active = False
             return {'FINISHED'}
 
         if event.type == 'TIMER':
+
+            if SimulationOperator.pause:
+                return {'PASS_THROUGH'}
+
             sel_rob_id = context.scene.selected_robot_props.prop_robot_id
             if sel_rob_id < 0:
                 self.report({'ERROR'}, "Can not simulate plan: There is not a selected robot")
@@ -139,7 +151,7 @@ class SimulationOperator(bpy.types.Operator):
             else:
                 SimulationOperator.current_pose = path.Pose.fromVector(end_pose.loc, SimulationOperator.current_pose.rotation)
                 r.loc = end_pose.loc
-            print(start_pose.loc, end_pose.loc, SimulationOperator.direction, SimulationOperator.loc_reached)
+            #print(start_pose.loc, end_pose.loc, SimulationOperator.direction, SimulationOperator.loc_reached)
 
             if not SimulationOperator.rot_reached:
                 global angle_speed
@@ -205,3 +217,16 @@ class SimulationOperator(bpy.types.Operator):
 
         SimulationOperator.active = True
         return {'RUNNING_MODAL'}
+
+class PauseResumeSimulation(bpy.types.Operator):
+    bl_idname = "wm.pause_simulation"
+    bl_label = "Pause/Resume simulation"
+    bl_description = "Pause/Resume simulation"
+
+    @classmethod
+    def poll(cls, context):
+        return SimulationOperator.active
+
+    def execute(self, context):
+        SimulationOperator.pause = not SimulationOperator.pause
+        return {'FINISHED'}

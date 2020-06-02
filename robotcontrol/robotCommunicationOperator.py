@@ -103,6 +103,10 @@ class SocketModalOperator(bpy.types.Operator):
     closed = True
     error = ""
 
+    # active redrawing when a change occurs
+    def check(self, context):
+        return True
+
     def cancel(self, context):
         """
         Se ejecuta al cerrar la aplicación sin salir de modo robot
@@ -169,7 +173,7 @@ class SocketModalOperator(bpy.types.Operator):
                         SocketModalOperator.running = False
                         return {'FINISHED'}
 
-                    update_gui()
+                    #update_gui()
                     toggle_deactivate_options(robot_modes_summary.index("EDITOR_MODE"))
                     cnh.ConnectionHandler().remove_socket()
                     SocketModalOperator.running = False
@@ -314,7 +318,7 @@ class StartPauseResumePlanOperator(bpy.types.Operator):
             else:
                 self.report({"INFO"}, "There is not plan created : Please, design a plan to execute")
             # update path status
-        
+
         if com_props.prop_running_nav:
             if com_props.prop_paused_nav:
                 if path_changed:

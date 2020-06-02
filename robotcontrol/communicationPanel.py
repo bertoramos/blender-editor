@@ -30,6 +30,8 @@ class CommunicationPanel(bpy.types.Panel):
         if mode == co.robot_modes_summary.index("ROBOT_MODE"):
             icon_mode = "SYSTEM"
 
+        self.layout.label(text="Communication")
+
         self.layout.operator(co.ChangeModeOperator.bl_idname, icon = icon_mode, text="Change mode")
 
         rendering = context.scene.com_props.prop_rendering
@@ -45,8 +47,15 @@ class CommunicationPanel(bpy.types.Panel):
         play_row.operator(co.StartPauseResumePlanOperator.bl_idname, icon=icon_play, text="")
         play_row.operator(co.StopPlanOperator.bl_idname, icon="CANCEL", text="")
 
-        icon_sim = "PLAY" if not so.SimulationOperator.active else "PAUSE"
+        icon_sim = "PLAY"
         text_sim = "Simulate" if not so.SimulationOperator.active else "Press esc to stop"
 
+        pause_icon = "PAUSE" if not so.SimulationOperator.pause else "PLAY"
+        pause_text = "Pause" if not so.SimulationOperator.pause else "Resume"
+
+        self.layout.label(text="Simulation")
+
         box_sim = self.layout.box()
-        box_sim.operator(so.SimulationOperator.bl_idname, icon=icon_sim, text=text_sim)
+        row_sim = box_sim.split()
+        row_sim.operator(so.SimulationOperator.bl_idname, icon=icon_sim, text=text_sim)
+        row_sim.operator(so.PauseResumeSimulation.bl_idname, icon=pause_icon, text=pause_text)
