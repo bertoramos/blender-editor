@@ -395,10 +395,21 @@ class ChangeSpeedOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return True
+        return SocketModalOperator.running
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+    def draw(self, context):
+        props = bpy.context.scene.com_props
+        self.layout.prop(props, "prop_speed", text="Change speed")
 
     def execute(self, context):
-        #context.scene.com_props.prop_speed
+        speed = context.scene.com_props.prop_speed
+        context.scene.com_props.prop_last_sent_packet += 1
+        pid = context.scene.com_props.prop_last_sent_packet
+        cnh.ConnectionHandler().send_change_speed(pid, speed)
         return {'FINISHED'}
 
 

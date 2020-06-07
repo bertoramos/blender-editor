@@ -206,6 +206,8 @@ class ConnectionHandler:
     def send_change_speed(self, pid, speed):
         """
         Send a change speed packet
-        :returns: False if status != 1
+        :returns: False if status != 1 or not ack is received
         """
-        return False
+        change_speed_packet = dp.ChangeSpeedPacket(pid, speed)
+        ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(change_speed_packet), ConnectionHandler.serverAddr)
+        return self.receive_ack_packet(pid)
