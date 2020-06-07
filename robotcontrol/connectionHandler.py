@@ -16,12 +16,15 @@ class Buffer:
         if cls.__instance is None:
             cls.__instance = object.__new__(cls)
             cls.__buffer = []
+            cls.__reached_poses = []
             cls.__last_trace = None
         return cls.__instance
 
     def set_packet(self, packet):
         if type(packet) == dp.TracePacket:
             self.__last_trace = packet
+        if type(packet) == dp.ReachedPosePacket:
+            self.__reached_poses.append(packet)
         else:
             self.__buffer.append(packet)
 
@@ -41,9 +44,18 @@ class Buffer:
             self.__buffer.remove(ret_packet)
         return ret_packet
 
+    def get_reached_poses(self):
+        return [e.pose for e in self.__reached_poses]
+
+    def clear_reached_poses(self):
+        self.__reached_poses.clear()
+
     def clear(self):
         self.__buffer.clear()
         self.__last_trace = None
+
+    def __iter__(self):
+        return iter(self.__buffer)
 
 
 bufferSize = 128
@@ -77,28 +89,43 @@ class ConnectionHandler:
     def hasSocket(self):
         return ConnectionHandler.client_socket is not None
 
-    def receive_packet(self):
+    def receive_packet(self, op):
+
         try:
             msgFromServer = ConnectionHandler.client_socket.recvfrom(bufferSize)
             packet = ms.MsgPackSerializator.unpack(msgFromServer[0])
+            op.report({'INFO'}, "Receive: " + str(packet))
             if packet.pid > bpy.context.scene.com_props.prop_last_recv_packet:
                 Buffer().set_packet(packet)
+            bpy.context.scene.com_props.prop_last_recv_packet = packet.pid
+
+            # acknowledge reached pose packet
+            if type(packet) == dp.ReachedPosePacket:
+                bpy.context.scene.com_props.prop_last_sent_packet += 1
+                ack_pid = bpy.context.scene.com_props.prop_last_sent_packet
+                status = 1
+                ack_packet = dp.AckPacket(ack_pid, packet.pid, status)
+                ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(ack_packet), ConnectionHandler.serverAddr)
         except Exception as e:
-            pass
+            import sys
+            op.report({'INFO'}, str(e) + " line "+ str(sys.exc_info()[-1].tb_lineno))
+
 
     def receive_ack_packet(self, pid):
         start_time = time.time()
         ack_packet = None
         while abs(time.time() - start_time) < 3.0 and ack_packet is None:
             ack_packet = Buffer().get_ack_packet(pid)
+        if ack_packet is not None:
+            bpy.context.scene.com_props.prop_last_recv_packet = ack_packet.pid
         return ack_packet.status == 1 if ack_packet is not None else False
 
-    def send_change_mode(self, pid, mode):
+    def send_change_mode(self, pid, mode, initial_speed):
         """
         Send a mode packet
         :returns: False if send mode operation fails or status != 1
         """
-        mode_packet = dp.ModePacket(pid, mode)
+        mode_packet = dp.ModePacket(pid, mode, initial_speed)
         ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(mode_packet), ConnectionHandler.serverAddr)
         return self.receive_ack_packet(pid)
 
@@ -175,3 +202,10 @@ class ConnectionHandler:
         resume_plan_packet = dp.ResumePlanPacket(pid)
         ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(resume_plan_packet), ConnectionHandler.serverAddr)
         return self.receive_ack_packet(pid)
+
+    def send_change_speed(self, pid, speed):
+        """
+        Send a change speed packet
+        :returns: False if status != 1
+        """
+        return False

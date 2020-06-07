@@ -23,9 +23,9 @@ class ModePacketMsgPackSerialization(st.Serialization):
         """
         Apply a deserialization method to unpack
         """
-        assert len(list_packet) == 3, "Error: No valid mode packet"
+        assert len(list_packet) == 4, "Error: No valid mode packet"
         assert list_packet[1] == 2, "Error: list_packet is not a mode packet"
-        return datapacket.ModePacket(list_packet[0], list_packet[2])
+        return datapacket.ModePacket(list_packet[0], list_packet[2], list_packet[3])
 
 class AckPacketMsgPackSerialization(st.Serialization):
     """
@@ -62,7 +62,10 @@ class TracePacketMsgPackSerialization(st.Serialization):
         """
         assert type(packet) == datapacket.TracePacket, "Error : packet is not a TracePacket"
         l = list(iter(packet))
-        return msgpack.packb(l, use_bin_type=True)
+
+        from math import degrees
+        res = [l[0], l[1], l[2].x, l[2].y, degrees(l[2].gamma)]
+        return msgpack.packb(res, use_bin_type=True)
 
     @staticmethod
     def unpack(list_packet):
@@ -71,7 +74,9 @@ class TracePacketMsgPackSerialization(st.Serialization):
         """
         assert len(list_packet) == 5, "Error: No valid trace packet"
         assert list_packet[1] == 3, "Error: list_packet is not a trace packet"
-        pose = path.Pose(list_packet[2], list_packet[3], 0.0, 0.0, 0.0, list_packet[4])
+
+        from math import radians
+        pose = path.Pose(list_packet[2], list_packet[3], 0.0, 0.0, 0.0, radians(list_packet[4]))
         return datapacket.TracePacket(list_packet[0], pose)
 
 class OpenPlanPacketMsgPackSerialization(st.Serialization):
@@ -122,7 +127,9 @@ class AddPosePlanPacketMsgPackSerialization(st.Serialization):
         """
         assert len(list_packet) == 5, "Error: No valid add pose plan packet"
         assert list_packet[1] == 5, "Error: list_packet is not a add pose plan packet"
-        pose = path.Pose(list_packet[2], list_packet[3], 0.0, 0.0, 0.0, list_packet[4])
+
+        from math import radians
+        pose = path.Pose(list_packet[2], list_packet[3], 0.0, 0.0, 0.0, radians(list_packet[4]))
         return datapacket.AddPosePlanPacket(list_packet[0], pose)
 
 class ClosePlanPacketMsgPackSerialization(st.Serialization):
@@ -252,6 +259,37 @@ class ReachedPosePacketMsgPackSerialization(st.Serialization):
         """
         assert type(packet) == datapacket.ReachedPosePacket, "Error: packet is not a ReachedPosePacket"
         l = list(iter(packet))
+
+        from math import degrees
+        res = [l[0], l[1], l[2].x, l[2].y, degrees(l[2].gamma)]
+        return msgpack.packb(res, use_bin_type=True)
+
+    @staticmethod
+    def unpack(list_packet):
+        """
+        Apply a deserialization method to unpack
+        """
+        assert len(list_packet) == 5, "Error: No valid reached pose packet " + "len= " + str(len(list_packet))
+        assert list_packet[1] == 11, "Error: list_packet is not a reached pose packet"
+        x = list_packet[2]
+        y = list_packet[3]
+        tetha = list_packet[4]
+        from math import radians
+        pose = path.Pose(x, y, 0, 0, 0, radians(tetha))
+        return datapacket.ReachedPosePacket(list_packet[0], pose)
+
+class ChangeSpeedPacketMsgPackSerialization(st.Serialization):
+    """
+    Defines an algorithm to pack-unpack a packet
+    """
+
+    @staticmethod
+    def pack(packet):
+        """
+        Apply a serialization method to pack
+        """
+        assert type(packet) == datapacket.ChangeSpeedPacket, "Error: packet is not a ChangeSpeedPacket"
+        l = list(iter(packet))
         return msgpack.packb(l, use_bin_type=True)
 
     @staticmethod
@@ -259,10 +297,9 @@ class ReachedPosePacketMsgPackSerialization(st.Serialization):
         """
         Apply a deserialization method to unpack
         """
-        assert len(list_packet) == 2, "Error: No valid reached pose packet"
-        assert list_packet[1] == 11, "Error: list_packet is not a reached pose packet"
-        return datapacket.TracePacket(list_packet[0])
-
+        assert len(list_packet) == 3, "Error: No valid change speed packet"
+        assert list_packet[1] == 12, "Error: list_packet is not a change speed packet"
+        return datapacket.ChangeSpeedPacket(list_packet[0], list_packet[2])
 
 # { ptype : SerializationClass, ... }
 # choose_serialization.get(ptype) -> return: ptype pack/unpack method
@@ -277,7 +314,8 @@ choose_serialization = {
                         8:  StopPlanPacketMsgPackSerialization,
                         9:  PausePlanPacketMsgPackSerialization,
                         10: ResumePlanPacketMsgPackSerialization,
-                        11: ReachedPosePacketMsgPackSerialization
+                        11: ReachedPosePacketMsgPackSerialization,
+                        12: ChangeSpeedPacketMsgPackSerialization
                        }
 
 class MsgPackSerializator(st.Serializator):

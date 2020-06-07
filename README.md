@@ -5,3 +5,4 @@
 3. Enviar rutas solamente cuando sean actualizadas o creadas
 4. Añadir flecha a la primera pose de un plan
 5. Añadir opcion de cambiar ip del cliente
+6. Cancelar plan al ser actualizado y reenviado

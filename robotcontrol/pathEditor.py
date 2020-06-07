@@ -81,6 +81,9 @@ class PathDrawer(cl.Observer):
         showCeil()
 
     def notifyStart(self, operator):
+        bpy.context.scene.cursor.location = Vector((0.0, 0.0, 0.0))
+        bpy.context.scene.cursor.rotation_euler = Euler((0.0, 0.0, 0.0))
+
         if len(robot_tools.RobotSet()) <= 0:
             operator.report({'ERROR'}, 'No robot available : add a robot to create a path')
             bpy.ops.scene.stop_cursor_listener('INVOKE_DEFAULT')
@@ -268,7 +271,9 @@ class RemoveLastSavedPoseOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return len(pc.PathContainer()) > 0
+        running_plan = context.scene.com_props.prop_running_nav
+        paused_plan = context.scene.com_props.prop_paused_nav
+        return len(pc.PathContainer()) > 0 and (not running_plan or (running_plan and paused_plan))
 
     def execute(self, context):
         action = pc.PathContainer().removeLastAction()
@@ -282,7 +287,9 @@ class ClearPathOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return len(pc.PathContainer()) > 0
+        running_plan = context.scene.com_props.prop_running_nav
+        paused_plan = context.scene.com_props.prop_paused_nav
+        return len(pc.PathContainer()) > 0 and (not running_plan or (running_plan and paused_plan))
 
     def execute(self, context):
         pc.PathContainer().clear()
@@ -316,6 +323,7 @@ class SelectCursorOperator(bpy.types.Operator):
         cl.CursorListener.select_cursor()
         return {'FINISHED'}
 
+update_time = -1
 
 class PathEditorLog(bpy.types.Operator):
     bl_idname = "screen.patheditor_log"
@@ -329,7 +337,12 @@ class PathEditorLog(bpy.types.Operator):
     def execute(self, context):
         import datetime as dt
         date = str(dt.datetime.now())
-        log = "PathEditor | " + date + "\n"
+
+        global update_time
+        update = update_time < pc.PathContainer().getLastUpdate()
+        update_time = pc.PathContainer().getLastUpdate()
+
+        log = "PathEditor | " + date + " | update = " + str(update) + " : " + str(update_time) + "\n"
         log += "\tPathContainer : " + str(len(pc.PathContainer())) + "\n"
         for p in pc.PathContainer().poses:
             log += "\t\t" + str(p) + "\n"

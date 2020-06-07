@@ -18,27 +18,25 @@ class PathContainer:
         if cls.__instance is None:
             cls.__list = []
             cls.__instance = object.__new__(cls)
+            cls.__instance.__last_update = -1
         return cls.__instance
 
     def getLastAction(self):
         return PathContainer.__instance.__list[-1] if len(PathContainer.__instance.__list) > 0 else None
 
     def removeLastAction(self):
+        self.__last_update = int(time.time())
         return PathContainer.__instance.__list.pop() if len(PathContainer.__instance.__list) > 0 else None
 
-    def getActionByTimestamp(self, timestamp):
-        for a in PathContainer.__instance.__list:
-            if a.timestamp == timestamp:
-                return a
-
+    """
     def findPose(self, pose):
-        """
+        " ""
         incoming_action ----> pose ----> outgoing_action
             if incoming_action is None -> 'pose' is first pose
             if outgoing_action is None -> 'pose' is last pose
             if incoming_action and outgoing_action is not None -> incoming_action.p1 == outgoing_action.p0 == pose
             if incoming_action and outgoing_action is None -> pose not in PathContainer
-        """
+        " ""
         incoming_action = None
         outgoing_action = None
 
@@ -58,13 +56,19 @@ class PathContainer:
                 return action_tmp, None # Last pose
             return action_tmp, PathContainer.__instance.__list[index_action] # midpoint
         return None, None
+    """
 
     def clear(self):
         PathContainer.__instance.__list.clear()
+        self.__last_update = int(time.time())
 
     def extendActions(self, actions):
         idx = len(PathContainer.__instance.__list)
         PathContainer.__instance.__list.extend(actions)
+        self.__last_update = int(time.time())
+
+    def getLastUpdate(self):
+        return int(self.__last_update)
 
     def _get_poses(self):
         poses = []

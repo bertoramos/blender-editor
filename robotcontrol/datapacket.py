@@ -19,18 +19,19 @@ Paquete de velocidad (12)
 
 class ModePacket(st.Packet):
 
-    def __init__(self, pid, mode, ptype=2):
+    def __init__(self, pid, mode, initial_speed, ptype=2):
         super().__init__(pid, ptype)
         self.__mode = mode
+        self.__initial_speed = initial_speed
 
     def __get_mode(self):
         return self.__mode
 
     def __str__(self):
-        return "[" + str(self.pid) + "|" + str(self.ptype) + "|" + str(self.__mode) + "]"
+        return "[{}|{}|{}|{}]".format(self.pid, self.ptype, self.__mode, self.__initial_speed)
 
     def __iter__(self):
-        return iter([self.pid, self.ptype, self.__mode])
+        return iter([self.pid, self.ptype, self.__mode, self.__initial_speed])
 
     mode = property(__get_mode)
 
@@ -48,7 +49,8 @@ class AckPacket(st.Packet):
         return self.__status
 
     def __str__(self):
-        return "[" + str(self.pid) + "|" + str(self.ptype) + "|" + str(self.__ack_packet) + "|" + str(self.__status) + "]"
+        #return "[" + str(self.pid) + "|" + str(self.ptype) + "|" + str(self.__ack_packet) + "|" + str(self.__status) + "]"
+        return "[{}|{}|{}|{}]".format(self.pid, self.ptype, self.__ack_packet, self.__status)
 
     def __iter__(self):
         return iter([self.pid, self.ptype, self.__ack_packet, self.__status])
@@ -66,7 +68,7 @@ class TracePacket(st.Packet):
         return self.__pose
 
     def __str__(self):
-        return "[" + str(self.pid) + "|" + str(self.ptype) + "|" + str(self.__pose) + "]"
+        return "[{}|{}|{}]".format(self.pid, self.ptype, self.__pose)
 
     def __iter__(self):
         return iter([self.pid, self.ptype, self.__pose.x, self.__pose.y, self.__pose.gamma])
@@ -83,7 +85,7 @@ class OpenPlanPacket(st.Packet):
         return self.__n_poses
 
     def __str__(self):
-        return "[" + str(self.pid) + "|" + str(self.ptype) + "|" + str(self.__n_poses) + "]"
+        return "[{}|{}|{}]".format(self.pid, self.ptype, self.__n_poses)
 
     def __iter__(self):
         return iter([self.pid, self.ptype, self.__n_poses])
@@ -98,7 +100,7 @@ class AddPosePlanPacket(st.Packet):
         return self.__pose
 
     def __str__(self):
-        return "[" + str(self.pid) + "|" + str(self.ptype) + "|" + str(self.__pose) + "]"
+        return "[{}|{}|{}]".format(self.pid, self.ptype, self.__pose)
 
     def __iter__(self):
         return iter([self.pid, self.ptype, self.__pose])
@@ -109,7 +111,7 @@ class ClosePlanPacket(st.Packet):
         super().__init__(pid, ptype)
 
     def __str__(self):
-        return "[" + str(self.pid) + "|" + str(self.ptype) + "]"
+        return "[{}|{}]".format(self.pid, self.ptype)
 
     def __iter__(self):
         return iter([self.pid, self.ptype])
@@ -120,7 +122,7 @@ class StartPlanPacket(st.Packet):
         super().__init__(pid, ptype)
 
     def __str__(self):
-        return "[" + str(self.pid) + "|" + str(self.ptype)  + "]"
+        return "[{}|{}]".format(self.pid, self.ptype)
 
     def __iter__(self):
         return iter([self.pid, self.ptype])
@@ -131,7 +133,7 @@ class PausePlanPacket(st.Packet):
         super().__init__(pid, ptype)
 
     def __str__(self):
-        return "[" + str(self.pid) + "|" + str(self.ptype)  + "]"
+        return "[{}|{}]".format(self.pid, self.ptype)
 
     def __iter__(self):
         return iter([self.pid, self.ptype])
@@ -142,7 +144,7 @@ class ResumePlanPacket(st.Packet):
         super().__init__(pid, ptype)
 
     def __str__(self):
-        return "[" + str(self.pid) + "|" + str(self.ptype)  + "]"
+        return "[{}|{}]".format(self.pid, self.ptype)
 
     def __iter__(self):
         return iter([self.pid, self.ptype])
@@ -153,18 +155,36 @@ class StopPlanPacket(st.Packet):
         super().__init__(pid, ptype)
 
     def __str__(self):
-        return "[" + str(self.pid) + "|" + str(self.ptype)  + "]"
+        return "[{}|{}]".format(self.pid, self.ptype)
 
     def __iter__(self):
         return iter([self.pid, self.ptype])
 
 class ReachedPosePacket(st.Packet):
 
-    def __init__(self, pid, ptype=11):
+    def __init__(self, pid, pose, ptype=11):
         super().__init__(pid, ptype)
+        self.__pose = pose
+
+    def __get_pose(self):
+        return self.__pose
 
     def __str__(self):
-        return "[" + str(self.pid) + "|" + str(self.ptype) + "]"
+        return "[{}|{}|{}]".format(self.pid, self.ptype, self.__pose)
 
     def __iter__(self):
-        return iter([self.pid, self.ptype])
+        return iter([self.pid, self.ptype, self.__pose])
+
+    pose = property(__get_pose)
+
+class ChangeSpeedPacket(st.Packet):
+
+    def __init__(self, pid, speed, ptype=12):
+        super().__init__(pid, ptype)
+        self.__speed = speed
+
+    def __str__(self):
+        return "[{}|{}|{}]".format(self.pid, self.ptype, self.__speed)
+
+    def __iter__(self):
+        return iter([self.pid, self.ptype, self.__speed])
