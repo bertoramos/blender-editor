@@ -90,6 +90,8 @@ class OpenPlanPacket(st.Packet):
     def __iter__(self):
         return iter([self.pid, self.ptype, self.__n_poses])
 
+    n_poses = property(__get_n_poses)
+
 class AddPosePlanPacket(st.Packet):
 
     def __init__(self, pid, pose, ptype=5):
@@ -104,6 +106,8 @@ class AddPosePlanPacket(st.Packet):
 
     def __iter__(self):
         return iter([self.pid, self.ptype, self.__pose])
+
+    pose = property(__get_pose)
 
 class ClosePlanPacket(st.Packet):
 

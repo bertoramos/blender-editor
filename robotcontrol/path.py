@@ -78,7 +78,7 @@ def draw_pose_note(context, name, pose, color, font, font_align):
     loc = pose.loc
     rot = pose.rotation
 
-    txt = '({:0.4f}, {:0.4f}, {:0.4f})'.format(loc.x, loc.y, loc.z)
+    txt = '(x={:0.4f}, y={:0.4f}, z={:0.4f}) [meters]'.format(loc.x, loc.y, loc.z)
 
     hint_space = 10
     rotation = 0
@@ -89,7 +89,7 @@ def draw_pose_note(context, name, pose, color, font, font_align):
     bpy.data.objects[loc_note_name].lock_scale[0:3] = (True, True, True)
     bpy.data.objects[loc_note_name].protected = True
 
-    txt = '({:0.4f}, {:0.4f}, {:0.4f})'.format(degrees(rot.x), degrees(rot.y), degrees(rot.z))
+    txt = '(x={:0.4f}, y={:0.4f}, z={:0.4f}) degrees'.format(degrees(rot.x), degrees(rot.y), degrees(rot.z))
 
     rot_note_name = utils.draw_text(context, name, txt, loc, color, hint_space, font, font_align, rotation)
 

@@ -206,10 +206,20 @@ class SocketModalOperator(bpy.types.Operator):
 
     # THREAD EXECUTION
     def run(operator):
+        limit = 10
+        n_rcv = limit
         SocketModalOperator.running = True
         while SocketModalOperator.running:
             if cnh.ConnectionHandler().hasSocket():
-                cnh.ConnectionHandler().receive_packet(operator)
+                rcv = cnh.ConnectionHandler().receive_packet(operator)
+                if rcv:
+                    n_rcv = limit
+                else:
+                    operator.report({'INFO'}, 'No communication')
+                    n_rcv-=1
+            if n_rcv == 0:
+                operator.report({'ERROR'}, 'Unavailable server: changing mode')
+                bpy.ops.wm.change_mode()
 
     def execute(self, context):
         wm = context.window_manager
@@ -393,19 +403,23 @@ class ChangeSpeedOperator(bpy.types.Operator):
     bl_label = "Change speed"
     bl_description = "Send speed"
 
+    update_speed: bpy.props.FloatProperty(name="Speed",
+                                          min=0.0,
+                                          max=100.0,
+                                          default=0.0)
+
     @classmethod
     def poll(cls, context):
         return SocketModalOperator.running
 
     def invoke(self, context, event):
+        self.update_speed = bpy.context.scene.com_props.prop_speed
         wm = context.window_manager
         return wm.invoke_props_dialog(self)
 
-    def draw(self, context):
-        props = bpy.context.scene.com_props
-        self.layout.prop(props, "prop_speed", text="Change speed")
-
     def execute(self, context):
+        self.report({'INFO'}, str(self.update_speed))
+        context.scene.com_props.prop_speed = self.update_speed
         speed = context.scene.com_props.prop_speed
         context.scene.com_props.prop_last_sent_packet += 1
         pid = context.scene.com_props.prop_last_sent_packet

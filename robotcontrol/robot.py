@@ -395,9 +395,10 @@ class SelectRobotOperator(bpy.types.Operator):
 
 def selectUpdate(self, context):
     #print("Update ", str(self.name), str(self.idn), str(str(self.selected)))
-    for item in context.scene.select_robot_collection:
-        if item.idn != self.idn and self.selected == True:
-            item.selected = False
+    if self.selected:
+        for item in context.scene.select_robot_collection:
+            if item.idn != self.idn:
+                item.selected = False
 
 
 class RobotItemForSelect(bpy.types.PropertyGroup):

@@ -14,6 +14,7 @@ items = [("OTHER", "Other", "", 0),
 
 bpy.types.Object.object_type = bpy.props.EnumProperty(items=items, default="OTHER")
 
+# Disable change
 def update_nop(self, context):
     pass
 

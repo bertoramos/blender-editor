@@ -67,7 +67,6 @@ def showCeil():
 class PathDrawer(cl.Observer):
 
     def __init__(self):
-        self.current_pose = None
         self.current_action = None
 
     def notifyStop(self, operator):
@@ -103,7 +102,6 @@ class PathDrawer(cl.Observer):
         else:
             loc = robot.loc + Vector((bpy.context.scene.TOL, bpy.context.scene.TOL, bpy.context.scene.TOL))
             angle = robot.rotation
-            #angle.y = pi/2.0
 
         # Movemos el cursor a la posicion de comienzo
         new_pose = path.Pose.fromVector(loc, angle)

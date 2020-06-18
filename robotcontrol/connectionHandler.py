@@ -94,7 +94,9 @@ class ConnectionHandler:
         try:
             msgFromServer = ConnectionHandler.client_socket.recvfrom(bufferSize)
             packet = ms.MsgPackSerializator.unpack(msgFromServer[0])
-            op.report({'INFO'}, "Receive: " + str(packet))
+            if type(packet) != dp.TracePacket:
+                op.report({'INFO'}, "Receive: " + str(packet))
+
             if packet.pid > bpy.context.scene.com_props.prop_last_recv_packet:
                 Buffer().set_packet(packet)
             bpy.context.scene.com_props.prop_last_recv_packet = packet.pid
@@ -108,7 +110,9 @@ class ConnectionHandler:
                 ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(ack_packet), ConnectionHandler.serverAddr)
         except Exception as e:
             import sys
-            op.report({'INFO'}, str(e) + " line "+ str(sys.exc_info()[-1].tb_lineno))
+            #op.report({'INFO'}, str(e) + " line "+ str(sys.exc_info()[-1].tb_lineno))
+            return False
+        return True
 
 
     def receive_ack_packet(self, pid):

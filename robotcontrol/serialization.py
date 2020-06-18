@@ -32,7 +32,7 @@ class Serialization:
 
     @staticmethod
     @abc.abstractmethod
-    def unpack(cls, byte_packet):
+    def unpack(cls, list_packet):
         """
         Apply a deserialization method to unpack
         """

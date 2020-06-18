@@ -10,14 +10,18 @@ import robotCommunicationOperator as rco
 
 def autoregister():
     global classes
-    classes = [SimulationOperator, PauseResumeSimulation]
+    classes = [SimulationOperator, PauseResumeSimulation, SimulationProps, ChangeSpeedSimulationOperator]
     for cls in classes:
         bpy.utils.register_class(cls)
+
+    bpy.types.Scene.sim_props = bpy.props.PointerProperty(type=SimulationProps)
 
 def autounregister():
     global classes
     for cls in classes:
         bpy.utils.unregister_class(cls)
+
+    del bpy.types.Scene.sim_props
 
 def is_loc_reached(start_loc, end_loc, current_loc):
     current_dir = (end_loc - current_loc).normalized()
@@ -25,7 +29,11 @@ def is_loc_reached(start_loc, end_loc, current_loc):
     print("Reached : ", current_dir.dot(running_dir), "Current_dir:", current_dir, "Running_dir:", running_dir)
     return current_dir.dot(running_dir) <= 0.0
 
-speed = 1/10 # m/s
+class SimulationProps(bpy.types.PropertyGroup):
+    prop_simulated_speed: bpy.props.FloatProperty(name="Speed", default=100.0, min=0.0, max=100.0)
+
+
+max_speed = 1/10 # m/s
 angle_speed = 0.25 # %
 
 class SimulationOperator(bpy.types.Operator):
@@ -141,7 +149,8 @@ class SimulationOperator(bpy.types.Operator):
                     end_pose = SimulationOperator.poses[SimulationOperator.last_reached + 1]
 
             if not SimulationOperator.loc_reached:
-                global speed
+                global max_speed
+                speed = max_speed * context.scene.sim_props.prop_simulated_speed/100.0
                 loc = SimulationOperator.current_pose.loc + speed * SimulationOperator.direction
                 p = path.Pose.fromVector(loc, SimulationOperator.current_pose.rotation)
                 SimulationOperator.current_pose = p
@@ -229,4 +238,28 @@ class PauseResumeSimulation(bpy.types.Operator):
 
     def execute(self, context):
         SimulationOperator.pause = not SimulationOperator.pause
+        return {'FINISHED'}
+
+class ChangeSpeedSimulationOperator(bpy.types.Operator):
+    bl_idname = "wm.change_speed_simulation"
+    bl_label = "Change speed simulation"
+    bl_description = "Change speed in simulation"
+
+    update_speed: bpy.props.FloatProperty(name="Speed",
+                                          min=0.0,
+                                          max=100.0,
+                                          default=0.0)
+
+    @classmethod
+    def poll(cls, context):
+        return SimulationOperator.active
+
+    def invoke(self, context, event):
+        self.update_speed = context.scene.sim_props.prop_simulated_speed
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+    def execute(self, context):
+        self.report({'INFO'}, str(self.update_speed))
+        context.scene.sim_props.prop_simulated_speed = self.update_speed
         return {'FINISHED'}

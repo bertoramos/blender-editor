@@ -77,7 +77,7 @@ def get_filename(self):
     return self.get("prop_name", "scenario.blend")
 
 class FileProps(PropertyGroup):
-    prop_path: bpy.props.StringProperty(name="File path", description="File path", default="", subtype="FILE_PATH")
+    prop_path: bpy.props.StringProperty(name="File path", description="File path", default="", subtype="DIR_PATH")
     prop_name: bpy.props.StringProperty(name="File name", description="File name", default="", subtype="FILE_NAME", update=update_filename, get=get_filename, set=set_filename)
 
 class ExportScenarioOperator(Operator):

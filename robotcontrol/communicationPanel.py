@@ -41,11 +41,16 @@ class CommunicationPanel(bpy.types.Panel):
         box_com = self.layout.box()
         box_com.operator(co.ToggleRenderingOperator.bl_idname, icon = icon_rendering, text=rendering_txt)
 
-
         icon_play = "PAUSE" if context.scene.com_props.prop_running_nav and not context.scene.com_props.prop_paused_nav else "PLAY"
         play_row = box_com.split()
         play_row.operator(co.StartPauseResumePlanOperator.bl_idname, icon=icon_play, text="")
         play_row.operator(co.StopPlanOperator.bl_idname, icon="CANCEL", text="")
+
+        speed_lab = "Speed : " + "{0:.2f}".format(context.scene.com_props.prop_speed) + " %"
+        box_com.label(text=speed_lab)
+        box_com.operator(co.ChangeSpeedOperator.bl_idname, icon="ANIM_DATA", text="Change speed")
+
+        # SIMULATION:
 
         icon_sim = "PLAY"
         text_sim = "Simulate" if not so.SimulationOperator.active else "Press esc to stop"
@@ -59,3 +64,7 @@ class CommunicationPanel(bpy.types.Panel):
         row_sim = box_sim.split()
         row_sim.operator(so.SimulationOperator.bl_idname, icon=icon_sim, text=text_sim)
         row_sim.operator(so.PauseResumeSimulation.bl_idname, icon=pause_icon, text=pause_text)
+
+        speed_lab = "Speed : " + "{0:.2f}".format(context.scene.sim_props.prop_simulated_speed) + " %"
+        box_sim.label(text=speed_lab)
+        box_sim.operator(so.ChangeSpeedSimulationOperator.bl_idname, icon="ANIM_DATA", text="Change speed")

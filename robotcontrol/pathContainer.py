@@ -28,36 +28,6 @@ class PathContainer:
         self.__last_update = int(time.time())
         return PathContainer.__instance.__list.pop() if len(PathContainer.__instance.__list) > 0 else None
 
-    """
-    def findPose(self, pose):
-        " ""
-        incoming_action ----> pose ----> outgoing_action
-            if incoming_action is None -> 'pose' is first pose
-            if outgoing_action is None -> 'pose' is last pose
-            if incoming_action and outgoing_action is not None -> incoming_action.p1 == outgoing_action.p0 == pose
-            if incoming_action and outgoing_action is None -> pose not in PathContainer
-        " ""
-        incoming_action = None
-        outgoing_action = None
-
-        action_tmp = None
-        index_action = -1
-        for i, a in enumerate(PathContainer.__instance.__list):
-            if a.p0 == pose or a.p1 == pose:
-                index_action = i # action location in list
-                action_tmp = a
-                break
-        if action_tmp is None:
-            return None, None # pose not found
-        if action_tmp.p0 == pose:
-            return None, action_tmp # First pose
-        if action_tmp.p1 == pose:
-            if index_action == len(PathContainer.__instance.__list)-1:
-                return action_tmp, None # Last pose
-            return action_tmp, PathContainer.__instance.__list[index_action] # midpoint
-        return None, None
-    """
-
     def clear(self):
         PathContainer.__instance.__list.clear()
         self.__last_update = int(time.time())
