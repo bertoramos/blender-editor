@@ -49,7 +49,7 @@ def get_children(parent):
         not_visited.extend(current_node.children)
     return children
 
-def delete(self, context, delete_children):
+def delete(self, context, delete_children=False):
     protected_obj = []
     to_delete = [obj for obj in context.selected_objects] # map deleted objects : avoid an invalid object error when the child of a selected object is also selected
     for obj in to_delete:
@@ -57,7 +57,6 @@ def delete(self, context, delete_children):
             if delete_children:
                 children = get_children(obj)
                 for child in children:
-
                     if child in to_delete: # indicates selected child was deleted
                         to_delete.remove(child)
                     drop(child)
@@ -74,7 +73,7 @@ class DeleteOverrideOperator(bpy.types.Operator):
     bl_idname = "object.delete"
     bl_label = "Delete unprotected"
     bl_options = {'REGISTER', 'INTERNAL'}
-    bl_description = "Delete selected objects and children"
+    bl_description = "Delete selected objects and optionally children"
 
     delete_children: bpy.props.BoolProperty(default=True)
 
@@ -90,4 +89,4 @@ class DeleteOverrideOperator(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self)
 
     def draw(self, context):
-        self.layout.prop(self, "delete_children", text="Delete children")
+        self.layout.prop(self, "delete_children", text="Recursively delete")

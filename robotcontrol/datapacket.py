@@ -27,6 +27,9 @@ class ModePacket(st.Packet):
     def __get_mode(self):
         return self.__mode
 
+    def __get_initial_speed(self):
+        return self.__initial_speed
+
     def __str__(self):
         return "[{}|{}|{}|{}]".format(self.pid, self.ptype, self.__mode, self.__initial_speed)
 
@@ -34,6 +37,7 @@ class ModePacket(st.Packet):
         return iter([self.pid, self.ptype, self.__mode, self.__initial_speed])
 
     mode = property(__get_mode)
+    initial_speed = property(__get_initial_speed)
 
 class AckPacket(st.Packet):
 

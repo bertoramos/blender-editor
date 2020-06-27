@@ -225,7 +225,7 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port):
     myrobot.name = name
 
     myrobot.lock_location[0:3] = (False, False, True)
-    myrobot.lock_rotation[0:3] = (False, False, False)
+    myrobot.lock_rotation[0:3] = (True, True, False)
     myrobot.lock_scale[0:3] = (True, True, True)
     myrobot.protected = True
 

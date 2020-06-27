@@ -24,7 +24,7 @@ class Serialization:
 
     @staticmethod
     @abc.abstractmethod
-    def pack(cls, packet):
+    def pack(cls, packet: Packet) -> list:
         """
         Apply a serialization method to pack
         """
@@ -32,7 +32,7 @@ class Serialization:
 
     @staticmethod
     @abc.abstractmethod
-    def unpack(cls, list_packet):
+    def unpack(cls, list_packet: list) -> Packet:
         """
         Apply a deserialization method to unpack
         """
@@ -45,7 +45,7 @@ class Serializator:
 
     @staticmethod
     @abc.abstractmethod
-    def pack(cls, packet):
+    def pack(cls, packet: Packet) -> bytes:
         """
         Convert Packet to byte
         """
@@ -53,7 +53,7 @@ class Serializator:
 
     @staticmethod
     @abc.abstractmethod
-    def unpack(cls, byte_packet):
+    def unpack(cls, byte_packet: bytes) -> Packet:
         """
         Convert a bytes to Packet, selecting a serialization method
         """

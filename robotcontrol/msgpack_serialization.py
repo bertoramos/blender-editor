@@ -15,8 +15,7 @@ class ModePacketMsgPackSerialization(st.Serialization):
         Apply a serialization method to pack
         """
         assert type(packet) == datapacket.ModePacket, "Error : packet is not a ModePacket"
-        l = list(iter(packet))
-        return msgpack.packb(l, use_bin_type=True)
+        return list(iter(packet))
 
     @staticmethod
     def unpack(list_packet):
@@ -38,8 +37,7 @@ class AckPacketMsgPackSerialization(st.Serialization):
         Apply a serialization method to pack
         """
         assert type(packet) == datapacket.AckPacket, "Error : packet is not a AckPacket"
-        l = list(iter(packet))
-        return msgpack.packb(l, use_bin_type=True)
+        return list(iter(packet))
 
     @staticmethod
     def unpack(list_packet):
@@ -64,8 +62,7 @@ class TracePacketMsgPackSerialization(st.Serialization):
         l = list(iter(packet))
 
         from math import degrees
-        res = [l[0], l[1], l[2].x, l[2].y, degrees(l[2].gamma)]
-        return msgpack.packb(res, use_bin_type=True)
+        return [l[0], l[1], l[2].x, l[2].y, degrees(l[2].gamma)]
 
     @staticmethod
     def unpack(list_packet):
@@ -90,8 +87,7 @@ class OpenPlanPacketMsgPackSerialization(st.Serialization):
         Apply a serialization method to pack
         """
         assert type(packet) == datapacket.OpenPlanPacket, "Error : packet is not a ModePacket"
-        l = list(iter(packet))
-        return msgpack.packb(l, use_bin_type=True)
+        return list(iter(packet))
 
     @staticmethod
     def unpack(list_packet):
@@ -117,8 +113,7 @@ class AddPosePlanPacketMsgPackSerialization(st.Serialization):
         l = list(iter(packet))
 
         from math import degrees
-        res = [l[0], l[1], l[2].x, l[2].y, degrees(l[2].gamma)]
-        return msgpack.packb(res, use_bin_type=True)
+        return [l[0], l[1], l[2].x, l[2].y, degrees(l[2].gamma)]
 
     @staticmethod
     def unpack(list_packet):
@@ -143,8 +138,7 @@ class ClosePlanPacketMsgPackSerialization(st.Serialization):
         Apply a serialization method to pack
         """
         assert type(packet) == datapacket.ClosePlanPacket, "Error: packet is not a ClosePlanPacket"
-        l = list(iter(packet))
-        return msgpack.packb(l, use_bin_type=True)
+        return list(iter(packet))
 
     @staticmethod
     def unpack(list_packet):
@@ -166,8 +160,7 @@ class StartPlanPacketMsgPackSerialization(st.Serialization):
         Apply a serialization method to pack
         """
         assert type(packet) == datapacket.StartPlanPacket, "Error: packet is not a StartPlanPacket"
-        l = list(iter(packet))
-        return msgpack.packb(l, use_bin_type=True)
+        return list(iter(packet))
 
     @staticmethod
     def unpack(list_packet):
@@ -189,8 +182,7 @@ class PausePlanPacketMsgPackSerialization(st.Serialization):
         Apply a serialization method to pack
         """
         assert type(packet) == datapacket.PausePlanPacket, "Error: packet is not a PausePlanPacket"
-        l = list(iter(packet))
-        return msgpack.packb(l, use_bin_type=True)
+        return list(iter(packet))
 
     @staticmethod
     def unpack(list_packet):
@@ -212,8 +204,7 @@ class ResumePlanPacketMsgPackSerialization(st.Serialization):
         Apply a serialization method to pack
         """
         assert type(packet) == datapacket.ResumePlanPacket, "Error: packet is not a ResumePlanPacket"
-        l = list(iter(packet))
-        return msgpack.packb(l, use_bin_type=True)
+        return list(iter(packet))
 
     @staticmethod
     def unpack(list_packet):
@@ -235,8 +226,7 @@ class StopPlanPacketMsgPackSerialization(st.Serialization):
         Apply a serialization method to pack
         """
         assert type(packet) == datapacket.StopPlanPacket, "Error: packet is not a stop plan packet"
-        l = list(iter(packet))
-        return msgpack.packb(l, use_bin_type=True)
+        return list(iter(packet))
 
     @staticmethod
     def unpack(list_packet):
@@ -261,8 +251,7 @@ class ReachedPosePacketMsgPackSerialization(st.Serialization):
         l = list(iter(packet))
 
         from math import degrees
-        res = [l[0], l[1], l[2].x, l[2].y, degrees(l[2].gamma)]
-        return msgpack.packb(res, use_bin_type=True)
+        return [l[0], l[1], l[2].x, l[2].y, degrees(l[2].gamma)]
 
     @staticmethod
     def unpack(list_packet):
@@ -289,8 +278,7 @@ class ChangeSpeedPacketMsgPackSerialization(st.Serialization):
         Apply a serialization method to pack
         """
         assert type(packet) == datapacket.ChangeSpeedPacket, "Error: packet is not a ChangeSpeedPacket"
-        l = list(iter(packet))
-        return msgpack.packb(l, use_bin_type=True)
+        return list(iter(packet))
 
     @staticmethod
     def unpack(list_packet):
@@ -326,7 +314,8 @@ class MsgPackSerializator(st.Serializator):
         cipher_method = choose_serialization.get(ptype)
         if cipher_method is None:
             raise "Error: Serialization method not found (pack). Check packet type identification"
-        return cipher_method.pack(packet)
+        values = cipher_method.pack(packet)
+        return msgpack.packb(values, use_bin_type=True)
 
     @staticmethod
     def unpack(byte_packet: bytes) -> st.Packet:

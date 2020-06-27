@@ -268,6 +268,19 @@ class ChangeModeOperator(bpy.types.Operator):
     bl_label = "Change mode"
     bl_description = "Change between robot / editor"
 
+    update_speed: bpy.props.FloatProperty(name="Set initial speed",
+                                          min=0.0,
+                                          max=100.0,
+                                          default=0.0)
+
+    def invoke(self, context, event):
+        if SocketModalOperator.closed:
+            self.update_speed = bpy.context.scene.com_props.prop_speed
+            wm = context.window_manager
+            return wm.invoke_props_dialog(self)
+        else:
+            return self.execute(context)
+
     @classmethod
     def poll(cls, context):
         running_plan = context.scene.com_props.prop_running_nav
@@ -281,6 +294,7 @@ class ChangeModeOperator(bpy.types.Operator):
             bpy.ops.wm.socket_modal('INVOKE_DEFAULT')
         else:
             SocketModalOperator.closed = True
+        bpy.context.scene.com_props.prop_speed = self.update_speed
         return {'FINISHED'}
 
 class ToggleRenderingOperator(bpy.types.Operator):
@@ -419,11 +433,15 @@ class ChangeSpeedOperator(bpy.types.Operator):
 
     def execute(self, context):
         self.report({'INFO'}, str(self.update_speed))
-        context.scene.com_props.prop_speed = self.update_speed
-        speed = context.scene.com_props.prop_speed
+
+        older_speed = context.scene.com_props.prop_speed
+        curre_speed = self.update_speed
         context.scene.com_props.prop_last_sent_packet += 1
         pid = context.scene.com_props.prop_last_sent_packet
-        cnh.ConnectionHandler().send_change_speed(pid, speed)
+        if not cnh.ConnectionHandler().send_change_speed(pid, curre_speed):
+            self.report({"ERROR", "Speed can not be changed"})
+        else:
+            context.scene.com_props.prop_speed = curre_speed
         return {'FINISHED'}
 
 

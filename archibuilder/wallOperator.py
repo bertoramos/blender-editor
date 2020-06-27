@@ -44,6 +44,11 @@ def create_wall(self, context, cursor):
 
     L = gm.dist(Vector((ox, oy, 0)), Vector((dx, dy, 0)))
 
+    self.report({'INFO'}, "{} {} {} {}".format(dx, dy, ox, oy))
+    if abs(dx-ox) < context.scene.TOL and abs(dy-oy) < context.scene.TOL:
+        self.report({'ERROR'}, "The wall could not be created, the start and end points must be different")
+        return
+
     if dx - ox == 0:
         if dy - oy > 0:
             alpha = 90
@@ -51,6 +56,7 @@ def create_wall(self, context, cursor):
             alpha = 270
     else:
         alpha = degrees(atan((dy - oy)/(dx - ox)))
+
 
     if dx-ox < 0:
         th = 180 + alpha
@@ -61,7 +67,6 @@ def create_wall(self, context, cursor):
             th = 180
     else:
         th = alpha
-
     # Vertex
     lfd = Vector((0, 0, 0))
     lbd = Vector((0, W, 0))
@@ -168,8 +173,8 @@ def create_room(self, context, cursor):
     scene = bpy.context.scene
 
     # Save wall props
-    save_prop_o = scene.wall_props.prop_o
-    save_prop_d = scene.wall_props.prop_d
+    save_prop_o = scene.wall_props.prop_o.xy
+    save_prop_d = scene.wall_props.prop_d.xy
     save_W = scene.wall_props.prop_width
     save_H = scene.wall_props.prop_height
 
@@ -182,31 +187,36 @@ def create_room(self, context, cursor):
     width_e = scene.room_props.prop_width_east
     width_w = scene.room_props.prop_width_west
     height = scene.room_props.prop_height
+    
+    if dim_x < context.scene.TOL or dim_y < context.scene.TOL:
+        self.report({'ERROR'}, "Room could not be created, room dimensions must be larger than 0")
+        return
+
 
     # South wall
-    scene.wall_props.prop_o = Vector((point_x, point_y))
-    scene.wall_props.prop_d = Vector((point_x + dim_x, point_y))
+    scene.wall_props.prop_o = Vector((point_x - width_w, point_y - width_s))
+    scene.wall_props.prop_d = Vector((point_x + dim_x + width_e, point_y - width_s))
     scene.wall_props.prop_width = width_s
     scene.wall_props.prop_height = height
     create_wall(self, context, cursor)
 
-    # North wall
-    scene.wall_props.prop_o = Vector((point_x, point_y + dim_y - width_n))
-    scene.wall_props.prop_d = Vector((point_x + dim_x, point_y + dim_y - width_n))
-    scene.wall_props.prop_width = width_n
-    scene.wall_props.prop_height = height
-    create_wall(self, context, cursor)
-
     # West wall
-    scene.wall_props.prop_o = Vector((point_x, point_y + dim_y - width_n))
-    scene.wall_props.prop_d = Vector((point_x, point_y + width_s))
+    scene.wall_props.prop_o = Vector((point_x, point_y))
+    scene.wall_props.prop_d = Vector((point_x, point_y + dim_y))
     scene.wall_props.prop_width = width_w
     scene.wall_props.prop_height = height
     create_wall(self, context, cursor)
 
+    # North wall
+    scene.wall_props.prop_o = Vector((point_x - width_w, point_y + dim_y))
+    scene.wall_props.prop_d = Vector((point_x + dim_x + width_e, point_y + dim_y))
+    scene.wall_props.prop_width = width_n
+    scene.wall_props.prop_height = height
+    create_wall(self, context, cursor)
+
     # East wall
-    scene.wall_props.prop_o = Vector((point_x + dim_x, point_y + width_s))
-    scene.wall_props.prop_d = Vector((point_x + dim_x, point_y + dim_y - width_n))
+    scene.wall_props.prop_o = Vector((point_x + dim_x + width_e, point_y))
+    scene.wall_props.prop_d = Vector((point_x + dim_x + width_e, point_y + dim_y))
     scene.wall_props.prop_width = width_e
     scene.wall_props.prop_height = height
     create_wall(self, context, cursor)
