@@ -2,11 +2,12 @@
 bl_info = {
     "name": "Utilities",
     "author": "Alberto Ramos Sanchez",
-    "version": (0, 0, 1),
+    "version": (1, 0, 0),
     "blender": (2, 80, 0),
     "location": "",
     "description": "General Utilities",
     "category": "System",
+    "wiki_url": "https://github.com/bertoramos/blender-editor"
 }
 
 import os

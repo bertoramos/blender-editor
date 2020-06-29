@@ -109,6 +109,9 @@ class PathDrawer(cl.Observer):
 
         self.current_action = path.Action(new_pose, new_pose)
 
+        if len(pc.PathContainer()) == 0:
+            self.current_action.set_first_action()
+
         cl.CursorListener.select_cursor()
         hideCeil()
 

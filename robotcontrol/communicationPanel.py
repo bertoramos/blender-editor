@@ -38,9 +38,11 @@ class CommunicationPanel(bpy.types.Panel):
         rendering_txt = "Rendering active" if rendering else "Rendering inactive"
         icon_rendering = "RESTRICT_RENDER_OFF" if rendering else "RESTRICT_RENDER_ON"
 
-        box_com = self.layout.box()
-        box_com.operator(co.ToggleRenderingOperator.bl_idname, icon = icon_rendering, text=rendering_txt)
 
+        self.layout.operator(co.ToggleRenderingOperator.bl_idname, icon = icon_rendering, text=rendering_txt)
+        self.layout.label(text="Control panel")
+
+        box_com = self.layout.box()
         icon_play = "PAUSE" if context.scene.com_props.prop_running_nav and not context.scene.com_props.prop_paused_nav else "PLAY"
         play_row = box_com.split()
         play_row.operator(co.StartPauseResumePlanOperator.bl_idname, icon=icon_play, text="")
@@ -58,7 +60,7 @@ class CommunicationPanel(bpy.types.Panel):
         pause_icon = "PAUSE" if not so.SimulationOperator.pause else "PLAY"
         pause_text = "Pause" if not so.SimulationOperator.pause else "Resume"
 
-        self.layout.label(text="Simulation")
+        self.layout.label(text="Simulation panel")
 
         box_sim = self.layout.box()
         row_sim = box_sim.split()

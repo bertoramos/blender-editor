@@ -7,6 +7,7 @@ bl_info = {
     "location": "View3D > Sidebar Panel > Options Panel",
     "description": "File manager: export/import scenarios",
     "category": "Import-Export",
+    "wiki_url": "https://github.com/bertoramos/blender-editor"
 }
 
 import os

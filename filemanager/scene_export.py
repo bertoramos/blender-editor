@@ -25,7 +25,8 @@ exportable_objects = {"WALL",
                       "OBSTACLE",
                       "OBSTACLE_MARGIN",
                       "BLUETOOTH_BEACON",
-                      "ULTRASOUND_BEACON"}
+                      "ULTRASOUND_BEACON",
+                      "OTHER"}
 
 def export():
     path = bpy.context.scene.file_props.prop_path
@@ -46,7 +47,8 @@ def export():
             mat = obj.active_material
             bpy.data.objects.remove(obj)
             if dat is not None:
-                bpy.data.meshes.remove(dat)
+                if dat in bpy.data.meshes:
+                    bpy.data.meshes.remove(dat)
             if mat is not None:
                 bpy.data.materials.remove(mat)
         wm.progress_update(i)

@@ -34,7 +34,7 @@ class SimulationProps(bpy.types.PropertyGroup):
 
 
 max_speed = 1/10 # m/s
-angle_speed = 0.25 # %
+angle_speed = 0.05 # %
 
 class SimulationOperator(bpy.types.Operator):
     bl_idname = "wm.simulate_plan"
@@ -55,6 +55,19 @@ class SimulationOperator(bpy.types.Operator):
     active = False
 
     pause = False
+
+
+    update_speed: bpy.props.FloatProperty(name="Speed",
+                                          min=0.0,
+                                          max=100.0,
+                                          default=0.0)
+
+    def invoke(self, context, event):
+        self.update_speed = context.scene.sim_props.prop_simulated_speed
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+
 
     @classmethod
     def poll(cls, context):
@@ -185,6 +198,8 @@ class SimulationOperator(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def execute(self, context):
+
+
         sel_rob_id = context.scene.selected_robot_props.prop_robot_id
         if sel_rob_id < 0:
             self.report({'ERROR'}, "Can not simulate plan: There is not a selected robot")
@@ -193,6 +208,7 @@ class SimulationOperator(bpy.types.Operator):
             self.report({'ERROR'}, "Can not simulate plan: There is not a created plan")
             return {'FINISHED'}
         r = robot.RobotSet().getRobot(sel_rob_id)
+        context.scene.sim_props.prop_simulated_speed = self.update_speed
 
         SimulationOperator.poses.extend(pc.PathContainer().poses)
 

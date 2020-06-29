@@ -86,6 +86,8 @@ def draw_robot_note(context, loc, text, color, font, font_align):
     bpy.data.objects[robot_note].lock_scale[0:3] = (True, True, True)
     bpy.data.objects[robot_note].protected = True
 
+    bpy.data.objects[robot_note].object_type = "ROBOT_NOTE"
+
     return robot_note
 
 class RobotSet:
@@ -161,6 +163,9 @@ class Robot:
         pass
 
     def unlock(self):
+        pass
+
+    def activeCamera(self):
         pass
 
     def __get_idn(self):
@@ -252,6 +257,8 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port):
     bpy.ops.mesh.primitive_ico_sphere_add(radius=minx/(2*1.5), location=(loc.x, loc.y, dim.z))
     myico = bpy.context.active_object
 
+    myico.object_type = "ROBOT"
+
     if myico.active_material is None:
         mat = bpy.data.materials.new("Material_robot_icosphere" + name)
         myico.active_material = mat
@@ -259,6 +266,7 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port):
 
     # Notas
     note_name = draw_robot_note(context, Vector((0,0,0)), myrobot.name + " | " + str(ip) + ":" + str(port), Vector((255,255,255,255)), 14, "C")
+    bpy.data.objects[note_name].object_type = "ROBOT_NOTE"
 
 
     # Hierarchy area+robot
@@ -292,6 +300,7 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port):
     bpy.ops.object.camera_add(location=(loc.x, loc.y, dim.z + 0.1), rotation=(-pi/2, pi, pi/2 + myrobot.rotation_euler.z))
     camera = bpy.context.active_object
     camera.scale = Vector((0.25, 0.25, 0.25))
+    camera.object_type = "ROBOT_CAMERA"
 
     camera.select_set(True)
     myrobot.select_set(True)
@@ -335,8 +344,11 @@ class MyRobot(Robot):
     def unlock(self):
         myrobot = bpy.data.objects[super().name]
         myrobot.lock_location[0:3] = (False, False, True)
-        myrobot.lock_rotation[0:3] = (False, False, False)
+        myrobot.lock_rotation[0:3] = (True, True, False)
         myrobot.lock_scale[0:3] = (True, True, True)
+
+    def activeCamera(self):
+        bpy.context.scene.camera = bpy.data.objects[self.name + "_camera"]
 
     def __get_dim(self):
         return self.__dim
@@ -385,6 +397,10 @@ class SelectRobotOperator(bpy.types.Operator):
             if item.selected:
                 idn = item.idn
                 scene.selected_robot_props.prop_robot_id = idn
+
+                robot = RobotSet().getRobot(idn)
+                robot.activeCamera()
+
                 break
         if 'idn' not in locals():
             scene.selected_robot_props.prop_robot_id = -1

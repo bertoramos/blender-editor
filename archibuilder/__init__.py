@@ -7,6 +7,7 @@ bl_info = {
     "location": "View3D > Sidebar Panel > Archibuilder Panel",
     "description": "Scene editor",
     "category": "Scene",
+    "wiki_url": "https://github.com/bertoramos/blender-editor"
 }
 
 import os

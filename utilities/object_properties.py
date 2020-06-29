@@ -1,7 +1,8 @@
 
 import bpy
 
-items = [("OTHER", "Other", "", 0),
+items = [("TEMPORAL", "Temporal", "", -1),
+         ("OTHER", "Other", "", 0),
          ("WALL", "Wall", "", 1),
          ("CEIL", "Ceil", "", 2),
          ("OBSTACLE", "Obstacle", "", 3),
@@ -10,7 +11,11 @@ items = [("OTHER", "Other", "", 0),
          ("ULTRASOUND_BEACON", "Ultrasound_Beacon", "", 6),
          ("ROBOT", "Robot", "", 7),
          ("ROBOT_MARGIN", "Robot_margin", "", 8),
-         ("TEMPORAL", "Temporal", "", 9)]
+         ("ROBOT_NOTE", "Robot_note", "", 9),
+         ("ROBOT_CAMERA", "Robot_camera", "", 10),
+         ("PATH_ELEMENTS", "Path_elements", "", 11),
+         ("GEOMETRIC_CURSOR", "Geometric_cursor", "", 12)
+         ]
 
 bpy.types.Object.object_type = bpy.props.EnumProperty(items=items, default="OTHER")
 

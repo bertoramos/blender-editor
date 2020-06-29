@@ -194,6 +194,7 @@ class SocketModalOperator(bpy.types.Operator):
                     if context.scene.is_cursor_active:
                         bpy.ops.scene.stop_cursor_listener()
 
+                cnh.Buffer().clear_reached_poses()
                 SocketModalOperator.switching = False
                 self.report({'INFO'}, "Socket closed")
 
@@ -410,6 +411,7 @@ class StopPlanOperator(bpy.types.Operator):
         context.scene.com_props.prop_paused_nav = False
 
         context.scene.com_props.prop_last_path_update = -1
+        cnh.Buffer().clear_reached_poses()
         return {'FINISHED'}
 
 class ChangeSpeedOperator(bpy.types.Operator):

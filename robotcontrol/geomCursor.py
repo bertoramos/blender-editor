@@ -26,6 +26,8 @@ def addGeomCursor(initial_pose):
     geomCursor.lock_scale[0:3] = (True, True, True)
     geomCursor.protected = True
 
+    geomCursor.object_type = "GEOMETRIC_CURSOR"
+
     return geomCursor.name
 
 

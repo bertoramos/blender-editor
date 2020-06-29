@@ -223,8 +223,21 @@ class Action:
         self._arrow = create_arrow(p1)
         self._timestamp = int(time.time())
 
+        bpy.data.objects[self._line].object_type = "PATH_ELEMENTS"
+        bpy.data.objects[self._arrow].object_type = "PATH_ELEMENTS"
+
+        self._first_action = False
+
         self._loc_note_name = ""
         self._rot_note_name = ""
+        self._pre_loc_note_name = ""
+        self._pre_rot_note_name = ""
+
+    def set_first_action(self):
+        self._first_action = True
+        self._pre_arrow = create_arrow(self._p0)
+
+        bpy.data.objects[self._pre_arrow].object_type = "PATH_ELEMENTS"
 
     def move(self, pose):
         self._p1 = pose
@@ -237,12 +250,27 @@ class Action:
         font_align = 'C'
         self._loc_note_name, self._rot_note_name = draw_pose_note(context, "Note_pose", self.p1, color, font, font_align)
 
+        bpy.data.objects[self._loc_note_name].object_type = "PATH_ELEMENTS"
+        bpy.data.objects[self._rot_note_name].object_type = "PATH_ELEMENTS"
+
+        if self._first_action:
+            self._pre_loc_note_name, self._pre_rot_note_name = draw_pose_note(context, "Pre_note_pose", self.p0, color, font, font_align)
+
+            bpy.data.objects[self._pre_loc_note_name].object_type = "PATH_ELEMENTS"
+            bpy.data.objects[self._pre_rot_note_name].object_type = "PATH_ELEMENTS"
+
     def del_annotation(self):
 
         if self._loc_note_name in bpy.data.objects:
             bpy.data.objects.remove(bpy.data.objects[self._loc_note_name], do_unlink=True)
         if self._rot_note_name in bpy.data.objects:
             bpy.data.objects.remove(bpy.data.objects[self._rot_note_name], do_unlink=True)
+
+        if self._first_action and self._pre_loc_note_name in bpy.data.objects:
+            bpy.data.objects.remove(bpy.data.objects[self._pre_loc_note_name], do_unlink=True)
+        if self._first_action and self._pre_rot_note_name in bpy.data.objects:
+            bpy.data.objects.remove(bpy.data.objects[self._pre_rot_note_name], do_unlink=True)
+
 
     def get_p0(self):
         return self._p0
@@ -258,8 +286,12 @@ class Action:
             bpy.data.objects.remove(bpy.data.objects[self._line], do_unlink=True)
         if self._line in bpy.data.meshes:
             bpy.data.meshes.remove(bpy.data.meshes[self._line], do_unlink=True)
+
         if self._arrow in bpy.data.objects:
             bpy.data.objects.remove(bpy.data.objects[self._arrow], do_unlink=True)
+        if self._first_action and self._pre_arrow in bpy.data.objects:
+            bpy.data.objects.remove(bpy.data.objects[self._pre_arrow], do_unlink=True)
+
         self.del_annotation()
 
     def __str__(self):
