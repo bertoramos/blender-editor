@@ -94,8 +94,8 @@ class ConnectionHandler:
         try:
             msgFromServer = ConnectionHandler.client_socket.recvfrom(bufferSize)
             packet = ms.MsgPackSerializator.unpack(msgFromServer[0])
-            if type(packet) != dp.TracePacket:
-                op.report({'INFO'}, "Receive: " + str(packet))
+            #if type(packet) != dp.TracePacket:
+            #    op.report({'INFO'}, "Receive: " + str(packet))
 
             if packet.pid > bpy.context.scene.com_props.prop_last_recv_packet:
                 Buffer().set_packet(packet)

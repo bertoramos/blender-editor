@@ -33,7 +33,7 @@ class SimulationProps(bpy.types.PropertyGroup):
     prop_simulated_speed: bpy.props.FloatProperty(name="Speed", default=100.0, min=0.0, max=100.0)
 
 
-max_speed = 1/10 # m/s
+max_speed = 1/5 # m/s
 angle_speed = 0.05 # %
 
 class SimulationOperator(bpy.types.Operator):

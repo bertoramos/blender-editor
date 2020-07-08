@@ -17,17 +17,7 @@ En el último *release* se encuentra el código preparado para ser instalado.
 
 Para activar *Measureit* nos dirigimos a la pestaña preferencias : **Edit > Preferences**. Posteriormente, en la pestaña *add-ons*, buscamos *Measureit* y comprobamos que el *checklist* esté seleccionado.
 
-<div class="row">
-  <center>
-  <div class="column">
-    <img src="images/edit_preferences.png" alt="Edit menu" style="width:40%;float:left;padding: 5px;">
-  </div>
-  <div class="column">
-    <img src="images/activate_addon.png" alt="Activate addon menu" style="width:60%;padding: 5px;">
-  </div>
-  </center>
-</div>
-
+![Activate addon menu](images/edit_install.png)
 
 
 ### 2. Instalar *msgpack*.
@@ -42,9 +32,9 @@ Para instalarlo, seguimos los siguientes pasos:
   1. **./python.exe -m pip install --upgrade pip**
   2. **./python.exe -m pip install msgpack**
 
-### Instalar *addons*.
+### 3. Instalar *addons*.
 
-Al no estar distribuidos con la propia aplicación *Blender*, debemos instalarlos a partir de los 4 ficheros comprimidos en zip que se encuentran en zip del último *release* (*archibuilder.zip*, *robotcontrol.zip*, *utilities.zip* y *filemanager.zip*).
+Este *toolbox* debemos instalarlo a partir de los 4 ficheros comprimidos en zip que se encuentran dentro del archivo zip del último *release* (*archibuilder.zip*, *robotcontrol.zip*, *utilities.zip* y *filemanager.zip*).
 
 La instalación se realiza desde el panel de *Addons* de la ventana de preferencias.
 
@@ -62,78 +52,46 @@ Con el addon *archibuilder*, se pueden crear paredes, habitaciones, techos y pos
 <br>
 <br>
 
-##### Crear paredes.
+#### Crear paredes.
 
-<div class="row">
-  <div class="column">
-    <img src="images/wall.png" alt="Pared" style="width:40%;float:left;padding: 5px;">
-  </div>
-  <div class="column">
-    <img src="images/wall_menu.png" alt="Menu crear pared" style="width:50%;padding: 5px;">
-  </div>
-</div>
-<br>
-<br>
+Se pueden crear paredes con las que delimitar un escenario virtual.
 
-##### Crear habitaciones.
+![Crear paredes](images/wall_create.png)
 
-<div class="row">
-  <div class="column">
-    <img src="images/room.png" alt="habitación" style="width:40%;float:left;padding: 5px;">
-  </div>
-  <div class="column">
-    <img src="images/room_menu.png" alt="Menu crear habitacion" style="width:50%;padding: 5px;">
-  </div>
-</div>
-<br>
-<br>
+#### Crear habitaciones.
 
-##### Crear techos.
+Utilizando paredes, se facilita la creación de habitaciones, que pueden modificarse.
 
-<div class="row">
-  <div class="column">
-    <img src="images/ceil.png" alt="Techo" style="width:30%;float:left;padding: 5px;">
-  </div>
-  <div class="column">
-    <img src="images/ceil_menu.png" alt="Menu crear techo" style="width:60%;padding: 5px;">
-  </div>
-</div>
-<br>
-<br>
+![Crear habitaciones](images/room_create.png)
 
-##### Crear obstáculos.
+#### Crear techos.
 
-<div class="row">
-  <div class="column">
-    <img src="images/obstacle.png" alt="Obstaculo" style="width:40%;float:left;padding: 5px;">
-  </div>
-  <div class="column">
-    <img src="images/obstacle_menu.png" alt="Menu crear obstaculo" style="width:60%;padding: 5px;">
-  </div>
-</div>
-<br>
-<br>
+Los techos se representan como planos semitransparentes. Pueden situarse sobre el escenario, para delimitar su altura.
+
+![Crear techos](images/ceil_create.png)
+
+#### Crear obstáculos.
+
+Los obstáculos representan zonas en las que las plataformas robóticas no pueden adentrarse.
+
+![Crear obstáculos](images/obstacle_create.png)
 
 
-##### Posicionar *beacons*.
+#### Posicionar *beacons*.
 
-<div class="row">
-  <div class="column">
-    <img src="images/bluetooth.png" alt="Beacon bluetooth" style="width:50%;float:left;padding: 5px;">
-  </div>
-  <div class="column">
-    <img src="images/ultrasound.png" alt="Beacon" style="width:50%;padding: 5px;">
-  </div>
-</div>
+Los *beacons* son emisores de señales que utiliza la plataforma robótica para orientarse en el escenario real. En el escenario virtual son utilizados como información adicional al usuario, para conocer donde están situados en la realidad.
 
+![Crear beacons](images/beacon_create.png)
 
 <center>
-<img src="images/beacon_menu.png" alt="Beacon bluetooth">
+<img src="images/beacon_menu.png" alt="Beacon menu">
 </center>
 <br>
 <br>
 
-##### Exportar escenarios.
+#### Exportar escenarios.
+
+Los escenarios diseñados pueden exportarse a ficheros ***.blend***.
 
 <center>
 <img src="images/filemanager_interfaz.png" alt="Exportar escenarios">
@@ -147,25 +105,19 @@ Con el *addon robotcontrol* se pueden crear plataformas robóticas virtuales, co
 
 #### Creación de plataformas robóticas.
 
-<div class="row">
-  <center>
-  <div class="column">
-    <img src="images/robot.png" alt="Beacon bluetooth" style="width:50%;float:left;padding: 5px;">
-  </div>
-  <div class="column">
-    <img src="images/robot_menu.png" alt="Beacon" style="width:40%;padding: 5px;">
-  </div>
-  </center>
-</div>
+El *addon* está adaptado para poder diseñar múltiples tipos de plataformas robóticas. Por el momento, solamente se encuentra implementado el diseño de *RoboMap*.
+
+![Crear robots](images/robot_create.png)
 
 #### Diseño de planes de navegación.
+
+Siempre que exista una plataforma robótica en el escenario virtual, pueden crearse planes de navegación, que pueden ser enviados a la plataforma real para que los ejecute, o simularlos en la propia aplicación.
 
 <center>
   <div class="column">
     <img src="images/path_creation.gif" alt="Creacion de rutas">
     </div>
 </center>
-
 
 #### Ejecución de rutas.
 
@@ -180,7 +132,6 @@ Se pueden enviar rutas, pausar la plataforma, controlar su velocidad y cancelar 
 #### Simulación.
 
 Sin necesidad de comunicarse con la plataforma se pueden simular planes de navegación creados, con controles similares al panel de control de la plataforma.
-
 
 <center>
   <div class="column">
