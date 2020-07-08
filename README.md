@@ -8,7 +8,7 @@
   <img src="images/ejecucion.gif" alt="Creacion de rutas">
 </p>
 <p align="center">
-Figura 1: Simulación.
+Figura 1: Ejecución de plan de navegación.
 </p>
 
 ## Instalación.
@@ -19,8 +19,13 @@ En el último *release* se encuentra el código preparado para ser instalado.
 
 Para activar *Measureit* nos dirigimos a la pestaña preferencias : **Edit > Preferences**. Posteriormente, en la pestaña *add-ons*, buscamos *Measureit* y comprobamos que el *checklist* esté seleccionado.
 
-![Activate addon menu](images/edit_install.png)
-
+<p align="center">
+<img src="images/edit_install.png" alt="Activate addon menu">
+<!--![Activate addon menu](images/edit_install.png)-->
+</p>
+<p align="center">
+Figura 2: Instalación de *addons*.
+</p>
 
 ### 2. Instalar *msgpack*.
 
@@ -59,7 +64,11 @@ Con el addon *archibuilder*, se pueden crear paredes, habitaciones, techos y pos
 Se pueden crear paredes con las que delimitar un escenario virtual.
 
 <p align="center">
-![Crear paredes](images/wall_create.png)
+<img src="images/wall_create.png" alt="Crear paredes">
+<!--![Crear paredes](images/wall_create.png)-->
+</p>
+<p align="center">
+Figura 3: Creación de paredes.
 </p>
 
 #### Crear habitaciones.
@@ -67,7 +76,11 @@ Se pueden crear paredes con las que delimitar un escenario virtual.
 Utilizando paredes, se facilita la creación de habitaciones, que pueden modificarse.
 
 <p align="center">
-![Crear habitaciones](images/room_create.png)
+<img src="images/room_create.png" alt="Crear habitaciones">
+<!--![Crear habitaciones](images/room_create.png)-->
+</p>
+<p align="center">
+Figura 4: Creación de habitaciones.
 </p>
 
 #### Crear techos.
@@ -75,7 +88,11 @@ Utilizando paredes, se facilita la creación de habitaciones, que pueden modific
 Los techos se representan como planos semitransparentes. Pueden situarse sobre el escenario, para delimitar su altura.
 
 <p align="center">
-![Crear techos](images/ceil_create.png)
+<img alt="Crear techos" src="images/ceil_create.png">
+<!--![Crear techos](images/ceil_create.png)-->
+</p>
+<p align="center">
+Figura 5: Creación de techos.
 </p>
 
 #### Crear obstáculos.
@@ -83,7 +100,11 @@ Los techos se representan como planos semitransparentes. Pueden situarse sobre e
 Los obstáculos representan zonas en las que las plataformas robóticas no pueden adentrarse.
 
 <p align="center">
-![Crear obstáculos](images/obstacle_create.png)
+<img alt="Crear obstáculos" src="images/obstacle_create.png">
+<!--![Crear obstáculos](images/obstacle_create.png)-->
+</p>
+<p align="center">
+Figura 6: Creación de obstáculos.
 </p>
 
 #### Posicionar *beacons*.
@@ -91,11 +112,18 @@ Los obstáculos representan zonas en las que las plataformas robóticas no puede
 Los *beacons* son emisores de señales que utiliza la plataforma robótica para orientarse en el escenario real. En el escenario virtual son utilizados como información adicional al usuario, para conocer donde están situados en la realidad.
 
 <p align="center">
-![Crear beacons](images/beacon_create.png)
+<img src="images/beacon_create.png" alt="Crear beacon">
+<!--![Crear beacons](images/beacon_create.png)-->
+</p>
+<p align="center">
+Figura 7: *Beacon bluetooth* y ultrasónico.
 </p>
 
 <p align="center">
 <img src="images/beacon_menu.png" alt="Beacon menu">
+</p>
+<p align="center">
+Figura 8: Menú de creación de beacons.
 </p>
 <br>
 <br>
@@ -106,6 +134,9 @@ Los escenarios diseñados pueden exportarse a ficheros ***.blend***.
 
 <p align="center">
 <img src="images/filemanager_interfaz.png" alt="Exportar escenarios">
+</p>
+<p align="center">
+Figura 9: Menú exportar escenarios.
 </p>
 
 ### Control de plataformas robóticas.
@@ -119,7 +150,11 @@ Con el *addon robotcontrol* se pueden crear plataformas robóticas virtuales, co
 El *addon* está adaptado para poder diseñar múltiples tipos de plataformas robóticas. Por el momento, solamente se encuentra implementado el diseño de *RoboMap*.
 
 <p align="center">
-![Crear robots](images/robot_create.png)
+<img src="images/robot_create.png" alt="Crear robots">
+<!-- ![Crear robots](images/robot_create.png)-->
+</p>
+<p align="center">
+Figura 10: Creación de plataformas robóticas.
 </p>
 
 #### Diseño de planes de navegación.
@@ -129,13 +164,19 @@ Siempre que exista una plataforma robótica en el escenario virtual, pueden crea
 <p align="center">
   <img src="images/path_creation.gif" alt="Creacion de rutas">
 </p>
+<p align="center">
+Figura 11: Creación de ruta.
+</p>
 
 #### Ejecución de rutas.
 
 Se pueden enviar rutas, pausar la plataforma, controlar su velocidad y cancelar planes de navegación.
 
 <p align="center">
-  <img src="images/iniciar_plan.png" alt="Creacion de rutas">
+  <img src="images/iniciar_plan.png" alt="Menu control de plataforma">
+</p>
+<p align="center">
+Figura 12: Panel de control de plataformas.
 </p>
 
 #### Simulación.
@@ -144,4 +185,7 @@ Sin necesidad de comunicarse con la plataforma se pueden simular planes de naveg
 
 <p align="center">
   <img src="images/panel_simulacion.png" alt="Creacion de rutas">
+</p>
+<p align="center">
+Figura 13: Menú de control de la simulación.
 </p>
