@@ -3,11 +3,13 @@
 
 *Robotcontrol editor toolbox* es un conjunto de herramientas creado para diseñar escenarios en 3D y controlar de forma remota plataformas robóticas. Es compatible para versiones superiores a 2.8 de *Blender*.
 
-<center>
-  <div class="column">
-    <img src="images/ejecucion.gif" alt="Creacion de rutas">
-    </div>
-</center>
+
+<p align="center">
+  <img src="images/ejecucion.gif" alt="Creacion de rutas">
+</p>
+<p align="center">
+Figura 1: Simulación.
+</p>
 
 ## Instalación.
 
@@ -56,36 +58,45 @@ Con el addon *archibuilder*, se pueden crear paredes, habitaciones, techos y pos
 
 Se pueden crear paredes con las que delimitar un escenario virtual.
 
+<p align="center">
 ![Crear paredes](images/wall_create.png)
+</p>
 
 #### Crear habitaciones.
 
 Utilizando paredes, se facilita la creación de habitaciones, que pueden modificarse.
 
+<p align="center">
 ![Crear habitaciones](images/room_create.png)
+</p>
 
 #### Crear techos.
 
 Los techos se representan como planos semitransparentes. Pueden situarse sobre el escenario, para delimitar su altura.
 
+<p align="center">
 ![Crear techos](images/ceil_create.png)
+</p>
 
 #### Crear obstáculos.
 
 Los obstáculos representan zonas en las que las plataformas robóticas no pueden adentrarse.
 
+<p align="center">
 ![Crear obstáculos](images/obstacle_create.png)
-
+</p>
 
 #### Posicionar *beacons*.
 
 Los *beacons* son emisores de señales que utiliza la plataforma robótica para orientarse en el escenario real. En el escenario virtual son utilizados como información adicional al usuario, para conocer donde están situados en la realidad.
 
+<p align="center">
 ![Crear beacons](images/beacon_create.png)
+</p>
 
-<center>
+<p align="center">
 <img src="images/beacon_menu.png" alt="Beacon menu">
-</center>
+</p>
 <br>
 <br>
 
@@ -93,9 +104,9 @@ Los *beacons* son emisores de señales que utiliza la plataforma robótica para 
 
 Los escenarios diseñados pueden exportarse a ficheros ***.blend***.
 
-<center>
+<p align="center">
 <img src="images/filemanager_interfaz.png" alt="Exportar escenarios">
-</center>
+</p>
 
 ### Control de plataformas robóticas.
 
@@ -107,34 +118,30 @@ Con el *addon robotcontrol* se pueden crear plataformas robóticas virtuales, co
 
 El *addon* está adaptado para poder diseñar múltiples tipos de plataformas robóticas. Por el momento, solamente se encuentra implementado el diseño de *RoboMap*.
 
+<p align="center">
 ![Crear robots](images/robot_create.png)
+</p>
 
 #### Diseño de planes de navegación.
 
 Siempre que exista una plataforma robótica en el escenario virtual, pueden crearse planes de navegación, que pueden ser enviados a la plataforma real para que los ejecute, o simularlos en la propia aplicación.
 
-<center>
-  <div class="column">
-    <img src="images/path_creation.gif" alt="Creacion de rutas">
-    </div>
-</center>
+<p align="center">
+  <img src="images/path_creation.gif" alt="Creacion de rutas">
+</p>
 
 #### Ejecución de rutas.
 
 Se pueden enviar rutas, pausar la plataforma, controlar su velocidad y cancelar planes de navegación.
 
-<center>
-  <div class="column">
-    <img src="images/iniciar_plan.png" alt="Creacion de rutas">
-    </div>
-</center>
+<p align="center">
+  <img src="images/iniciar_plan.png" alt="Creacion de rutas">
+</p>
 
 #### Simulación.
 
 Sin necesidad de comunicarse con la plataforma se pueden simular planes de navegación creados, con controles similares al panel de control de la plataforma.
 
-<center>
-  <div class="column">
-    <img src="images/panel_simulacion.png" alt="Creacion de rutas">
-    </div>
-</center>
+<p align="center">
+  <img src="images/panel_simulacion.png" alt="Creacion de rutas">
+</p>
