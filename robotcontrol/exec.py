@@ -1,6 +1,8 @@
 
 import bpy
 import os
+from pathlib import Path
 
-filename = "D:\\alberto\\TFT\\desarrollo\\blender-editor\\robotcontrol\\__init__.py"
-exec(compile(open(filename).read(), filename, 'exec'))
+project_folder = Path("D:\\blender_editor\\")
+filename = project_folder / Path(".\\blender-editor\\robotcontrol\\__init__.py")
+exec(compile(open(str(filename)).read(), str(filename), 'exec'))

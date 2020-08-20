@@ -15,6 +15,10 @@ Paquete de pausa (9)
 Paquete continuar (10)
 Paquete pose de ruta alcanzado (11)
 Paquete de velocidad (12)
+Paquete de solicitud de informacion de calibrado (13)
+Paquete de abrir calibrado (14)
+Paquete de agregar baliza ultrasónica (15)
+Paquete de cerrar calibrado (16)
 """
 
 class ModePacket(st.Packet):
@@ -191,8 +195,74 @@ class ChangeSpeedPacket(st.Packet):
         super().__init__(pid, ptype)
         self.__speed = speed
 
+    def __get_speed(self):
+        return self.__speed
+
     def __str__(self):
         return "[{}|{}|{}]".format(self.pid, self.ptype, self.__speed)
 
     def __iter__(self):
         return iter([self.pid, self.ptype, self.__speed])
+
+    speed = property(__get_speed)
+
+class CalibrationRequestPacket(st.Packet):
+
+    def __init__(self, pid, ptype=13):
+        super().__init__(pid, ptype)
+
+    def __str__(self):
+        return "[{}|{}]".format(self.pid, self.ptype)
+
+    def __iter__(self):
+        return iter([self.pid, self.ptype])
+
+class StartCalibrationPacket(st.Packet):
+
+    def __init__(self, pid, nbeacons, ptype=14):
+        super().__init__(pid, ptype)
+        self.__nbeacons = nbeacons
+
+    def __str__(self):
+        return "[{}|{}|{}]".format(self.pid, self.ptype, self.__nbeacons)
+
+    def __iter__(self):
+        return iter([self.pid, self.ptype, self.__nbeacons])
+
+    def __get_nbeacons(self):
+        return self.__nbeacons
+
+    nbeacons = property(__get_nbeacons)
+
+class AddUltrasoundBeaconPacket(st.Packet):
+
+    def __init__(self, pid, beacon_id, beacon_pose, ptype=15):
+        super().__init__(pid, ptype)
+        self.__beacon_id = beacon_id
+        self.__beacon_pose = beacon_pose
+
+    def __str__(self):
+        return "[{}|{}|{}|{}]".format(self.pid, self.ptype, self.__beacon_id, self.__beacon_pose)
+
+    def __iter__(self):
+        return iter([self.pid, self.ptype, self.__beacon_id, self.__beacon_pose])
+
+    def __get_beacon_id(self):
+        return self.__beacon_id
+
+    def __get_beacon_pose(self):
+        return self.__beacon_pose
+
+    beacon_id = property(__get_beacon_id)
+    beacon_pose = property(__get_beacon_pose)
+
+class CloseCalibrationPacket(st.Packet):
+
+    def __init__(self, pid, ptype=16):
+        super().__init__(pid, ptype)
+
+    def __str__(self):
+        return "[{}|{}]".format(self.pid, self.ptype)
+
+    def __iter__(self):
+        return iter([self.pid, self.ptype])

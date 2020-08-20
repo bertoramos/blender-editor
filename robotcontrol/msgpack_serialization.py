@@ -2,6 +2,8 @@
 import serialization as st
 import datapacket
 import path
+
+from math import radians, degrees
 import msgpack
 
 class ModePacketMsgPackSerialization(st.Serialization):
@@ -289,6 +291,91 @@ class ChangeSpeedPacketMsgPackSerialization(st.Serialization):
         assert list_packet[1] == 12, "Error: list_packet is not a change speed packet"
         return datapacket.ChangeSpeedPacket(list_packet[0], list_packet[2])
 
+class CalibrationRequestPacketMsgPackSerialization(st.Serialization):
+    """
+    Defines an algorithm to pack-unpack a packet
+    """
+    @staticmethod
+    def pack(packet):
+        assert type(packet) == datapacket.CalibrationRequestPacket, "Error: packet is not a CalibrationRequestPacket"
+        return list(iter(packet))
+
+    @staticmethod
+    def unpack(list_packet):
+        assert len(list_packet) == 2, "Error: no valid CalibrationRequestPacket"
+        assert list_packet[1] == 13, "Error: packet is not a CalibrationRequestPacket"
+        pid = list_packet[0]
+        return datapacket.CalibrationRequestPacket(pid)
+
+class StartCalibrationPacketMsgPackSerialization(st.Serialization):
+    """
+    Defines an algorithm to pack-unpack a packet
+    """
+    @staticmethod
+    def pack(packet):
+        assert type(packet) == datapacket.StartCalibrationPacket, "Error: packet is not a StartCalibrationPacket"
+        return list(iter(packet))
+
+    @staticmethod
+    def unpack(list_packet):
+        assert len(list_packet) == 3, "Error: no valid StartCalibrationPacket"
+        assert list_packet[1] == 14, "Error: packet is not a StartCalibrationPacket"
+        pid = list_packet[0]
+        nbeacons = list_packet[2]
+        return datapacket.StartCalibrationPacket(pid, nbeacons)
+
+class AddUltrasoundBeaconPacketMsgPackSerialization(st.Serialization):
+    """
+    Defines an algorithm to pack-unpack a packet
+    """
+    @staticmethod
+    def pack(packet):
+        assert type(packet) == datapacket.AddUltrasoundBeaconPacket, "Error: packet is not an AddUltrasoundBeaconPacket"
+        list_packet = list(iter(packet))
+        pid = list_packet[0]
+        ptype = list_packet[1]
+        beacon_id = list_packet[2]
+        x = list_packet[3].x
+        y = list_packet[3].y
+        z = list_packet[3].z
+        a = radians(list_packet[3].alpha)
+        b = radians(list_packet[3].beta)
+        g = radians(list_packet[3].gamma)
+        return [pid, ptype, beacon_id, x, y, z, a, b, g]
+
+    @staticmethod
+    def unpack(list_packet):
+        assert len(list_packet) == 9, "Error: no valid AddUltrasoundBeaconPacket"
+        assert list_packet[1] == 15, "Error: packet is not an AddUltrasoundBeaconPacket"
+        pid = list_packet[0]
+        ptype = list_packet[1]
+        beacon_id = list_packet[2]
+        x = list_packet[3]
+        y = list_packet[4]
+        z = list_packet[5]
+        a = list_packet[6]
+        b = list_packet[7]
+        g = list_packet[8]
+        pose_beacon = path.Pose(x, y, z, a, b, g)
+        return datapacket.AddUltrasoundBeaconPacket(pid, beacon_id, pose_beacon)
+
+
+class CloseCalibrationPacketMsgPackSerialization(st.Serialization):
+    """
+    Defines an algorithm to pack-unpack a packet
+    """
+    @staticmethod
+    def pack(packet):
+        assert type(packet) == datapacket.CloseCalibrationPacket, "Error: packet is not a CloseCalibrationPacket"
+        return list(iter(packet))
+
+    @staticmethod
+    def unpack(list_packet):
+        assert len(list_packet) == 2, "Error: no valid CloseCalibrationPacket"
+        assert list_packet[1] == 16, "Error: packet is not a CloseCalibrationPacket"
+        pid = list_packet[0]
+        return datapacket.CloseCalibrationPacket(pid)
+
 # { ptype : SerializationClass, ... }
 # choose_serialization.get(ptype) -> return: ptype pack/unpack method
 choose_serialization = {
@@ -303,7 +390,11 @@ choose_serialization = {
                         9:  PausePlanPacketMsgPackSerialization,
                         10: ResumePlanPacketMsgPackSerialization,
                         11: ReachedPosePacketMsgPackSerialization,
-                        12: ChangeSpeedPacketMsgPackSerialization
+                        12: ChangeSpeedPacketMsgPackSerialization,
+                        13: CalibrationRequestPacketMsgPackSerialization,
+                        14: StartCalibrationPacketMsgPackSerialization,
+                        15: AddUltrasoundBeaconPacketMsgPackSerialization,
+                        16: CloseCalibrationPacketMsgPackSerialization
                        }
 
 class MsgPackSerializator(st.Serializator):

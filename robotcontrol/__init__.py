@@ -13,11 +13,14 @@ bl_info = {
 import os
 import sys
 import bpy
+from pathlib import Path
 
 # For testing
-dir = "D:\\alberto\\TFT\\desarrollo\\blender-editor\\robotcontrol\\"
+project_folder = Path("D:\\blender_editor\\")
+
+dir = project_folder / Path(".\\blender-editor\\robotcontrol\\")
 if not dir in sys.path:
-    sys.path.append(dir)
+    sys.path.append(str(dir))
 
 # TODO: Change to from . import MODULE
 import geomCursor
@@ -38,6 +41,7 @@ import connectionHandler
 import robotCommunicationOperator
 import communicationPanel
 import simulationOperator
+import calibrationOperator
 
 # Remove
 import importlib
@@ -57,8 +61,9 @@ importlib.reload(robotCommunicationOperator)
 importlib.reload(connectionHandler)
 importlib.reload(communicationPanel)
 importlib.reload(simulationOperator)
+importlib.reload(calibrationOperator)
 
-operadores = [cursorListener, pathEditor, robot, robot_props, robotCommunicationOperator, simulationOperator]
+operadores = [cursorListener, pathEditor, robot, robot_props, robotCommunicationOperator, simulationOperator, calibrationOperator]
 paneles = [robot_panel, pathEditorPanel, communicationPanel]
 
 def register():

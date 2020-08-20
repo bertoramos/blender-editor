@@ -13,11 +13,13 @@ bl_info = {
 import os
 import sys
 import bpy
+from pathlib import Path
 
 # For testing
-dir = "D:\\alberto\\TFT\\desarrollo\\blender-editor\\archibuilder\\"
+project_folder = Path("D:\\blender_editor\\")
+dir = project_folder / Path(".\\blender-editor\\archibuilder\\")
 if not dir in sys.path:
-    sys.path.append(dir)
+    sys.path.append(str(dir))
 
 # TODO: Change to from . import MODULE
 import annotation_update

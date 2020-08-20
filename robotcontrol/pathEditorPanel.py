@@ -64,8 +64,8 @@ class ToolsPanel(bpy.types.Panel):
 
 
 class PathEditorMenu(bpy.types.Menu):
-    bl_label = "OBJECT_PT_PathEditorMenu"
-    bl_idname = "wm.path_menupie"
+    bl_label = "Path editor menupie"
+    bl_idname = "OBJECT_MT_PathEditorMenu"
 
     def draw(self, context):
         pie = self.layout.menu_pie()

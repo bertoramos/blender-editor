@@ -219,8 +219,9 @@ class SocketModalOperator(bpy.types.Operator):
                     operator.report({'INFO'}, 'No communication')
                     n_rcv-=1
             if n_rcv == 0:
+                n_rcv = limit
                 operator.report({'ERROR'}, 'Unavailable server: changing mode')
-                bpy.ops.wm.change_mode()
+                #bpy.ops.wm.change_mode()
 
     def execute(self, context):
         wm = context.window_manager
@@ -459,9 +460,6 @@ class SeeBufferOperator(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        s = "Buffer"
-        for packet in iter(cnh.Buffer()):
-            s += "\t" + str(packet) + "\n"
-        s += "----------\n\t Last trace: " + str(cnh.Buffer().get_last_trace_packet()) + "\n----------"
-        self.report({'INFO'}, s)
+        from datetime import datetime
+        self.report({'INFO'}, "(" + str(datetime.now()) + ")\nBuffer:\n-------------------\n" + str(cnh.Buffer()) + "\n-------------------------")
         return {'FINISHED'}
