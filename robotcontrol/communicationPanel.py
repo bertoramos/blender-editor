@@ -44,8 +44,8 @@ class CommunicationPanel(bpy.types.Panel):
         self.layout.operator(co.ToggleRenderingOperator.bl_idname, icon = icon_rendering, text=rendering_txt)
         self.layout.label(text="Control panel")
 
-        self.layout.operator(cal_op.CalibrateOperator.bl_idname)
-        self.layout.operator(cal_op.DropAllStaticBeacons.bl_idname)
+        self.layout.operator(cal_op.CalibrateOperator.bl_idname, icon="UV_SYNC_SELECT")
+        self.layout.operator(cal_op.DropAllStaticBeacons.bl_idname, icon="TRASH")
 
         box_com = self.layout.box()
         icon_play = "PAUSE" if context.scene.com_props.prop_running_nav and not context.scene.com_props.prop_paused_nav else "PLAY"

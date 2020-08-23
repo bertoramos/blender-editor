@@ -97,7 +97,7 @@ class DropAllStaticBeacons(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return any([o.object_type in DropAllStaticBeacons.static_beacons for o in bpy.data.objects])
+        return any([o.object_type in DropAllStaticBeacons.static_beacons for o in bpy.data.objects]) and not context.scene.com_props.prop_running_nav
 
     def execute(self, context):
         drop_all_static_beacons()
@@ -115,7 +115,7 @@ class CalibrateOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.com_props.prop_mode == rco.robot_modes_summary.index("ROBOT_MODE")
+        return context.scene.com_props.prop_mode == rco.robot_modes_summary.index("ROBOT_MODE") and not context.scene.com_props.prop_running_nav
 
     def invoke(self, context, event):
         wm = context.window_manager
