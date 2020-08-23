@@ -4,12 +4,13 @@ from mathutils import Vector
 
 from bpy.props import BoolProperty
 
+# begin local import: Change to from . import MODULE
 import geomCursor as gc
 import path
 import pathContainer as pc
 import robot
 import utils
-
+# end local import: Change to from . import MODULE
 
 def autoregister():
     global classes

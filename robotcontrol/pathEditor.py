@@ -3,6 +3,7 @@ import bpy
 from mathutils import Vector, Euler
 from math import pi
 
+# begin local import: Change to from . import MODULE
 import cursorListener as cl
 import path
 import pathContainer as pc
@@ -10,7 +11,7 @@ import pathEditorPanel as pep
 import robot as robot_tools
 import collision_detection
 import utils
-
+# end local import: Change to from . import MODULE
 
 keymaps = []
 
@@ -227,8 +228,7 @@ class SavePoseOperator(bpy.types.Operator):
         area_robot_obj = bpy.data.objects[robot.area_name]
 
         res = is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1)
-
-        self.report({'INFO'}, "Collision : " + str(res))
+        
         if res:
             self.report({'ERROR'}, "Robot will collide if takes this path")
             return {'FINISHED'}

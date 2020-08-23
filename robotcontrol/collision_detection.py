@@ -3,8 +3,10 @@ import bpy
 from mathutils import Vector, Euler
 import bmesh
 
+# begin local import: Change to from . import MODULE
 import utils
 import overlap_check
+# end local import: Change to from . import MODULE
 
 def create_point(loc):
     bpy.ops.object.empty_add(location=loc)
@@ -130,7 +132,6 @@ def check_collision(robot_obj, pos0, pos1, objects):
     for obj in objects:
         bmobj = create_bmesh(obj)
         if overlap_check.check_overlap(bmobj, bmarea):
-            print(obj.name)
             overlap = True
         bmobj.free()
         if overlap:

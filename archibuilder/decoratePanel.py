@@ -1,7 +1,9 @@
 
 import bpy
 
+# begin local import: Change to from . import MODULE
 import obstacleOperator as oo
+# end local import: Change to from . import MODULE
 
 def autoregister():
     bpy.utils.register_class(DecoratePanel)

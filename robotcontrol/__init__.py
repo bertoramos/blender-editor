@@ -10,19 +10,22 @@ bl_info = {
     "wiki_url": "https://github.com/bertoramos/blender-editor"
 }
 
+
+import bpy
+
+# begin remove
 import os
 import sys
-import bpy
 from pathlib import Path
 
-# For testing
 project_folder = Path("D:\\blender_editor\\")
 
 dir = project_folder / Path(".\\blender-editor\\robotcontrol\\")
 if not dir in sys.path:
     sys.path.append(str(dir))
+# end remove
 
-# TODO: Change to from . import MODULE
+# begin local import: Change to from . import MODULE
 import geomCursor
 import path
 import pathContainer
@@ -35,15 +38,14 @@ import utils
 import robot
 import robot_props
 import robot_panel
-#import communicationOperator
-#import connection_handler
 import connectionHandler
 import robotCommunicationOperator
 import communicationPanel
 import simulationOperator
 import calibrationOperator
+# end local import: Change to from . import MODULE
 
-# Remove
+# begin remove
 import importlib
 importlib.reload(geomCursor)
 importlib.reload(path)
@@ -62,6 +64,7 @@ importlib.reload(connectionHandler)
 importlib.reload(communicationPanel)
 importlib.reload(simulationOperator)
 importlib.reload(calibrationOperator)
+# end remove
 
 operadores = [cursorListener, pathEditor, robot, robot_props, robotCommunicationOperator, simulationOperator, calibrationOperator]
 paneles = [robot_panel, pathEditorPanel, communicationPanel]

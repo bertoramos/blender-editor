@@ -2,6 +2,9 @@
 import bpy
 import re
 
+# begin local import: Change to from . import MODULE
+# end local import: Change to from . import MODULE
+
 def autoregister():
     global classes
     classes = [RobotProps, MyRobotProps]
@@ -27,7 +30,6 @@ def update_func(self, context):
     p = re.compile("^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$")
     if not p.match(ip):
         context.scene.robot_props.prop_ip = "127.0.0.1"
-        #self.report({'ERROR'}, "No valid ip")
 
 class RobotProps(bpy.types.PropertyGroup):
     # Propiedades comunes

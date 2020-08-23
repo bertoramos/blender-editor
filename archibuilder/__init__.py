@@ -10,18 +10,20 @@ bl_info = {
     "wiki_url": "https://github.com/bertoramos/blender-editor"
 }
 
+import bpy
+
+# begin remove
 import os
 import sys
-import bpy
 from pathlib import Path
 
-# For testing
 project_folder = Path("D:\\blender_editor\\")
 dir = project_folder / Path(".\\blender-editor\\archibuilder\\")
 if not dir in sys.path:
     sys.path.append(str(dir))
+# end remove
 
-# TODO: Change to from . import MODULE
+# begin local import: Change to from . import MODULE
 import annotation_update
 import wallOperator
 import obstacleOperator
@@ -32,8 +34,9 @@ import ceilOperator
 import hideAreaOperator
 import beaconOperator
 import beaconPanel
+# end local import: Change to from . import MODULE
 
-# Remove
+# begin remove
 import importlib
 importlib.reload(wallOperator)
 importlib.reload(envBuilderPanel)
@@ -45,6 +48,7 @@ importlib.reload(hideAreaOperator)
 importlib.reload(beaconOperator)
 importlib.reload(beaconPanel)
 importlib.reload(annotation_update)
+# end remove
 
 operadores = [wallOperator, obstacleOperator, ceilOperator, hideAreaOperator, beaconOperator, annotation_update]
 

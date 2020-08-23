@@ -3,14 +3,14 @@ import time
 from mathutils import Vector, Euler
 from math import radians
 
+# begin local import: Change to from . import MODULE
 import connectionHandler as cnh
 import datapacket as dp
 import robot
-
 import pathContainer as pc
 import path
-
 import pathEditor
+# end local import: Change to from . import MODULE
 
 keymaps = []
 
@@ -144,7 +144,6 @@ class SocketModalOperator(bpy.types.Operator):
             if context.scene.com_props.prop_running_nav and not context.scene.com_props.prop_paused_nav:
                 last_pose = pc.PathContainer().poses[-1]
                 reached_poses = cnh.Buffer().get_reached_poses()
-                #self.report({'INFO'}, "Poses" + str(reached_poses))
                 for pose in reached_poses:
                     if last_pose == pose:
                         context.scene.com_props.prop_running_nav = False
@@ -183,13 +182,19 @@ class SocketModalOperator(bpy.types.Operator):
                         self.report({'ERROR'}, "Changed to editor mode but not in server : ack not received")
                         SocketModalOperator.switching = False
                         SocketModalOperator.running = False
+
+                        self.thread.join() # se espera a que acabe el hilo
+
                         cnh.ConnectionHandler().remove_socket()
                         return {'FINISHED'}
 
                     #update_gui()
                     toggle_deactivate_options(robot_modes_summary.index("EDITOR_MODE"))
-                    cnh.ConnectionHandler().remove_socket()
+
                     SocketModalOperator.running = False
+                    self.thread.join() # se espera a que acabe el hilo
+
+                    cnh.ConnectionHandler().remove_socket()
 
                     if context.scene.is_cursor_active:
                         bpy.ops.scene.stop_cursor_listener()
@@ -221,7 +226,7 @@ class SocketModalOperator(bpy.types.Operator):
             if n_rcv == 0:
                 n_rcv = limit
                 operator.report({'ERROR'}, 'Unavailable server: changing mode')
-                #bpy.ops.wm.change_mode()
+                bpy.ops.wm.change_mode()
 
     def execute(self, context):
         wm = context.window_manager
@@ -391,7 +396,6 @@ class StartPauseResumePlanOperator(bpy.types.Operator):
                 com_props.prop_paused_nav = False
             else:
                 send_plan()
-                #self.report({'INFO'}, "No plan: start a new plan")
         return {'FINISHED'}
 
 class StopPlanOperator(bpy.types.Operator):
@@ -435,7 +439,6 @@ class ChangeSpeedOperator(bpy.types.Operator):
         return wm.invoke_props_dialog(self)
 
     def execute(self, context):
-        self.report({'INFO'}, str(self.update_speed))
 
         older_speed = context.scene.com_props.prop_speed
         curre_speed = self.update_speed

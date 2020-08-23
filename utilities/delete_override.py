@@ -1,6 +1,9 @@
 import bpy
 from bpy.props import BoolProperty
 
+# begin local import: Change to from . import MODULE
+# end local import: Change to from . import MODULE
+
 
 def autoregister():
     bpy.utils.register_class(DeleteOverrideOperator)

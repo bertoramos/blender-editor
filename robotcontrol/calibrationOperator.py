@@ -2,9 +2,11 @@
 import bpy
 from mathutils import Vector, Euler
 
+# begin local import: Change to from . import MODULE
 import datapacket as dp
 import connectionHandler as cnh
 import robotCommunicationOperator as rco
+# end local import: Change to from . import MODULE
 
 def autoregister():
     global classes
@@ -46,7 +48,6 @@ class StaticUltrasoundBeaconProps(bpy.types.PropertyGroup):
     prop_rotation: bpy.props.FloatVectorProperty(name="Rotation", description="Beacon rotation", default=(0.0, 0.0, 0.0), subtype='XYZ', size=3)
 
 def create_ultrasound_beacon(self, context):
-    self.report({'INFO'}, "Ultrasonica")
     beacon_props = bpy.context.scene.static_beacon_props
     name = beacon_props.prop_beacon_name
     loc = beacon_props.prop_position.xyz
@@ -63,31 +64,43 @@ def create_ultrasound_beacon(self, context):
 
     beacon.protected = True
 
+    # Eliminar las siguientes lineas en caso que se quiera que los beacon sean modificables por el usuario
+    beacon.hide_select = True
+    beacon.lock_location[:] = (True, True, True)
+    beacon.lock_rotation[:] = (True, True, True)
+    beacon.lock_scale[:] = (True, True, True)
+    beacon.lock_rotation_w = True
+    beacon.lock_rotations_4d = True
+
 
 beacon_create_function = {#"BLUETOOTH" : [create_bluetooth_beacon],
                             "ULTRASOUND": [create_ultrasound_beacon]}
 
 def create_static_beacon(self, context, beacon_type):
-    beacon_create_function.get(beacon_type, lambda self, context: self.report({'ERROR'}, type + ' does not exist'))[0](self, context)
+    beacon_create_function.get(beacon_type, lambda self, context: self.report({'ERROR'}, beacon_type + ' does not exist'))[0](self, context)
 
 
 def delete(obj):
     bpy.data.objects.remove(bpy.data.objects[obj.name], do_unlink=True)
 
+def drop_all_static_beacons():
+    for obj in bpy.data.objects:
+        if obj.object_type in DropAllStaticBeacons.static_beacons:
+            delete(obj)
 
 class DropAllStaticBeacons(bpy.types.Operator):
     bl_idname = "wm.drop_all_static_beacons"
     bl_label = "Drop all static beacons"
     bl_description = "Drop all static beacons"
 
+    static_beacons = {"STATIC_ULTRASOUND_BEACON", "STATIC_BLUETOOTH_BEACON"}
+
     @classmethod
     def poll(cls, context):
-        return True
+        return any([o.object_type in DropAllStaticBeacons.static_beacons for o in bpy.data.objects])
 
     def execute(self, context):
-        for obj in bpy.data.objects:
-            if obj.object_type in {"STATIC_ULTRASOUND_BEACON", "STATIC_BLUETOOTH_BEACON"}:
-                delete(obj)
+        drop_all_static_beacons()
         return {'FINISHED'}
 
 class CalibrateOperator(bpy.types.Operator):
@@ -114,12 +127,14 @@ class CalibrateOperator(bpy.types.Operator):
     def execute(self, context):
         beacon_type = self.prop_type_beacon
 
-        bpy.ops.wm.drop_all_static_beacons()
+        drop_all_static_beacons()
 
-        data = cnh.ConnectionHandler().receive_calibration_data()
+        nbeacons_expected, data = cnh.ConnectionHandler().receive_calibration_data()
         if data is None:
             self.report({'ERROR'}, "Data not received")
             return {'FINISHED'}
+        if len(data) != nbeacons_expected:
+            self.report({'ERROR'}, "{} beacons were expected to be received. Only {} beacons were received".format(nbeacons_expected, len(data)))
 
         for d in data:
             context.scene.static_beacon_props.prop_beacon_name = "Beacon {}".format(d.beacon_id)

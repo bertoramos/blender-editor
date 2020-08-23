@@ -1,6 +1,9 @@
 
 import abc
 
+# begin local import: Change to from . import MODULE
+# end local import: Change to from . import MODULE
+
 class Packet(abc.ABC):
 
     def __init__(self, pid, ptype):

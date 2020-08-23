@@ -10,25 +10,28 @@ bl_info = {
     "wiki_url": "https://github.com/bertoramos/blender-editor"
 }
 
+import bpy
+
+# begin remove
 import os
 import sys
-import bpy
 from pathlib import Path
 
-# For testing
 project_folder = Path("D:\\blender_editor\\")
 dir = project_folder / Path(".\\blender-editor\\filemanager\\")
 if not dir in sys.path:
     sys.path.append(str(dir))
+# end remove
 
-# TODO: Change to from . import MODULE
-# import module
+# begin local import: Change to from . import MODULE
 import scene_export
+# end local import: Change to from . import MODULE
 
-# Remove
+# begin remove
 import importlib
 # importlib.reload(module)
 importlib.reload(scene_export)
+# end remove
 
 operadores = [scene_export]
 paneles = []

@@ -1,9 +1,11 @@
 
 import bpy
 
+# begin local import: Change to from . import MODULE
 import cursorListener as cl
 import pathEditor as pe
 import robot as robot_tools
+# end local import: Change to from . import MODULE
 
 keymaps = []
 

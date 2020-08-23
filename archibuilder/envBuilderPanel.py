@@ -1,8 +1,10 @@
 
 import bpy
 
+# begin local import: Change to from . import MODULE
 import wallOperator as wo
 import ceilOperator as co
+# end local import: Change to from . import MODULE
 
 def autoregister():
     bpy.utils.register_class(EnvironmentBuildPanel)

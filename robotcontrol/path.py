@@ -3,13 +3,12 @@ import bpy
 from mathutils import Vector, Euler
 from bpy_extras.object_utils import object_data_add
 import bmesh
-
-import utils
-
-from math import degrees, pi
-
 import time
 
+# begin local import: Change to from . import MODULE
+import utils
+from math import degrees, pi
+# end local import: Change to from . import MODULE
 
 def draw_line(p1, p2):
     verts = [p1, p2]

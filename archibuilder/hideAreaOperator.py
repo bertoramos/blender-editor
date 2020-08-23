@@ -1,6 +1,9 @@
 import bpy
 from bpy.types import Operator
 
+# begin local import: Change to from . import MODULE
+# end local import: Change to from . import MODULE
+
 keymaps = []
 
 def autoregister():

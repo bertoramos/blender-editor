@@ -4,7 +4,8 @@ from bpy.types import Operator
 from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from mathutils import Vector
 
-
+# begin local import: Change to from . import MODULE
+# end local import: Change to from . import MODULE
 
 def autoregister():
     global classes
@@ -32,7 +33,7 @@ def create_ceil(cursor):
     save_cursor_loc = bpy.context.scene.cursor.location.xyz
     bpy.context.scene.cursor.location = cursor
     bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-    
+
     # Location
     x = scene.ceil_props.prop_loc.x
     y = scene.ceil_props.prop_loc.y

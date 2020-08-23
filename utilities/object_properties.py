@@ -1,6 +1,9 @@
 
 import bpy
 
+# begin local import: Change to from . import MODULE
+# end local import: Change to from . import MODULE
+
 items = [("TEMPORAL", "Temporal", "", -1),
          ("OTHER", "Other", "", 0),
          ("WALL", "Wall", "", 1),

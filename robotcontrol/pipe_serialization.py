@@ -1,12 +1,14 @@
 
+# begin local import: Change to from . import MODULE
 import serialization as st
 import datapacket
 import path
+# end local import: Change to from . import MODULE
 
 class ModePacketPipeSerialization(st.Serialization):
     """
     Defines an algorithm to pack-unpack a packet
-    """ 
+    """
 
     @staticmethod
     def pack(packet):

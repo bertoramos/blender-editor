@@ -1,11 +1,13 @@
 
 import bpy
+from mathutils import Vector
+import time
 
+# begin local import: Change to from . import MODULE
 import path
 import utils
-from mathutils import Vector
+# begin local import: Change to from . import MODULE
 
-import time
 
 class PathContainer:
     """

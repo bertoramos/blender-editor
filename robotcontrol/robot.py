@@ -3,11 +3,12 @@ import bpy
 from mathutils import Vector, Euler
 from math import radians, pi
 
+# begin local import: Change to from . import MODULE
 import robot_props
 import cursorListener as cl
 import utils
-
 import path
+# end local import: Change to from . import MODULE
 
 keymaps = []
 
@@ -410,7 +411,6 @@ class SelectRobotOperator(bpy.types.Operator):
 
 
 def selectUpdate(self, context):
-    #print("Update ", str(self.name), str(self.idn), str(str(self.selected)))
     if self.selected:
         for item in context.scene.select_robot_collection:
             if item.idn != self.idn:

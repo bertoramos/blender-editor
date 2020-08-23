@@ -4,7 +4,9 @@ from mathutils import Vector
 from bpy_extras.object_utils import AddObjectHelper
 from math import pi
 
+# begin local import: Change to from . import MODULE
 import path
+# end local import: Change to from . import MODULE
 
 def addGeomCursor(initial_pose):
     bpy.ops.mesh.primitive_cone_add()

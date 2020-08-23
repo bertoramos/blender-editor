@@ -5,7 +5,9 @@ from mathutils.geometry import intersect_line_line
 from mathutils import Vector
 from math import sqrt, acos, degrees, radians, pi
 from mathutils.bvhtree import BVHTree
- 
+
+# begin local import: Change to from . import MODULE
+# end local import: Change to from . import MODULE
 
 """
 Check a mesh overlap other mesh
@@ -77,8 +79,6 @@ def is_inside(bm1, bm2):
     # Check inside
     vertex_tmp2 = [vertex.co for vertex in bm2.verts]
     bool_res = points_inside(vertex_tmp2, bm1)
-    for v, r in zip(vertex_tmp2, bool_res):
-        print(v, r)
     return any(bool_res)
 
 """

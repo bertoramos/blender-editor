@@ -2,7 +2,9 @@
 import bpy
 from math import degrees
 
+# begin local import: Change to from . import MODULE
 import beaconOperator
+# end local import: Change to from . import MODULE
 
 def autoregister():
     bpy.app.handlers.depsgraph_update_post.append(update_annotations)

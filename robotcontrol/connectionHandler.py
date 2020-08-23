@@ -3,11 +3,12 @@ import bpy
 
 import socket
 import time
+
+# begin local import: Change to from . import MODULE
 import msgpack_serialization as ms
 import datapacket as dp
-
 import connection_exceptions as exc
-
+# end local import: Change to from . import MODULE
 
 class Buffer:
     __instance = None
@@ -68,6 +69,8 @@ class Buffer:
 
     def clear(self):
         self.__buffer.clear()
+        self.__reached_poses.clear()
+        self.__calibration_packets.clear()
         self.__last_trace = None
 
     def __str__(self):
@@ -97,6 +100,12 @@ bufferSize = 128
 class ConnectionHandler:
     __instance = None
     running = False
+
+    acknowledge_packet = {dp.StartCalibrationPacket,
+                          dp.AddUltrasoundBeaconPacket,
+                          dp.CloseCalibrationPacket,
+                          dp.ReachedPosePacket
+                          }
 
     def __new__(cls):
         if cls.__instance is None:
@@ -131,11 +140,11 @@ class ConnectionHandler:
             if type(packet) != dp.TracePacket:
                 op.report({'INFO'}, "Receive: " + str(packet) + " " + str(type(packet)))
 
-            if packet.pid > bpy.context.scene.com_props.prop_last_recv_packet:
-                Buffer().set_packet(packet)
+            #if packet.pid > bpy.context.scene.com_props.prop_last_recv_packet:
+            Buffer().set_packet(packet)
 
-            # acknowledge reached pose packet
-            if type(packet) == dp.ReachedPosePacket:
+            # acknowledge packets
+            if type(packet) in ConnectionHandler.acknowledge_packet:
                 bpy.context.scene.com_props.prop_last_sent_packet += 1
                 ack_pid = bpy.context.scene.com_props.prop_last_sent_packet
                 status = 1
@@ -183,7 +192,6 @@ class ConnectionHandler:
 
         # Add pose
         for n, pose in enumerate(poses):
-            print("Sent : " , str(pose))
             pid += 1
             bpy.context.scene.com_props.prop_last_sent_packet = pid
             add_pose_packet = dp.AddPosePlanPacket(pid, pose)
@@ -262,11 +270,6 @@ class ConnectionHandler:
                     break
         if start_calibration_packet is not None:
             bpy.context.scene.com_props.prop_last_recv_packet = start_calibration_packet.pid
-
-            bpy.context.scene.com_props.prop_last_sent_packet += 1
-            pid = bpy.context.scene.com_props.prop_last_sent_packet
-            ack_packet = dp.AckPacket(pid, start_calibration_packet.pid, 1)
-            ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(ack_packet), ConnectionHandler.serverAddr)
         return start_calibration_packet
 
     def receive_calibration_data(self):
@@ -294,31 +297,22 @@ class ConnectionHandler:
         n_nochanges = 0
         close_recv = False
 
-        prev_dim = 0
-        while n_nochanges < 10 and not close_recv:
+        cal_data = []
+        start_time = time.time()
+        while abs(time.time() - start_time) < 3.0 and not close_recv:
             cal_data = Buffer().get_calibration_packets()
-            if len(cal_data) == prev_dim:
-                n_nochanges += 1
-            else:
-                n_nochanges = 0
-            for p in cal_data:
-                if type(p) == dp.CloseCalibrationPacket:
-                    close_recv = True
-            prev_dim = len(cal_data)
+            close_recv = any([type(p) == dp.CloseCalibrationPacket for p in cal_data])
 
-        calibration_data = []
         cal_data = Buffer().get_calibration_packets()
+        
+        calibration_data = []
         for p in cal_data:
-            bpy.context.scene.com_props.prop_last_sent_packet += 1
-            pid = bpy.context.scene.com_props.prop_last_sent_packet
-
-            ack_packet = dp.AckPacket(pid, p.pid, 1)
-            ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(ack_packet), ConnectionHandler.serverAddr)
-
-            if type(p) == dp.CloseCalibrationPacket:
-                bpy.context.scene.com_props.prop_last_recv_packet = p.pid
             if type(p) == dp.AddUltrasoundBeaconPacket:
                 calibration_data.append(p)
+
+        if len(cal_data) != 0:
+            bpy.context.scene.com_props.prop_last_recv_packet = max([p.pid for p in cal_data])
+
         Buffer().clear_calibration_packets()
 
-        return calibration_data
+        return nbeacons, calibration_data

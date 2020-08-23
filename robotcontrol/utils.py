@@ -3,6 +3,9 @@ import bpy
 from bpy.types import Operator, SpaceView3D
 from mathutils import Vector
 
+# begin local import: Change to from . import MODULE
+# end local import: Change to from . import MODULE
+
 # measureit execute method AddNote operator
 # Antonio Vazquez
 def draw_text(context, name, text, loc, color, hint_space, font, font_align, font_rotation):

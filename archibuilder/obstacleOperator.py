@@ -5,6 +5,9 @@ from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from mathutils import Vector
 from math import sin, cos, atan, radians, degrees, sqrt, pi
 
+# begin local import: Change to from . import MODULE
+# end local import: Change to from . import MODULE
+
 def autoregister():
     global classes
     classes = [ObstacleProps, AddObstacleOperator]

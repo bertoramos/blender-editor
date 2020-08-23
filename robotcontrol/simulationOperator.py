@@ -3,10 +3,12 @@ import bpy
 from mathutils import Vector, Euler
 from math import pi, copysign
 
+# begin local import: Change to from . import MODULE
 import pathContainer as pc
 import robot
 import path
 import robotCommunicationOperator as rco
+# end local import: Change to from . import MODULE
 
 def autoregister():
     global classes
@@ -26,7 +28,6 @@ def autounregister():
 def is_loc_reached(start_loc, end_loc, current_loc):
     current_dir = (end_loc - current_loc).normalized()
     running_dir = (end_loc - start_loc).normalized()
-    print("Reached : ", current_dir.dot(running_dir), "Current_dir:", current_dir, "Running_dir:", running_dir)
     return current_dir.dot(running_dir) <= 0.0
 
 class SimulationProps(bpy.types.PropertyGroup):
@@ -155,7 +156,6 @@ class SimulationOperator(bpy.types.Operator):
                     r.rot = end_pose.rotation
                     SimulationOperator.last_reached += 1
 
-                    #self.report({'INFO'}, "New direction : " + str(SimulationOperator.last_reached) + "/" + str(len(SimulationOperator.poses)))
                     SimulationOperator.direction = (SimulationOperator.poses[SimulationOperator.last_reached+1].loc - \
                                                         SimulationOperator.poses[SimulationOperator.last_reached].loc).normalized()
                     start_pose = SimulationOperator.poses[SimulationOperator.last_reached] if SimulationOperator.last_reached >= 0 else SimulationOperator.start_pose
@@ -173,7 +173,6 @@ class SimulationOperator(bpy.types.Operator):
             else:
                 SimulationOperator.current_pose = path.Pose.fromVector(end_pose.loc, SimulationOperator.current_pose.rotation)
                 r.loc = end_pose.loc
-            #print(start_pose.loc, end_pose.loc, SimulationOperator.direction, SimulationOperator.loc_reached)
 
             if not SimulationOperator.rot_reached:
                 global angle_speed
@@ -276,6 +275,5 @@ class ChangeSpeedSimulationOperator(bpy.types.Operator):
         return wm.invoke_props_dialog(self)
 
     def execute(self, context):
-        self.report({'INFO'}, str(self.update_speed))
         context.scene.sim_props.prop_simulated_speed = self.update_speed
         return {'FINISHED'}

@@ -1,5 +1,7 @@
 
+# begin local import: Change to from . import MODULE
 import serialization as st
+# end local import: Change to from . import MODULE
 
 """
 Paquete desconocido (0)

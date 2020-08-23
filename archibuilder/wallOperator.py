@@ -5,7 +5,9 @@ from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from mathutils import Vector
 from math import sin, cos, asin, atan, radians, degrees, sqrt, pi
 
+# begin local import: Change to from . import MODULE
 import geom_math as gm
+# end local import: Change to from . import MODULE
 
 def autoregister():
     global classes
@@ -44,7 +46,6 @@ def create_wall(self, context, cursor):
 
     L = gm.dist(Vector((ox, oy, 0)), Vector((dx, dy, 0)))
 
-    self.report({'INFO'}, "{} {} {} {}".format(dx, dy, ox, oy))
     if abs(dx-ox) < context.scene.TOL and abs(dy-oy) < context.scene.TOL:
         self.report({'ERROR'}, "The wall could not be created, the start and end points must be different")
         return
@@ -187,7 +188,7 @@ def create_room(self, context, cursor):
     width_e = scene.room_props.prop_width_east
     width_w = scene.room_props.prop_width_west
     height = scene.room_props.prop_height
-    
+
     if dim_x < context.scene.TOL or dim_y < context.scene.TOL:
         self.report({'ERROR'}, "Room could not be created, room dimensions must be larger than 0")
         return

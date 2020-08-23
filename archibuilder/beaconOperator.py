@@ -4,7 +4,9 @@ from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from mathutils import Vector
 from math import pi, radians
 
+# begin local import: Change to from . import MODULE
 import utils
+# end local import: Change to from . import MODULE
 
 def autoregister():
     global classes

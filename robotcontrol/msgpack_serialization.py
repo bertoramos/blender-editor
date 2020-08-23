@@ -1,10 +1,12 @@
 
+from math import radians, degrees
+import msgpack
+
+# begin local import: Change to from . import MODULE
 import serialization as st
 import datapacket
 import path
-
-from math import radians, degrees
-import msgpack
+# end local import: Change to from . import MODULE
 
 class ModePacketMsgPackSerialization(st.Serialization):
     """

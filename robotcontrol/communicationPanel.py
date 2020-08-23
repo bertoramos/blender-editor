@@ -1,10 +1,12 @@
 
 import bpy
 
+# begin local import: Change to from . import MODULE
 import robotCommunicationOperator as co
 import robot as r
-
 import simulationOperator as so
+import calibrationOperator as cal_op
+# end local import: Change to from . import MODULE
 
 def autoregister():
     bpy.utils.register_class(CommunicationPanel)
@@ -41,6 +43,9 @@ class CommunicationPanel(bpy.types.Panel):
 
         self.layout.operator(co.ToggleRenderingOperator.bl_idname, icon = icon_rendering, text=rendering_txt)
         self.layout.label(text="Control panel")
+
+        self.layout.operator(cal_op.CalibrateOperator.bl_idname)
+        self.layout.operator(cal_op.DropAllStaticBeacons.bl_idname)
 
         box_com = self.layout.box()
         icon_play = "PAUSE" if context.scene.com_props.prop_running_nav and not context.scene.com_props.prop_paused_nav else "PLAY"

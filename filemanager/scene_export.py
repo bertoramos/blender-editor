@@ -4,6 +4,9 @@ from bpy.types import Operator, Panel, PropertyGroup
 import os
 import re
 
+# begin local import: Change to from . import MODULE
+# end local import: Change to from . import MODULE
+
 def autoregister():
     global classes
     classes = [FileProps, ExportScenarioOperator, ExportScenarioPanel]
