@@ -5,7 +5,6 @@ from math import radians, pi
 
 # begin local import: Change to from . import MODULE
 import robot_props
-import cursorListener as cl
 import utils
 import path
 # end local import: Change to from . import MODULE
@@ -377,7 +376,9 @@ class SelectRobotOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
+        # begin local import:
         import robotCommunicationOperator as co
+        # end local import:
         in_rob_mode = bpy.context.scene.com_props.prop_mode == co.robot_modes_summary.index("ROBOT_MODE")
         return not in_rob_mode and len(RobotSet()) > 0 and not bpy.context.scene.is_cursor_active
 
@@ -434,7 +435,9 @@ class AddRobotOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
+        # begin local import
         import robotCommunicationOperator as co
+        # end local import
         in_rob_mode = bpy.context.scene.com_props.prop_mode == co.robot_modes_summary.index("ROBOT_MODE")
         return not in_rob_mode
 
@@ -486,7 +489,10 @@ class DeleteRobotOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
+        # begin local import:
         import robotCommunicationOperator as co
+        import cursorListener as cl
+        # end local import:
         in_rob_mode = bpy.context.scene.com_props.prop_mode == co.robot_modes_summary.index("ROBOT_MODE")
         return not in_rob_mode and len(RobotSet()) > 0 and not cl.isListenerActive()
 

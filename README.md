@@ -189,3 +189,7 @@ Sin necesidad de comunicarse con la plataforma se pueden simular planes de naveg
 <p align="center">
 Figura 13: Menú de control de la simulación.
 </p>
+
+## Referencias
+
+Acceso a publicación en el repositorio Acceda: [http://hdl.handle.net/10553/77830](http://hdl.handle.net/10553/77830)

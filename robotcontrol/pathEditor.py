@@ -228,7 +228,7 @@ class SavePoseOperator(bpy.types.Operator):
         area_robot_obj = bpy.data.objects[robot.area_name]
 
         res = is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1)
-        
+
         if res:
             self.report({'ERROR'}, "Robot will collide if takes this path")
             return {'FINISHED'}

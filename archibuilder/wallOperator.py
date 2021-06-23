@@ -21,7 +21,7 @@ def autoregister():
 def autounregister():
     global classes
     for cls in classes:
-        bpy.utils.register_class(cls)
+        bpy.utils.unregister_class(cls)
 
     del bpy.types.Scene.wall_props
     del bpy.types.Scene.room_props

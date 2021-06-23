@@ -6,7 +6,7 @@ import time
 # begin local import: Change to from . import MODULE
 import path
 import utils
-# begin local import: Change to from . import MODULE
+# end local import: Change to from . import MODULE
 
 
 class PathContainer:

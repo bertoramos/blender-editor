@@ -20,7 +20,8 @@ def autoregister():
     if kc:
         km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
 
-        kmi = km.keymap_items.new("wm.call_menu_pie", type='Q', value='PRESS', ctrl=True, shift=True).properties.name = PathEditorMenu.bl_idname
+        kmi = km.keymap_items.new("wm.call_menu_pie", type='Q', value='PRESS', ctrl=True, shift=True)
+        kmi.properties.name = PathEditorMenu.bl_idname
         keymaps.append((km, kmi))
 
 def autounregister():
