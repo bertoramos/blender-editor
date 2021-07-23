@@ -36,8 +36,11 @@ Para instalarlo, seguimos los siguientes pasos:
 1. Nos dirigimos a la carpeta donde tenemos instalado *Blender*.
 2. Abrimos una terminal en **ruta-instalación-blender/blender-2.82a-windows64/blender-2.82a-windows64/2.82/python/bin/**.
 3. Ejecutamos los siguientes comandos:
-  1. **./python.exe -m pip install --upgrade pip**
-  2. **./python.exe -m pip install msgpack**
+  1. **./python.exe -m ensurepip**
+  2. **./python.exe -m pip install --upgrade pip**
+  3. **./python.exe -m pip install msgpack**
+
+> **_NOTA:_**  Las rutas y nombre de los ejecutables pueden variar ligeramente dependiendo de la versión de Blender y el sistema operativo. 
 
 ### 3. Instalar *addons*.
 
@@ -52,6 +55,9 @@ Estos pasos los repetimos con los 4 ficheros *zip* que disponemos.
 Una vez completados estos pasos, guardamos las preferencias en la opción *Save preferences*.
 
 ## Funciones.
+
+> **_NOTA:_**  La interfaz de todas las funciones del addon están localizadas en las distintas pestañas del llamado panel-N [(N-panel)](https://blenderartists.org/t/n-panel-clutter/1218580). Pulsa la tecla N para abrirlo o cerrarlo.
+
 
 ### Diseño de escenarios.
 
