@@ -441,6 +441,27 @@ class AddRobotOperator(bpy.types.Operator):
         in_rob_mode = bpy.context.scene.com_props.prop_mode == co.robot_modes_summary.index("ROBOT_MODE")
         return not in_rob_mode
 
+    def draw(self, context):
+        props = bpy.context.scene.robot_props
+        self.layout.prop(props, "prop_robot_name", text="Name")
+        self.layout.prop(props, "prop_robot_loc", text="Location")
+
+        self.layout.prop(props, "prop_ip", text="Ip")
+        self.layout.prop(props, "prop_port", text="Port")
+
+        self.layout.prop(props, "prop_robot_type", text="Type")
+
+        type = bpy.context.scene.robot_props.prop_robot_type
+        if type == "ROBOMAP":
+            props = bpy.context.scene.myrobot_props
+            self.layout.prop(props, "prop_myrobot_rotation")
+            self.layout.prop(props, "prop_myrobot_dim")
+            self.layout.prop(props, "prop_myrobot_margin")
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
     def execute(self, context):
         scene = context.scene
 

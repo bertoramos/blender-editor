@@ -170,7 +170,11 @@ class ConnectionHandler:
         :returns: False if send mode operation fails or status != 1
         """
         mode_packet = dp.ModePacket(pid, mode, initial_speed)
-        ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(mode_packet), ConnectionHandler.serverAddr)
+        try:
+            ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(mode_packet), ConnectionHandler.serverAddr)
+        except:
+            print("Exception caught")
+            return False
         return self.receive_ack_packet(pid)
 
     def send_plan(self, start_pid, poses):
@@ -304,7 +308,7 @@ class ConnectionHandler:
             close_recv = any([type(p) == dp.CloseCalibrationPacket for p in cal_data])
 
         cal_data = Buffer().get_calibration_packets()
-        
+
         calibration_data = []
         for p in cal_data:
             if type(p) == dp.AddUltrasoundBeaconPacket:

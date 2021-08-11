@@ -18,8 +18,7 @@ def autounregister():
     global classes
     for cls in classes:
         bpy.utils.unregister_class(cls)
-
-
+    
     del bpy.types.Scene.robot_props
     del bpy.types.Scene.myrobot_props
 

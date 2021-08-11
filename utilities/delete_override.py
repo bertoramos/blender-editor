@@ -78,7 +78,8 @@ class DeleteOverrideOperator(bpy.types.Operator):
     bl_options = {'REGISTER', 'INTERNAL'}
     bl_description = "Delete selected objects and optionally children"
 
-    delete_children: bpy.props.BoolProperty(default=True)
+    delete_children: BoolProperty(default=True)
+    use_global: BoolProperty()
 
     @classmethod
     def poll(cls, context):

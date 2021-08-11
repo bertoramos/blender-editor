@@ -34,6 +34,10 @@ class CommunicationPanel(bpy.types.Panel):
 
         self.layout.label(text="Communication")
 
+        props = context.scene.com_props
+        self.layout.prop(props, "prop_client_ip", text="Client Ip")
+        self.layout.prop(props, "prop_client_port", text="Client Port")
+
         self.layout.operator(co.ChangeModeOperator.bl_idname, icon = icon_mode, text="Change mode")
 
         rendering = context.scene.com_props.prop_rendering

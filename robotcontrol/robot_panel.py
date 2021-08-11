@@ -20,20 +20,7 @@ class RobotPropsPanel(bpy.types.Panel):
 
     def draw(self, context):
         props = bpy.context.scene.robot_props
-        self.layout.prop(props, "prop_robot_name", text="Name")
-        self.layout.prop(props, "prop_robot_loc", text="Location")
-
-        self.layout.prop(props, "prop_ip", text="Ip")
-        self.layout.prop(props, "prop_port", text="Port")
-
-        self.layout.prop(props, "prop_robot_type", text="Type")
-
-        type = bpy.context.scene.robot_props.prop_robot_type
-        if type == "ROBOMAP":
-            props = bpy.context.scene.myrobot_props
-            self.layout.prop(props, "prop_myrobot_rotation")
-            self.layout.prop(props, "prop_myrobot_dim")
-            self.layout.prop(props, "prop_myrobot_margin")
+        
         self.layout.operator(robot.AddRobotOperator.bl_idname, icon="SYSTEM", text="Add robot")
         if len(robot.RobotSet()) > 0:
             box = self.layout.box()
