@@ -36,6 +36,9 @@ def export():
     filename = bpy.context.scene.file_props.prop_name
     filepath = os.path.join(path, filename)
 
+    if not os.access(path, os.W_OK):
+        return False
+
     bpy.ops.scene.new(type='FULL_COPY')
     current_scene = bpy.context.scene
 
@@ -48,21 +51,25 @@ def export():
         if obj.object_type not in exportable_objects:
             dat = obj.data
             mat = obj.active_material
-            bpy.data.objects.remove(obj)
+            bpy.data.objects.remove(obj, do_unlink=True)
             if dat is not None:
-                if dat in bpy.data.meshes:
+                if dat.name_full in bpy.data.meshes:
                     bpy.data.meshes.remove(dat)
-            if mat is not None:
-                bpy.data.materials.remove(mat)
+            #if mat is not None:
+            #    bpy.data.materials.remove(mat)
         wm.progress_update(i)
         i += 1
     # write scene
     data_blocks = {current_scene}
     bpy.data.libraries.write(filepath, data_blocks)
 
+    for obj in current_scene.objects:
+        bpy.data.objects.remove(obj)
+
     bpy.data.scenes.remove(current_scene)
 
     wm.progress_end()
+    return True
 
 def update_filename(self, context):
     pass
@@ -94,11 +101,13 @@ class ExportScenarioOperator(Operator):
     @classmethod
     def poll(cls, context):
         # Si en alguna escena se indica que esta el cursor activo, no puede exportarse el escenario
-        return all([not scene.is_cursor_active for scene in bpy.data.scenes])
+        return True
 
     def execute(self, context):
-        export()
-        self.report({'INFO'}, "Exported")
+        if export():
+            self.report({'INFO'}, "Exported")
+        else:
+            self.report({'INFO'}, " Can't be exported")
         return {'FINISHED'}
 
 class ExportScenarioPanel(Panel):
