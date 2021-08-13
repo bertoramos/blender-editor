@@ -58,15 +58,15 @@ robot_modes_summary = ["EDITOR_MODE", # 0
                        "ROBOT_MODE" # 1
                       ]
 
-def update_func(self, context):
-    ip = context.scene.com_props.prop_client_ip
-    p = re.compile("^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$")
-    if not p.match(ip):
-        context.scene.com_props.prop_client_ip = "127.0.0.1"
+#def update_func(self, context):
+#    ip = context.scene.com_props.prop_client_ip
+#    p = re.compile("^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$")
+#    if not p.match(ip):
+#        context.scene.com_props.prop_client_ip = "127.0.0.1"
 
 class CommunicationProps(bpy.types.PropertyGroup):
-    prop_client_ip: bpy.props.StringProperty(name="Ip", default = "127.0.0.1", update=update_func)
-    prop_client_port : bpy.props.IntProperty(name="Port", default=1500, min=0)
+    #prop_client_ip: bpy.props.StringProperty(name="Ip", default = "127.0.0.1", update=update_func)
+    #prop_client_port : bpy.props.IntProperty(name="Port", default=1500, min=0)
 
     prop_rendering: bpy.props.BoolProperty(name="Rendering", default=True)
 
@@ -250,8 +250,9 @@ class SocketModalOperator(bpy.types.Operator):
             return {'RUNNING_MODAL'}
         r = robot.RobotSet().getRobot(sel_rob_id)
 
-        client_ip = context.scene.com_props.prop_client_ip
-        client_port = context.scene.com_props.prop_client_port
+
+        client_ip = r.client_ip
+        client_port = r.client_port
 
         try:
             cnh.ConnectionHandler().create_socket((client_ip, client_port), (r.ip, r.port))

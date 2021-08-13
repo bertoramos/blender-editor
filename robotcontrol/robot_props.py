@@ -18,7 +18,7 @@ def autounregister():
     global classes
     for cls in classes:
         bpy.utils.unregister_class(cls)
-    
+
     del bpy.types.Scene.robot_props
     del bpy.types.Scene.myrobot_props
 
@@ -35,8 +35,10 @@ class RobotProps(bpy.types.PropertyGroup):
     prop_robot_name: bpy.props.StringProperty(name="Name", description="Robot name",default="Robot", maxlen=20)
     prop_robot_loc: bpy.props.FloatVectorProperty(name="Location", description="Robot dimensions", default=(0,0,0), subtype='XYZ', size=3)
     prop_robot_type: bpy.props.EnumProperty(items = robot_types)
-    prop_ip: bpy.props.StringProperty(name="Ip", default = "127.0.0.1", update=update_func)
-    prop_port : bpy.props.IntProperty(name="Port", default=1999, min=0)
+    prop_ip: bpy.props.StringProperty(name="Server Ip", default = "127.0.0.1", update=update_func)
+    prop_port : bpy.props.IntProperty(name="Server Port", default=1999, min=0)
+    prop_client_ip: bpy.props.StringProperty(name="Client Ip", default = "127.0.0.1", update=update_func)
+    prop_client_port : bpy.props.IntProperty(name="Client Port", default=1500, min=0)
 
 class MyRobotProps(bpy.types.PropertyGroup):
     prop_myrobot_rotation: bpy.props.FloatProperty(name="Rotation", description="Rotation angle [degree]", default=0, min=0, max=359)

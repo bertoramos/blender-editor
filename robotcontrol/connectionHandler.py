@@ -306,7 +306,7 @@ class ConnectionHandler:
         while abs(time.time() - start_time) < 3.0 and not close_recv:
             cal_data = Buffer().get_calibration_packets()
             close_recv = any([type(p) == dp.CloseCalibrationPacket for p in cal_data])
-
+        
         cal_data = Buffer().get_calibration_packets()
 
         calibration_data = []

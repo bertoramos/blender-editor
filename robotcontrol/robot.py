@@ -141,7 +141,7 @@ class RobotSet:
 
 class Robot:
 
-    def __init__(self, idn, name, area_name, robot_type, ip, port):
+    def __init__(self, idn, name, area_name, robot_type, ip, port, client_ip, client_port):
         """
         Parameters:
             - id (int) : robot id
@@ -155,6 +155,8 @@ class Robot:
         self.__area_name = str(area_name)
         self.__ip = ip
         self.__port = port
+        self.__client_ip = client_ip
+        self.__client_port = client_port
 
         assert robot_type in robot_props.robot_types, "Error: robot_types does not contain " + str(type)
         self.__robot_type = robot_type
@@ -203,6 +205,13 @@ class Robot:
     def __get_pose(self):
         return path.Pose.fromVector(self.loc, self.rotation)
 
+    def __get_client_ip(self):
+        return self.__client_ip
+
+    def __get_client_port(self):
+        return self.__client_port
+
+
     def __hash__(self):
         return self.__idn
 
@@ -219,8 +228,11 @@ class Robot:
     port = property(__get_port)
     pose = property(__get_pose)
 
+    client_ip = property(__get_client_ip)
+    client_port = property(__get_client_port)
 
-def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port):
+
+def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port, client_ip, client_port):
 
     # Cuerpo
     bpy.ops.mesh.primitive_cube_add(location=(loc.x, loc.y, dim.z/2.0))
@@ -265,7 +277,7 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port):
     mat.diffuse_color = Vector((0, 0, 1, 0.2))
 
     # Notas
-    note_name = draw_robot_note(context, Vector((0,0,0)), myrobot.name + " | " + str(ip) + ":" + str(port), Vector((255,255,255,255)), 14, "C")
+    note_name = draw_robot_note(context, Vector((0,0,0)), myrobot.name + " | Server: " + str(ip) + ":" + str(port) + " | Client: " + str(client_ip) + ":" + str(client_port), Vector((255,255,255,255)), 14, "C")
     bpy.data.objects[note_name].object_type = "ROBOT_NOTE"
 
 
@@ -318,7 +330,7 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port):
 
 class MyRobot(Robot):
 
-    def __init__(self, idn, name, note_name, robot_type, dim, margin, ip, port):
+    def __init__(self, idn, name, note_name, robot_type, dim, margin, ip, port, client_ip, client_port):
         """
         Parameters:
             - idn (int) : robot id
@@ -327,8 +339,12 @@ class MyRobot(Robot):
             - type (tuple) : robot type. A tuple in robot_types
             - dim (Vector) : dimension in x, y, z axis
             - margin (Vector) : margin percentage in x, y, z axis
+            - ip (str): server ip
+            - port (int): server port
+            - client_ip (str): server ip
+            - client_port (str): client port
         """
-        super().__init__(idn, name, note_name, robot_type, ip, port)
+        super().__init__(idn, name, note_name, robot_type, ip, port, client_ip, client_port)
         self.__dim = dim
         self.__margin = margin
 
@@ -446,8 +462,12 @@ class AddRobotOperator(bpy.types.Operator):
         self.layout.prop(props, "prop_robot_name", text="Name")
         self.layout.prop(props, "prop_robot_loc", text="Location")
 
-        self.layout.prop(props, "prop_ip", text="Ip")
-        self.layout.prop(props, "prop_port", text="Port")
+        row_server_ip = self.layout.row()
+        row_client_ip = self.layout.row()
+        row_server_ip.prop(props, "prop_ip", text="Server Ip")
+        row_server_ip.prop(props, "prop_port", text="Server Port")
+        row_client_ip.prop(props, "prop_client_ip", text="Client ip")
+        row_client_ip.prop(props, "prop_client_port", text="Client port")
 
         self.layout.prop(props, "prop_robot_type", text="Type")
 
@@ -472,6 +492,8 @@ class AddRobotOperator(bpy.types.Operator):
         robot_type = scene.robot_props.prop_robot_type
         ip = scene.robot_props.prop_ip
         port = scene.robot_props.prop_port
+        client_ip = scene.robot_props.prop_client_ip
+        client_port = scene.robot_props.prop_client_port
 
         robot_type_tuple = ()
         for ENUM, enum, empty, num in robot_props.robot_types:
@@ -485,9 +507,9 @@ class AddRobotOperator(bpy.types.Operator):
             margin = scene.myrobot_props.prop_myrobot_margin.xyz
             rotation = Euler((0, pi/2, radians(rot)))
             loc.z = 0
-            complete_name, area_name = draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port)
+            complete_name, area_name = draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port, client_ip, client_port)
 
-            robot = MyRobot(idn, complete_name, area_name, robot_type_tuple, dim, margin, ip, port)
+            robot = MyRobot(idn, complete_name, area_name, robot_type_tuple, dim, margin, ip, port, client_ip, client_port)
             RobotSet().addRobot(robot)
 
         if robot is not None:

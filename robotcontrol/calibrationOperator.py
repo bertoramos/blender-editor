@@ -6,6 +6,7 @@ from mathutils import Vector, Euler
 import datapacket as dp
 import connectionHandler as cnh
 import robotCommunicationOperator as rco
+import utils
 # end local import: Change to from . import MODULE
 
 def autoregister():
@@ -44,10 +45,26 @@ class StaticBeaconProps(bpy.types.PropertyGroup):
 #def create_bluetooth_beacon(self, context):
 #    pass
 
+def draw_beacon_note(context, loc, text, color, font, font_align):
+    # Draw notes
+    name = "Beacon_note"
+    hint_space = 10
+    rotation = 0
+    beacon_note = utils.draw_text(context, name, text, loc, color, hint_space, font, font_align, rotation)
+
+    bpy.data.objects[beacon_note].lock_location[0:3] = (True, True, True)
+    bpy.data.objects[beacon_note].lock_rotation[0:3] = (True, True, True)
+    bpy.data.objects[beacon_note].lock_scale[0:3] = (True, True, True)
+    bpy.data.objects[beacon_note].protected = True
+
+    bpy.data.objects[beacon_note].object_type = "ROBOT_NOTE"
+
+    return beacon_note
+
 class StaticUltrasoundBeaconProps(bpy.types.PropertyGroup):
     prop_rotation: bpy.props.FloatVectorProperty(name="Rotation", description="Beacon rotation", default=(0.0, 0.0, 0.0), subtype='XYZ', size=3)
 
-def create_ultrasound_beacon(self, context):
+def create_ultrasound_beacon(self, context, beacon_id):
     beacon_props = bpy.context.scene.static_beacon_props
     name = beacon_props.prop_beacon_name
     loc = beacon_props.prop_position.xyz
@@ -72,15 +89,31 @@ def create_ultrasound_beacon(self, context):
     beacon.lock_rotation_w = True
     beacon.lock_rotations_4d = True
 
+    # Crea anotacion
+    loc = Vector((0,0,0))
+    text = f"ID {beacon_id}  =>  " + \
+           f"(x; y; z) = ({beacon.location.x:0.2f}; {beacon.location.y:0.2f}; {beacon.location.z:0.2f})"
+    color = Vector((255,0,0,255))
+    font = 14
+    font_align = "L"
+
+    beacon_note = draw_beacon_note(context, loc, text, color, font, font_align)
+    note = bpy.data.objects[beacon_note]
+    # Asigna como child de beacon
+
+    note.parent = beacon
+
 
 beacon_create_function = {#"BLUETOOTH" : [create_bluetooth_beacon],
                             "ULTRASOUND": [create_ultrasound_beacon]}
 
-def create_static_beacon(self, context, beacon_type):
-    beacon_create_function.get(beacon_type, lambda self, context: self.report({'ERROR'}, beacon_type + ' does not exist'))[0](self, context)
+def create_static_beacon(self, context, beacon_type, beacon_id):
+    beacon_create_function.get(beacon_type, lambda self, context: self.report({'ERROR'}, beacon_type + ' does not exist'))[0](self, context, beacon_id)
 
 
 def delete(obj):
+    for child in bpy.data.objects[obj.name].children:
+        bpy.data.objects.remove(child, do_unlink=True)
     bpy.data.objects.remove(bpy.data.objects[obj.name], do_unlink=True)
 
 def drop_all_static_beacons():
@@ -143,6 +176,6 @@ class CalibrateOperator(bpy.types.Operator):
 
             if beacon_type == "ULTRASOUND":
                 context.scene.static_ultrasound_beacon_props.prop_rotation = d.beacon_pose.rotation
-            create_static_beacon(self, context, beacon_type)
+            create_static_beacon(self, context, beacon_type, d.beacon_id)
 
         return {'FINISHED'}
