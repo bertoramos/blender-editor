@@ -38,6 +38,8 @@ def update_line(line_mesh_name, p1, p2):
     bm.from_mesh(line_mesh)
 
     for i, v in enumerate(bm.verts):
+        if i == 0:
+            v.co = p1
         if i == 1:
             v.co = p2
 
@@ -63,7 +65,7 @@ def create_arrow(pose):
     arrow.lock_rotation[0:3] = (True, True, True)
     arrow.lock_scale[0:3] = (True, True, True)
     arrow.protected = True
-    arrow.hide_select = True
+    arrow.hide_select = False
 
     return arrow_mesh_name
 
@@ -223,7 +225,7 @@ class Action:
         self._timestamp = int(time.time())
 
         bpy.data.objects[self._line].object_type = "PATH_ELEMENTS"
-        bpy.data.objects[self._arrow].object_type = "PATH_ELEMENTS"
+        bpy.data.objects[self._arrow].object_type = "PATH_ELEMENTS_POSE"
 
         self._first_action = False
 
@@ -240,6 +242,11 @@ class Action:
 
     def move(self, pose):
         self._p1 = pose
+        update_line(self._line, self._p0.loc, self._p1.loc)
+        update_arrow(self._arrow, self._p1)
+
+    def move_fixed(self, pose):
+        self._p0 = pose
         update_line(self._line, self._p0.loc, self._p1.loc)
         update_arrow(self._arrow, self._p1)
 

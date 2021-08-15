@@ -61,9 +61,11 @@ class ToolsPanel(bpy.types.Panel):
 
     def draw(self, context):
         self.layout.operator(pe.SavePoseOperator.bl_idname, icon="IMPORT")
+        self.layout.operator(pe.ApplyChangePoseOperator.bl_idname)
         self.layout.operator(pe.UndoPoseOperator.bl_idname, icon="LOOP_BACK")
         self.layout.operator(pe.MoveCursorToLastPoseOperator.bl_idname, icon="REW")
         self.layout.operator(pe.SelectCursorOperator.bl_idname, icon="ORIENTATION_CURSOR")
+        self.layout.operator(pe.MoveCursorSelectedPoseOperator.bl_idname)
 
 
 class PathEditorMenu(bpy.types.Menu):
@@ -72,6 +74,8 @@ class PathEditorMenu(bpy.types.Menu):
 
     def draw(self, context):
         pie = self.layout.menu_pie()
+        pie.operator(pe.MoveCursorSelectedPoseOperator.bl_idname)
+        pie.operator(pe.ApplyChangePoseOperator.bl_idname)
         pie.operator(pe.SavePoseOperator.bl_idname, icon="IMPORT")
         pie.operator(pe.UndoPoseOperator.bl_idname, icon="LOOP_BACK")
         pie.operator(pe.MoveCursorToLastPoseOperator.bl_idname, icon="REW")

@@ -20,7 +20,7 @@ from pathlib import Path
 
 project_folder = Path("D:\\alberto\\Universidad\\Robomap\\Fuente\\")
 
-dir = project_folder / Path(".\\blender-editor\\robotcontrol\\")
+dir = project_folder / Path(".\\blender-editor-plan_editor\\robotcontrol\\")
 if not dir in sys.path:
     sys.path.append(str(dir))
 # end remove

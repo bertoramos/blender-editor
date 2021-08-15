@@ -17,7 +17,17 @@ keymaps = []
 
 def autoregister():
     global classes
-    classes = [SavePoseOperator, UndoPoseOperator, RemoveLastSavedPoseOperator, PathEditorLog, MoveCursorToLastPoseOperator, SelectCursorOperator, ClearPathOperator]
+    classes = [SavePoseOperator,
+               UndoPoseOperator,
+               RemoveLastSavedPoseOperator,
+               PathEditorLog,
+               MoveCursorToLastPoseOperator,
+               SelectCursorOperator,
+               ClearPathOperator,
+               MoveCursorSelectedPoseOperator,
+               ApplyChangePoseOperator]
+    #
+
     for cls in classes:
         bpy.utils.register_class(cls)
 
@@ -25,6 +35,9 @@ def autoregister():
     global pd
     pd = PathDrawer()
     cl.CursorListener.add_observer(pd)
+
+    global isModifying
+    isModifying = False
 
     # keymap
     wm = bpy.context.window_manager
@@ -69,6 +82,7 @@ class PathDrawer(cl.Observer):
 
     def __init__(self):
         self.current_action = None
+        self.next_action = None
 
     def notifyStop(self, operator):
         pathContainer = pc.PathContainer()
@@ -116,11 +130,14 @@ class PathDrawer(cl.Observer):
         cl.CursorListener.select_cursor()
         hideCeil()
 
-
+        pc.TempPathContainer().loadActions()
 
     def notifyChange(self, current_pose):
         if self.current_action is not None:
             self.current_action.move(current_pose)
+            if self.next_action is not None:
+                self.next_action.move_fixed(current_pose)
+
 
 def is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1):
     rs = robot_tools.RobotSet()
@@ -212,7 +229,8 @@ class SavePoseOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.is_cursor_active
+        global isModifying
+        return context.scene.is_cursor_active and not isModifying
 
     def execute(self, context):
         global pd
@@ -235,7 +253,6 @@ class SavePoseOperator(bpy.types.Operator):
         else:
             self.report({'INFO'}, "Collision : " + str(res))
 
-
         # Guardamos nueva action y dibujamos la informacion para la action previa
         pd.current_action.draw_annotation(context)
         pc.TempPathContainer().appendAction(pd.current_action)
@@ -255,7 +272,8 @@ class UndoPoseOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return len(pc.TempPathContainer()) > 0
+        global isModifying
+        return len(pc.TempPathContainer()) > 0 and not isModifying
 
     def execute(self, context):
         last_action = pc.TempPathContainer().removeLast()
@@ -272,9 +290,10 @@ class RemoveLastSavedPoseOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
+        global isModifying
         running_plan = context.scene.com_props.prop_running_nav
         paused_plan = context.scene.com_props.prop_paused_nav
-        return len(pc.PathContainer()) > 0 and (not running_plan or (running_plan and paused_plan))
+        return len(pc.PathContainer()) > 0 and (not running_plan or (running_plan and paused_plan)) and not isModifying
 
     def execute(self, context):
         action = pc.PathContainer().removeLastAction()
@@ -323,6 +342,80 @@ class SelectCursorOperator(bpy.types.Operator):
     def execute(self, context):
         cl.CursorListener.select_cursor()
         return {'FINISHED'}
+
+class MoveCursorSelectedPoseOperator(bpy.types.Operator):
+    bl_idname = "scene.move_cursor_selected_pose"
+    bl_label = "Move cursor to selected pose"
+    bl_description = "Move cursor to selected pose"
+
+    @classmethod
+    def poll(cls, context):
+        global isModifying
+        # Si algun elemento seleccionado es una pose de la ruta activa
+        for obj in bpy.context.selected_objects:
+            if obj.object_type == "PATH_ELEMENTS_POSE":
+                return True
+        if isModifying:
+            return False
+        return False
+
+    def execute(self, context):
+        global pd
+        global isModifying
+
+        for obj in context.selected_objects:
+            for action_index, action in enumerate(pc.TempPathContainer()):
+                if obj.name_full == action._arrow:
+                    cl.CursorListener.set_pose(action.p1)
+                    pd.current_action = action
+
+                    if len(pc.TempPathContainer()) > action_index + 1:
+                        next_action = pc.TempPathContainer()[action_index + 1]
+                        pd.next_action = next_action
+
+                    cl.CursorListener.select_cursor()
+
+                    # remove anotation
+                    pd.current_action.del_annotation()
+
+                    isModifying = True
+                    return {'FINISHED'}
+        return {'FINISHED'}
+
+
+class ApplyChangePoseOperator(bpy.types.Operator):
+    bl_idname = "scene.apply_change_pose"
+    bl_label = "Apply Change Pose"
+    bl_description = "Apply change pose"
+
+    @classmethod
+    def poll(cls, context):
+        global isModifying
+        return context.scene.is_cursor_active and isModifying
+
+    def execute(self, context):
+        global pd
+        global isModifying
+        # validate current_action and next_action
+
+        # Guardamos nueva action y dibujamos la informacion para la action previa
+        pd.current_action.draw_annotation(context)
+        #pc.TempPathContainer().appendAction(pd.current_action)
+
+        last_action = pc.TempPathContainer().getLastAction()
+        pd.next_action = None
+
+        # Siguiente action
+        p1 = last_action.p1
+        pd.current_action = path.Action(p1, p1)
+
+        cl.CursorListener.select_cursor()
+        isModifying = False
+
+        cl.CursorListener.set_pose(p1)
+
+        return {'FINISHED'}
+
 
 update_time = -1
 

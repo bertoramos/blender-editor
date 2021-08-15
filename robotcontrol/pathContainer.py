@@ -39,6 +39,13 @@ class PathContainer:
         PathContainer.__instance.__list.extend(actions)
         self.__last_update = int(time.time())
 
+    def addAllActions(self, actions):
+        PathContainer.__instance.__list = actions
+        self.__last_update = int(time.time())
+
+    def getAllActions(self):
+        return PathContainer.__instance.__list
+
     def getLastUpdate(self):
         return int(self.__last_update)
 
@@ -50,6 +57,9 @@ class PathContainer:
         if last_action is not None:
             poses.append(last_action.p1)
         return poses
+
+    def __iter__(self):
+        return iter(PathContainer.__instance.__list)
 
     def __str__(self):
         return str(PathContainer.__instance.__list)
@@ -78,8 +88,15 @@ class TempPathContainer:
         action = TempPathContainer.__instance.__list.pop()
         return action
 
+    def getLastAction(self):
+        return TempPathContainer.__instance.__list[-1] if len(TempPathContainer.__instance.__list) > 0 else None
+
     def clear(self):
         TempPathContainer.__instance.__list.clear()
+
+    def loadActions(self):
+        if len(PathContainer()) > 0:
+            TempPathContainer.__instance.__list = PathContainer().getAllActions()
 
     def pushActions(self):
         if len(TempPathContainer.__instance.__list) > 0:
@@ -88,8 +105,14 @@ class TempPathContainer:
             for i in range(len(TempPathContainer.__instance.__list)):
                 a = TempPathContainer.__instance.__list.pop(0)
                 sent_list.append(a)
-            PathContainer().extendActions(sent_list)
+            PathContainer().addAllActions(sent_list)
             self.clear()
+
+    def __iter__(self):
+        return iter(TempPathContainer.__instance.__list)
+
+    def __getitem__(self, item_index):
+        return TempPathContainer.__instance.__list[item_index]
 
     def __str__(self):
         return str(TempPathContainer.__instance.__list)

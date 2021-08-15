@@ -19,7 +19,8 @@ items = [("TEMPORAL", "Temporal", "", -1),
          ("PATH_ELEMENTS", "Path_elements", "", 11),
          ("GEOMETRIC_CURSOR", "Geometric_cursor", "", 12),
          ("STATIC_ULTRASOUND_BEACON", "Static_Ultrasound_Beacon", "", 13),
-         ("STATIC_BLUETOOTH_BEACON", "Static_Bluetooth_Beacon", "", 14)
+         ("STATIC_BLUETOOTH_BEACON", "Static_Bluetooth_Beacon", "", 14),
+         ("PATH_ELEMENTS_POSE", "Path_elements_pose", "", 15)
          ]
 
 bpy.types.Object.object_type = bpy.props.EnumProperty(items=items, default="OTHER")
