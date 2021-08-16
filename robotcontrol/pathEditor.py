@@ -19,13 +19,15 @@ def autoregister():
     global classes
     classes = [SavePoseOperator,
                UndoPoseOperator,
-               RemoveLastSavedPoseOperator,
+               #RemoveLastSavedPoseOperator,
                PathEditorLog,
                MoveCursorToLastPoseOperator,
                SelectCursorOperator,
                ClearPathOperator,
                MoveCursorSelectedPoseOperator,
-               ApplyChangePoseOperator]
+               ApplyChangePoseOperator,
+               RemoveSelectedPoseOperator,
+               InsertPoseBeforeSelectedPoseOperator]
     #
 
     for cls in classes:
@@ -237,8 +239,6 @@ class SavePoseOperator(bpy.types.Operator):
         # validate new action
         pos0 = pd.current_action.p0
         pos1 = pd.current_action.p1
-        loc0 = pd.current_action.p0.loc
-        loc1 = pd.current_action.p1.loc
 
         idx = bpy.context.scene.selected_robot_props.prop_robot_id
         robot = robot_tools.RobotSet().getRobot(idx)
@@ -248,10 +248,10 @@ class SavePoseOperator(bpy.types.Operator):
         res = is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1)
 
         if res:
-            self.report({'ERROR'}, "Robot will collide if takes this path")
+            self.report({'ERROR'}, "Collision detected: Robot will collide if takes this path")
             return {'FINISHED'}
         else:
-            self.report({'INFO'}, "Collision : " + str(res))
+            self.report({'INFO'}, "Undetected collision")
 
         # Guardamos nueva action y dibujamos la informacion para la action previa
         pd.current_action.draw_annotation(context)
@@ -283,6 +283,7 @@ class UndoPoseOperator(bpy.types.Operator):
         pd.current_action.del_annotation()
         return {'FINISHED'}
 
+"""
 class RemoveLastSavedPoseOperator(bpy.types.Operator):
     bl_idname = "scene.remove_last_saved_pose"
     bl_label = "Remove Last Saved Pose"
@@ -296,9 +297,15 @@ class RemoveLastSavedPoseOperator(bpy.types.Operator):
         return len(pc.PathContainer()) > 0 and (not running_plan or (running_plan and paused_plan)) and not isModifying
 
     def execute(self, context):
-        action = pc.PathContainer().removeLastAction()
+        action = pc.TempPathContainer().removeLastAction()
         del action
+        last_action = pc.TempPathContainer().getLastAction()
+
+        cl.CursorListener.set_pose(last_action.p1)
+        pd.current_action = last_action
+
         return {'FINISHED'}
+"""
 
 class ClearPathOperator(bpy.types.Operator):
     bl_idname = "scene.clear_path"
@@ -397,6 +404,24 @@ class ApplyChangePoseOperator(bpy.types.Operator):
         global pd
         global isModifying
         # validate current_action and next_action
+        pos0 = pd.current_action.p0
+        pos1 = pd.current_action.p1
+        pos2 = getattr(pd.next_action, 'p1', None)
+
+        idx = bpy.context.scene.selected_robot_props.prop_robot_id
+        robot = robot_tools.RobotSet().getRobot(idx)
+        robot_obj = bpy.data.objects[robot.name]
+        area_robot_obj = bpy.data.objects[robot.area_name]
+
+        res_first_action = is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1)
+
+        res_second_action = is_colliding(idx, robot_obj, area_robot_obj, pos1, pos2) if pos2 is not None else False
+
+        if res_first_action or res_second_action:
+            self.report({'ERROR'}, "Collision detected: Robot will collide if takes this path")
+            return {'FINISHED'}
+        else:
+            self.report({'INFO'}, "Undetected collision")
 
         # Guardamos nueva action y dibujamos la informacion para la action previa
         pd.current_action.draw_annotation(context)
@@ -415,6 +440,115 @@ class ApplyChangePoseOperator(bpy.types.Operator):
         cl.CursorListener.set_pose(p1)
 
         return {'FINISHED'}
+
+
+class RemoveSelectedPoseOperator(bpy.types.Operator):
+    bl_idname = "scene.remove_selected_pose"
+    bl_label = "Remove selected pose"
+    bl_description = "Remove selected pose"
+
+    @classmethod
+    def poll(cls, context):
+        global isModifying
+        # Si algun elemento seleccionado es una pose de la ruta activa
+        for obj in bpy.context.selected_objects:
+            if obj.object_type == "PATH_ELEMENTS_POSE":
+                return True
+        if isModifying:
+            return False
+        return False
+
+    def execute(self, context):
+        global pd
+        global isModifying
+
+        for obj in context.selected_objects:
+            for action_index, action in enumerate(pc.TempPathContainer()):
+                if obj.name_full == action._arrow:
+
+                    next_action_index = -1
+                    if len(pc.TempPathContainer()) > action_index + 1:
+                        next_action_index = action_index + 1
+
+
+                    # Comprobar colision
+                    pos0 = action.p0
+                    pos1 = pd.current_action.p1 if next_action_index < 0 else pc.TempPathContainer()[next_action_index].p1
+
+                    idx = bpy.context.scene.selected_robot_props.prop_robot_id
+                    robot = robot_tools.RobotSet().getRobot(idx)
+                    robot_obj = bpy.data.objects[robot.name]
+                    area_robot_obj = bpy.data.objects[robot.area_name]
+
+                    res = is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1)
+
+                    if res:
+                        self.report({'ERROR'}, "Collision detected: Resulting path after deleting this point is not valid")
+                        return {'FINISHED'}
+                    else:
+                        self.report({'INFO'}, "Undetected collision")
+
+
+
+                    p0 = action.p0
+                    if next_action_index < 0:
+                        # mover punto fijo del current_action a action.p1
+                        pd.current_action.move_fixed(p0)
+                    else:
+                        # mover punto fijo del next_action a action.p1
+                        pc.TempPathContainer()[next_action_index].move_fixed(p0)
+                    pc.TempPathContainer().remove(action_index)
+
+                    return {'FINISHED'}
+        return {'FINISHED'}
+
+
+class InsertPoseBeforeSelectedPoseOperator(bpy.types.Operator):
+    bl_idname = "scene.insert_pose_before_selected_pose"
+    bl_label = "Insert pose before selected pose"
+    bl_description = "Insert pose before selected pose"
+
+    @classmethod
+    def poll(cls, context):
+        global isModifying
+        # Si algun elemento seleccionado es una pose de la ruta activa
+        for obj in bpy.context.selected_objects:
+            if obj.object_type == "PATH_ELEMENTS_POSE":
+                return True
+        if isModifying:
+            return False
+        return False
+
+    def execute(self, context):
+        global pd
+        global isModifying
+
+        for obj in context.selected_objects:
+            for action_index, action in enumerate(pc.TempPathContainer()):
+                if obj.name_full == action._arrow:
+                    # Inserta una nueva action en medio de la pose seleccionada y la anterior
+                    p0 = action.p0
+                    p1 = action.p1
+                    xm, ym = (p1.x + p0.x)/2. , (p1.y + p0.y)/2.
+                    med_pose = path.Pose(xm, ym, p0.z, p0.alpha, p0.beta, p0.gamma)
+
+                    next_action = path.Action(med_pose, p1)
+                    action.move(med_pose)
+
+                    pc.TempPathContainer().insert(action_index + 1, next_action)
+
+                    # Cambia pathdrawer
+                    pd.current_action = action
+                    pd.next_action = next_action
+
+                    cl.CursorListener.set_pose(action.p1)
+                    cl.CursorListener.select_cursor()
+                    isModifying = True
+
+                    return {'FINISHED'}
+        return {'FINISHED'}
+
+
 
 
 update_time = -1

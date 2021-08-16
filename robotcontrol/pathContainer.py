@@ -88,6 +88,14 @@ class TempPathContainer:
         action = TempPathContainer.__instance.__list.pop()
         return action
 
+    def remove(self, action_index):
+        if action_index < len(TempPathContainer.__instance.__list):
+            TempPathContainer.__instance.__list.pop(action_index)
+
+    def insert(self, action_index, action):
+        if 0 < action_index < len(TempPathContainer.__instance.__list) - 1:
+            TempPathContainer.__instance.__list.insert(action_index, action)
+
     def getLastAction(self):
         return TempPathContainer.__instance.__list[-1] if len(TempPathContainer.__instance.__list) > 0 else None
 

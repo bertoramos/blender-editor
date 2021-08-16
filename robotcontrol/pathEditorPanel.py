@@ -44,7 +44,7 @@ class PathCreationPanel(bpy.types.Panel):
     def draw(self, context):
         self.layout.operator(cl.StartPosesListener.bl_idname, icon="CURVE_PATH", text="Start editor")
         self.layout.operator(cl.StopPosesListener.bl_idname, icon="DISK_DRIVE", text="Stop editor (Save poses)")
-        self.layout.operator(pe.RemoveLastSavedPoseOperator.bl_idname, icon="GPBRUSH_ERASE_STROKE")
+        #self.layout.operator(pe.RemoveLastSavedPoseOperator.bl_idname, icon="GPBRUSH_ERASE_STROKE")
         self.layout.operator(pe.ClearPathOperator.bl_idname, icon="X")
 
 class ToolsPanel(bpy.types.Panel):
@@ -66,6 +66,8 @@ class ToolsPanel(bpy.types.Panel):
         self.layout.operator(pe.MoveCursorToLastPoseOperator.bl_idname, icon="REW")
         self.layout.operator(pe.SelectCursorOperator.bl_idname, icon="ORIENTATION_CURSOR")
         self.layout.operator(pe.MoveCursorSelectedPoseOperator.bl_idname)
+        self.layout.operator(pe.RemoveSelectedPoseOperator.bl_idname)
+        self.layout.operator(pe.InsertPoseBeforeSelectedPoseOperator.bl_idname)
 
 
 class PathEditorMenu(bpy.types.Menu):
@@ -80,3 +82,5 @@ class PathEditorMenu(bpy.types.Menu):
         pie.operator(pe.UndoPoseOperator.bl_idname, icon="LOOP_BACK")
         pie.operator(pe.MoveCursorToLastPoseOperator.bl_idname, icon="REW")
         pie.operator(pe.SelectCursorOperator.bl_idname, icon="ORIENTATION_CURSOR")
+        pie.operator(pe.RemoveSelectedPoseOperator.bl_idname)
+        pie.operator(pe.InsertPoseBeforeSelectedPoseOperator.bl_idname)
