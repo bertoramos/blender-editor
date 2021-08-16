@@ -43,6 +43,7 @@ import robotCommunicationOperator
 import communicationPanel
 import simulationOperator
 import calibrationOperator
+import data_export
 # end local import: Change to from . import MODULE
 
 # begin remove
@@ -64,9 +65,10 @@ importlib.reload(connectionHandler)
 importlib.reload(communicationPanel)
 importlib.reload(simulationOperator)
 importlib.reload(calibrationOperator)
+importlib.reload(data_export)
 # end remove
 
-operadores = [cursorListener, pathEditor, robot, robot_props, robotCommunicationOperator, simulationOperator, calibrationOperator]
+operadores = [cursorListener, pathEditor, robot, robot_props, robotCommunicationOperator, simulationOperator, calibrationOperator, data_export]
 paneles = [robot_panel, pathEditorPanel, communicationPanel]
 
 def register():

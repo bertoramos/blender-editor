@@ -58,8 +58,8 @@ def autoregister():
 
 def autounregister():
     global classes
-    for cls in classes:
-        bpy.utils.unregister_class(cls)
+    for c in classes:
+        bpy.utils.unregister_class(c)
 
 
     global pd
@@ -549,6 +549,7 @@ class InsertPoseBeforeSelectedPoseOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
+################################################################################
 
 
 update_time = -1

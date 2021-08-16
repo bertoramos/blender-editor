@@ -5,6 +5,7 @@ import bpy
 import cursorListener as cl
 import pathEditor as pe
 import robot as robot_tools
+import data_export
 # end local import: Change to from . import MODULE
 
 keymaps = []
@@ -46,6 +47,9 @@ class PathCreationPanel(bpy.types.Panel):
         self.layout.operator(cl.StopPosesListener.bl_idname, icon="DISK_DRIVE", text="Stop editor (Save poses)")
         #self.layout.operator(pe.RemoveLastSavedPoseOperator.bl_idname, icon="GPBRUSH_ERASE_STROKE")
         self.layout.operator(pe.ClearPathOperator.bl_idname, icon="X")
+        #self.layout.operator(data_export.LoadPosesOperator.bl_idname)
+        self.layout.operator(data_export.ExportPosesOperator.bl_idname)
+        self.layout.operator(data_export.LoadPosesOperator.bl_idname)
 
 class ToolsPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_ToolsPanel"

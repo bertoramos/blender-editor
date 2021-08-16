@@ -353,23 +353,32 @@ class StartPauseResumePlanOperator(bpy.types.Operator):
                 r = robot.RobotSet().getRobot(sel_robot_id)
                 pose_robot = r.pose
 
-                p = pc.PathContainer().poses
+                poses_list = pc.PathContainer().poses
 
-                if pose_robot != p[0]:
-                    robot_obj = bpy.data.objects[r.name]
-                    area_robot_obj = bpy.data.objects[r.area_name]
-                    collide = pathEditor.is_colliding(sel_robot_id, robot_obj, area_robot_obj, pose_robot, p[0])
+
+                robot_obj = bpy.data.objects[r.name]
+                area_robot_obj = bpy.data.objects[r.area_name]
+
+                if pose_robot != poses_list[0]:
+                    collide = pathEditor.is_colliding(sel_robot_id, robot_obj, area_robot_obj, pose_robot, poses_list[0])
                     if collide:
                         self.report({"ERROR"}, "Collision : robot cannot be moved to the indicated start position")
                         return
 
+                # Comprobar colision para el resto de poses de la ruta
+                for pose_index in range(len(poses_list)-1):
+                    collide = pathEditor.is_colliding(sel_robot_id, robot_obj, area_robot_obj, poses_list[pose_index], poses_list[pose_index + 1])
+                    if collide:
+                        self.report({"ERROR"}, "Collision: robot cannot execute current path")
+                        return
+
                 bpy.context.scene.com_props.prop_last_sent_packet += 1
                 pid = bpy.context.scene.com_props.prop_last_sent_packet
-                status = cnh.ConnectionHandler().send_plan(pid, p)
+                status = cnh.ConnectionHandler().send_plan(pid, poses_list)
 
-                self.report({"INFO"}, "Plan was sent" if status == len(p) else "Plan fail {0}".format(status))
+                self.report({"INFO"}, "Plan was sent" if status == len(poses_list) else "Plan fail {0}".format(status))
 
-                if status == len(p):
+                if status == len(poses_list):
                     com_props.prop_last_sent_packet += 1
                     pid = com_props.prop_last_sent_packet
                     cnh.ConnectionHandler().send_start_plan(pid)

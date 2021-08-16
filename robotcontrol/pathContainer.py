@@ -49,6 +49,15 @@ class PathContainer:
     def getLastUpdate(self):
         return int(self.__last_update)
 
+    def loadPoses(self, poses_list):
+        self.clear()
+        for pose_index in range(len(poses_list)-1):
+            action = path.Action(poses_list[pose_index], poses_list[pose_index+1])
+            if pose_index == 0:
+                action.set_first_action()
+            PathContainer.__instance.__list.append(action)
+        self.__last_update = int(time.time())
+
     def _get_poses(self):
         poses = []
         for action in PathContainer.__instance.__list:
