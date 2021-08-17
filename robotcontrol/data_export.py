@@ -27,7 +27,7 @@ def autounregister():
     for c in classes:
         bpy.utils.unregister_class(c)
 
-    del bpy.types.WindowManager.loaded_file
+    del bpy.types.WindowManager.load_file
 
 def parse_data(json_poses):
     try:
