@@ -102,7 +102,7 @@ class StopPosesListener(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         # Esta activo el listener?
-        return isListenerActive()
+        return isListenerActive() and not context.scene.isModifying
 
     def execute(self, context):
         bpy.ops.object.select_all(action='DESELECT')

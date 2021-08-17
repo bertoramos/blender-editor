@@ -45,11 +45,17 @@ class PathCreationPanel(bpy.types.Panel):
     def draw(self, context):
         self.layout.operator(cl.StartPosesListener.bl_idname, icon="CURVE_PATH", text="Start editor")
         self.layout.operator(cl.StopPosesListener.bl_idname, icon="DISK_DRIVE", text="Stop editor (Save poses)")
-        #self.layout.operator(pe.RemoveLastSavedPoseOperator.bl_idname, icon="GPBRUSH_ERASE_STROKE")
+
         self.layout.operator(pe.ClearPathOperator.bl_idname, icon="X")
-        #self.layout.operator(data_export.LoadPosesOperator.bl_idname)
-        self.layout.operator(data_export.ExportPosesOperator.bl_idname)
-        self.layout.operator(data_export.LoadPosesOperator.bl_idname)
+
+        box = self.layout.box()
+        if context.window_manager.load_file != "":
+            box.label(text=f"{context.window_manager.load_file}")
+        else:
+            box.label(text="No loaded file")
+        row = box.row()
+        row.operator(data_export.ExportPosesOperator.bl_idname, icon="EXPORT")
+        row.operator(data_export.LoadPosesOperator.bl_idname, icon="IMPORT")
 
 class ToolsPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_ToolsPanel"
@@ -64,14 +70,17 @@ class ToolsPanel(bpy.types.Panel):
         return any([scene.is_cursor_active for scene in bpy.data.scenes])
 
     def draw(self, context):
-        self.layout.operator(pe.SavePoseOperator.bl_idname, icon="IMPORT")
-        self.layout.operator(pe.ApplyChangePoseOperator.bl_idname)
+        self.layout.operator(pe.SavePoseOperator.bl_idname, icon="PLUS")
         self.layout.operator(pe.UndoPoseOperator.bl_idname, icon="LOOP_BACK")
+
+        self.layout.label(text="Edit poses")
+        self.layout.operator(pe.MoveCursorSelectedPoseOperator.bl_idname, icon="EDITMODE_HLT")
+        self.layout.operator(pe.RemoveSelectedPoseOperator.bl_idname, icon="X")
+        self.layout.operator(pe.InsertPoseBeforeSelectedPoseOperator.bl_idname, icon="NODE_INSERT_OFF")
+
+        self.layout.label(text="Cursor actions")
         self.layout.operator(pe.MoveCursorToLastPoseOperator.bl_idname, icon="REW")
         self.layout.operator(pe.SelectCursorOperator.bl_idname, icon="ORIENTATION_CURSOR")
-        self.layout.operator(pe.MoveCursorSelectedPoseOperator.bl_idname)
-        self.layout.operator(pe.RemoveSelectedPoseOperator.bl_idname)
-        self.layout.operator(pe.InsertPoseBeforeSelectedPoseOperator.bl_idname)
 
 
 class PathEditorMenu(bpy.types.Menu):
@@ -80,11 +89,10 @@ class PathEditorMenu(bpy.types.Menu):
 
     def draw(self, context):
         pie = self.layout.menu_pie()
-        pie.operator(pe.MoveCursorSelectedPoseOperator.bl_idname)
-        pie.operator(pe.ApplyChangePoseOperator.bl_idname)
+        pie.operator(pe.MoveCursorSelectedPoseOperator.bl_idname, icon="EDITMODE_HLT")
         pie.operator(pe.SavePoseOperator.bl_idname, icon="IMPORT")
         pie.operator(pe.UndoPoseOperator.bl_idname, icon="LOOP_BACK")
         pie.operator(pe.MoveCursorToLastPoseOperator.bl_idname, icon="REW")
         pie.operator(pe.SelectCursorOperator.bl_idname, icon="ORIENTATION_CURSOR")
-        pie.operator(pe.RemoveSelectedPoseOperator.bl_idname)
-        pie.operator(pe.InsertPoseBeforeSelectedPoseOperator.bl_idname)
+        pie.operator(pe.RemoveSelectedPoseOperator.bl_idname, icon="X")
+        pie.operator(pe.InsertPoseBeforeSelectedPoseOperator.bl_idname, icon="NODE_INSERT_OFF")

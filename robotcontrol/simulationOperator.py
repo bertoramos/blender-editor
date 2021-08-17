@@ -99,6 +99,7 @@ class SimulationOperator(bpy.types.Operator):
         SimulationOperator.active = False
 
     def modal(self, context, event):
+        print(f"Ocurre algun evento: {event.type=}{event.value=}")
         if event.type == 'ESC':
             sel_rob_id = context.scene.selected_robot_props.prop_robot_id
             if sel_rob_id < 0:

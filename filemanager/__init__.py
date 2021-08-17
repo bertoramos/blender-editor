@@ -17,8 +17,8 @@ import os
 import sys
 from pathlib import Path
 
-project_folder = Path("D:\\alberto\\Universidad\\Robomap\\Fuente\\")
-dir = project_folder / Path(".\\blender-editor-plan_editor\\filemanager\\")
+project_folder = Path("D:\\Universidad\\MUSIANI\\Robomap\\Fuente\\blender_editor_modificable_plan_editor\\")
+dir = project_folder / Path(".\\filemanager\\")
 if not dir in sys.path:
     sys.path.append(str(dir))
 # end remove

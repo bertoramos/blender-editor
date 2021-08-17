@@ -19,11 +19,15 @@ def autoregister():
     for c in classes:
         bpy.utils.register_class(c)
 
+    bpy.types.WindowManager.load_file = bpy.props.StringProperty(name="load_file", default="")
+
 def autounregister():
     global classes
 
     for c in classes:
         bpy.utils.unregister_class(c)
+
+    del bpy.types.WindowManager.loaded_file
 
 def parse_data(json_poses):
     try:
@@ -54,7 +58,7 @@ def export_poses(path, name, data_poses):
 
 class LoadPosesOperator(bpy.types.Operator, ExportHelper):
     bl_idname = "export.load_poses_operator"
-    bl_label = "Load poses from file"
+    bl_label = "Load path"
 
     filename_ext = ".json"
 
@@ -62,6 +66,10 @@ class LoadPosesOperator(bpy.types.Operator, ExportHelper):
         default="*.json",
         options={'HIDDEN'}
     )
+
+    @classmethod
+    def poll(cls, context):
+        return not context.scene.is_cursor_active
 
     def execute(self, context):
         # filepath
@@ -78,14 +86,15 @@ class LoadPosesOperator(bpy.types.Operator, ExportHelper):
         if not (poses := parse_data(json_poses) ):
             self.report({'ERROR'}, "Error while parsing poses. Check file content.")
         else:
-            pc.PathContainer().loadPoses(poses)
+            pc.PathContainer().loadPoses(poses, context=context)
+            context.window_manager.load_file = str(path/name)
 
         return {'FINISHED'}
 
 
 class ExportPosesOperator(bpy.types.Operator, ExportHelper):
     bl_idname = "export.export_poses_operator"
-    bl_label = "Export poses to file"
+    bl_label = "Export path"
 
     filename_ext = ".json"
 
@@ -93,6 +102,10 @@ class ExportPosesOperator(bpy.types.Operator, ExportHelper):
         default="*.json",
         options={'HIDDEN'}
     )
+
+    @classmethod
+    def poll(cls, context):
+        return not context.scene.is_cursor_active
 
     def execute(self, context):
         # poses

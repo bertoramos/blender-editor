@@ -3,6 +3,6 @@ import bpy
 import os
 from pathlib import Path
 
-project_folder = Path("D:\\alberto\\Universidad\\Robomap\\Fuente\\")
-filename = project_folder / Path(".\\blender-editor-plan_editor\\robotcontrol\\__init__.py")
+project_folder = Path("D:\\Universidad\\MUSIANI\\Robomap\\Fuente\\blender_editor_modificable_plan_editor\\")
+filename = project_folder / Path(".\\robotcontrol\\__init__.py")
 exec(compile(open(str(filename)).read(), str(filename), 'exec'))
