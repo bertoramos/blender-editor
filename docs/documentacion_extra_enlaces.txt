@@ -1,0 +1,12 @@
+
+Manual de usuario:
+	https://docs.blender.org/manual/en/latest/
+
+API:
+	https://docs.blender.org/api/current/
+
+Tutoriales:
+	https://www.blender.org/support/tutorials/
+
+Blender foro:
+	https://blender.stackexchange.com/
