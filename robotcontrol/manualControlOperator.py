@@ -29,15 +29,20 @@ class ManualControlEventsOperator(bpy.types.Operator):
         speed = context.scene.com_props.prop_speed
         displacement = 1
 
-        context.scene.com_props.prop_last_sent_packet += 1
-        pid = context.scene.com_props.prop_last_sent_packet
+        pid = context.scene.com_props.prop_last_sent_packet + 1
 
         action = {('PRESS','W'): lambda : ch.ConnectionHandler().send_manual_translation_packet(pid, 0, +displacement, speed),
                   ('PRESS','S'): lambda : ch.ConnectionHandler().send_manual_translation_packet(pid, 0, -displacement, speed),
                   ('PRESS','D'): lambda : ch.ConnectionHandler().send_manual_translation_packet(pid, +displacement, 0, speed),
                   ('PRESS','A'): lambda : ch.ConnectionHandler().send_manual_translation_packet(pid, -displacement, 0, speed),
                   ('PRESS','RIGHT_ARROW'): lambda : ch.ConnectionHandler().send_manual_rotation_mode(pid, +displacement, speed),
-                  ('PRESS','LEFT_ARROW'): lambda : ch.ConnectionHandler().send_manual_rotation_mode(pid, -displacement, speed)
+                  ('PRESS','LEFT_ARROW'): lambda : ch.ConnectionHandler().send_manual_rotation_mode(pid, -displacement, speed),
+                  ('RELEASE', 'W'): lambda: ch.ConnectionHandler().send_stop_plan(pid),
+                  ('RELEASE', 'S'): lambda: ch.ConnectionHandler().send_stop_plan(pid),
+                  ('RELEASE', 'D'): lambda: ch.ConnectionHandler().send_stop_plan(pid),
+                  ('RELEASE', 'A'): lambda: ch.ConnectionHandler().send_stop_plan(pid),
+                  ('RELEASE', 'RIGHT_ARROW'): lambda: ch.ConnectionHandler().send_stop_plan(pid),
+                  ('RELEASE', 'LEFT_ARROW'): lambda: ch.ConnectionHandler().send_stop_plan(pid)
                  }
 
         last_sent = ManualControlEventsOperator._last_sent
@@ -48,6 +53,7 @@ class ManualControlEventsOperator(bpy.types.Operator):
         rescode = action[(value,type)]()
         if rescode is not None and rescode:
             ManualControlEventsOperator._last_sent = (value, type)
+            context.scene.com_props.prop_last_sent_packet = pid
             return {'RUNNING_MODAL'} # is correct
         else:
             self.report({'ERROR'}, f"Ack not received {rescode}")

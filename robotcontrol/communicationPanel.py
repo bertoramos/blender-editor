@@ -12,26 +12,9 @@ import manualControlOperator as mco
 # end local import: Change to from . import MODULE
 
 def autoregister():
-    global preview_collections
-    preview_collections = {}
-
-    pcoll = bpy.utils.previews.new()
-    # https://icons8.com/license
-    my_icons_dir = os.path.join(os.path.dirname(__file__), "icons")
-    pcoll.load("gamepad_line_icon", os.path.join(my_icons_dir, "gamepad_line.png"), 'IMAGE')
-    pcoll.load("gamepad_filled_icon", os.path.join(my_icons_dir, "gamepad_filled.png"), 'IMAGE')
-
-    preview_collections["main"] = pcoll
-
     bpy.utils.register_class(CommunicationPanel)
 
 def autounregister():
-    global preview_collections
-
-    for pcoll in preview_collections.values():
-        bpy.utils.previews.remove(pcoll)
-    preview_collections.clear()
-
     bpy.utils.unregister_class(CommunicationPanel)
 
 
@@ -85,12 +68,8 @@ class CommunicationPanel(bpy.types.Panel):
 
         manual_control_button_text = "Open manual control" if not mco.ManualControlEventsOperator._open else "Close manual control"
 
-        pcoll = preview_collections["main"]
-        gamepad_line_icon = pcoll["gamepad_line_icon"]
-        gamepad_filled_icon = pcoll["gamepad_filled_icon"]
-
-        icon_value = gamepad_line_icon.icon_id if not mco.ManualControlEventsOperator._open else gamepad_filled_icon.icon_id
-        self.layout.operator(mco.ToggleManualControlOperator.bl_idname, text=manual_control_button_text, icon_value=icon_value)
+        icon_value = "PROP_OFF" if not mco.ManualControlEventsOperator._open else "PROP_ON"
+        self.layout.operator(mco.ToggleManualControlOperator.bl_idname, text=manual_control_button_text, icon=icon_value)
 
         # SIMULATION:
 
