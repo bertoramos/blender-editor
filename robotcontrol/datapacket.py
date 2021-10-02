@@ -20,6 +20,12 @@ Paquete de solicitud de informacion de calibrado (13)
 Paquete de abrir calibrado (14)
 Paquete de agregar baliza ultrasónica (15)
 Paquete de cerrar calibrado (16)
+Paquete de traslación manual (17)
+Paquete de rotación manual (18)
+Paquete de detención manual (19)
+Paquete de fin de ruta (20)
+Paquete de inicio de captura (21)
+Paquete de fin de captura (22)
 """
 
 class ModePacket(st.Packet):
@@ -317,3 +323,49 @@ class ManualRotationPacket(st.Packet):
 
     direction = property(__get_direction)
     speed = property(__get_speed)
+
+
+class ManualStopPacket(st.Packet):
+
+    def __init__(self, pid, ptype=19):
+        super().__init__(pid, ptype)
+
+    def __str__(self):
+        return "[{}|{}]".format(self.pid, self.ptype)
+
+    def __iter__(self):
+        return iter([self.pid, self.ptype])
+
+class EndPlanReachedPacket(st.Packet):
+
+    def __init__(self, pid, ptype=20):
+        super().__init__(pid, ptype)
+    
+    def __str__(self):
+        return "[{}|{}]".format(self.pid, self.ptype)
+
+    def __iter__(self):
+        return iter([self.pid, self.ptype])
+
+class CaptureStartedPacket(st.Packet):
+
+    def __init__(self, pid, ptype=21):
+        super().__init__(pid, ptype)
+    
+    def __str__(self):
+        return "[{}|{}]".format(self.pid, self.ptype)
+    
+    def __iter__(self):
+        return iter([self.pid, self.ptype])
+
+class CaptureEndedPacket(st.Packet):
+
+    def __init__(self, pid, ptype=22):
+        super().__init__(pid, ptype)
+    
+    def __str__(self):
+        return "[{}|{}]".format(self.pid, self.ptype)
+    
+    def __iter__(self):
+        return iter([self.pid, self.ptype])
+

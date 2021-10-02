@@ -35,14 +35,14 @@ class ManualControlEventsOperator(bpy.types.Operator):
                   ('PRESS','S'): lambda : ch.ConnectionHandler().send_manual_translation_packet(pid, 0, -displacement, speed),
                   ('PRESS','D'): lambda : ch.ConnectionHandler().send_manual_translation_packet(pid, +displacement, 0, speed),
                   ('PRESS','A'): lambda : ch.ConnectionHandler().send_manual_translation_packet(pid, -displacement, 0, speed),
-                  ('PRESS','RIGHT_ARROW'): lambda : ch.ConnectionHandler().send_manual_rotation_mode(pid, +displacement, speed),
-                  ('PRESS','LEFT_ARROW'): lambda : ch.ConnectionHandler().send_manual_rotation_mode(pid, -displacement, speed),
-                  ('RELEASE', 'W'): lambda: ch.ConnectionHandler().send_stop_plan(pid),
-                  ('RELEASE', 'S'): lambda: ch.ConnectionHandler().send_stop_plan(pid),
-                  ('RELEASE', 'D'): lambda: ch.ConnectionHandler().send_stop_plan(pid),
-                  ('RELEASE', 'A'): lambda: ch.ConnectionHandler().send_stop_plan(pid),
-                  ('RELEASE', 'RIGHT_ARROW'): lambda: ch.ConnectionHandler().send_stop_plan(pid),
-                  ('RELEASE', 'LEFT_ARROW'): lambda: ch.ConnectionHandler().send_stop_plan(pid)
+                  ('PRESS','RIGHT_ARROW'): lambda : ch.ConnectionHandler().send_manual_rotation_packet(pid, +displacement, speed),
+                  ('PRESS','LEFT_ARROW'): lambda : ch.ConnectionHandler().send_manual_rotation_packet(pid, -displacement, speed),
+                  ('RELEASE', 'W'): lambda: ch.ConnectionHandler().send_manual_stop_packet(pid),
+                  ('RELEASE', 'S'): lambda: ch.ConnectionHandler().send_manual_stop_packet(pid),
+                  ('RELEASE', 'D'): lambda: ch.ConnectionHandler().send_manual_stop_packet(pid),
+                  ('RELEASE', 'A'): lambda: ch.ConnectionHandler().send_manual_stop_packet(pid),
+                  ('RELEASE', 'RIGHT_ARROW'): lambda: ch.ConnectionHandler().send_manual_stop_packet(pid),
+                  ('RELEASE', 'LEFT_ARROW'): lambda: ch.ConnectionHandler().send_manual_stop_packet(pid)
                  }
 
         last_sent = ManualControlEventsOperator._last_sent
@@ -51,12 +51,13 @@ class ManualControlEventsOperator(bpy.types.Operator):
 
         # Send message
         rescode = action[(value,type)]()
+        print("ACK rescode from send translation ", rescode)
+        context.scene.com_props.prop_last_sent_packet = pid
+        ManualControlEventsOperator._last_sent = (value, type)
         if rescode is not None and rescode:
-            ManualControlEventsOperator._last_sent = (value, type)
-            context.scene.com_props.prop_last_sent_packet = pid
             return {'RUNNING_MODAL'} # is correct
         else:
-            self.report({'ERROR'}, f"Ack not received {rescode}")
+            self.report({'ERROR'}, f"WARNING: Robot could not be stopped")
             return {'RUNNING_MODAL'}
 
     def modal(self, context, event):

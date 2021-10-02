@@ -81,6 +81,8 @@ class CommunicationProps(bpy.types.PropertyGroup):
 
     prop_speed: bpy.props.FloatProperty(name="Speed", default=100.0, min=0.0, max=100.0)
 
+    prop_capture_running: bpy.props.BoolProperty(name="Capture running", default=False)
+
 # SOLUTION BUG: Create and drop a cube to update gui buttons
 def update_gui():
     bpy.ops.mesh.primitive_cube_add()
@@ -149,15 +151,44 @@ class SocketModalOperator(bpy.types.Operator):
 
     def modal(self, context, event):
         if event.type == "TIMER":
-
+            
             if context.scene.com_props.prop_running_nav and not context.scene.com_props.prop_paused_nav:
                 last_pose = pc.PathContainer().poses[-1]
+                # TODO: Cambiar por paquete de fin de ruta recibido
+                # Comprobar que se haya llegado a la última pose
                 reached_poses = cnh.Buffer().get_reached_poses()
-                for pose in reached_poses:
-                    if last_pose == pose:
-                        context.scene.com_props.prop_running_nav = False
-                        context.scene.com_props.prop_paused_nav = False
+                num_reached_poses = len(reached_poses)
+                num_path_poses = len(pc.PathContainer().poses)
+                end_reached = cnh.Buffer().end_reached()
 
+                if num_reached_poses == num_path_poses and end_reached:
+                    context.scene.com_props.prop_running_nav = False
+                    context.scene.com_props.prop_paused_nav = False
+                
+                if num_reached_poses != num_path_poses and end_reached:
+                    self.report({'ERROR'}, "End reached not expected")
+                    context.scene.com_props.prop_running_nav = False
+                    context.scene.com_props.prop_paused_nav = False
+                
+                capture_started = cnh.Buffer().capture_started()
+                capture_ended = cnh.Buffer().capture_ended()
+
+                if capture_started:
+                    prop_capture_running = context.scene.com_props.prop_capture_running
+                    if prop_capture_running:
+                        self.report({'ERROR'}, "Capture is already started")
+                    else:
+                        context.scene.com_props.prop_capture_running = True
+                        self.report({'INFO'}, "Capture started")
+                
+                if capture_ended:
+                    prop_capture_running = context.scene.com_props.prop_capture_running
+                    if not prop_capture_running:
+                        self.report({'ERROR'}, "Capture was not started")
+                    else:
+                        context.scene.com_props.prop_capture_running = False
+                        self.report({'INFO'}, "Capture ended")
+            
             if not SocketModalOperator.closed and context.scene.com_props.prop_rendering:
                 # Render robot position
                 sel_robot_id = bpy.context.scene.selected_robot_props.prop_robot_id

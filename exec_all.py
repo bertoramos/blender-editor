@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-project_folder = Path("E:\\Robomap\\blender-editor-master\\")
+project_folder = Path("E:\\Universidad\\Robomap\\Desarrollo\\blender-editor\\")
 
 filename = project_folder / Path(".\\utilities\\exec.py")
 exec(compile(open(str(filename)).read(), str(filename), 'exec'))

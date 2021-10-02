@@ -19,6 +19,9 @@ class Buffer:
             cls.__buffer = []
             cls.__reached_poses = []
             cls.__calibration_packets = []
+            cls.__end_reached = None
+            cls.__start_capture_packet = None
+            cls.__stop_capture_packet = None
             cls.__last_trace = None
         return cls.__instance
 
@@ -32,10 +35,32 @@ class Buffer:
             bpy.context.scene.com_props.prop_last_recv_packet = packet.pid
         elif type(packet) in {dp.CalibrationRequestPacket, dp.StartCalibrationPacket, dp.CloseCalibrationPacket, dp.AddUltrasoundBeaconPacket}:
             self.__calibration_packets.append(packet)
+        elif type(packet) in {dp.CaptureStartedPacket, dp.CaptureEndedPacket}:
+            self.__capture_packets.append(packet)
+        elif type(packet) in {dp.EndPlanReachedPacket}:
+            self.__end_reached = packet
         else:
             self.__buffer.append(packet)
             bpy.context.scene.com_props.prop_last_recv_packet = packet.pid
 
+    def end_reached(self):
+        if self.__end_reached is not None:
+            self.__end_reached = None
+            return True
+        return False
+    
+    def capture_started(self):
+        if self.__start_capture_packet is not None:
+            self.__start_capture_packet = None
+            return True
+        return False
+
+    def capture_ended(self):
+        if self.__stop_capture_packet is not None:
+            self.__stop_capture_packet = None
+            return True
+        return False
+    
     def get_last_trace_packet(self):
         return self.__last_trace
 
@@ -104,7 +129,10 @@ class ConnectionHandler:
     acknowledge_packet = {dp.StartCalibrationPacket,
                           dp.AddUltrasoundBeaconPacket,
                           dp.CloseCalibrationPacket,
-                          dp.ReachedPosePacket
+                          dp.ReachedPosePacket,
+                          dp.CaptureStartedPacket,
+                          dp.CaptureEndedPacket,
+                          dp.EndPlanReachedPacket
                           }
 
     def __new__(cls):
@@ -334,7 +362,7 @@ class ConnectionHandler:
             return False
         return self.receive_ack_packet(pid)
 
-    def send_manual_rotation_mode(self, pid, direction, speed):
+    def send_manual_rotation_packet(self, pid, direction, speed):
         """
         Send a manual rotation packet
         :returns: False if send mode operation fails or status != 1
@@ -343,6 +371,15 @@ class ConnectionHandler:
         try:
             ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(manual_rotation_packet), ConnectionHandler.serverAddr)
         except:
+            print("Exception caught")
+            return False
+        return self.receive_ack_packet(pid)
+    
+    def send_manual_stop_packet(self, pid):
+        manual_stop_packet = dp.ManualStopPacket(pid)
+        try:
+            ConnectionHandler.client_socket.sendto(ms.MsgPackSerializator.pack(manual_stop_packet), ConnectionHandler.serverAddr)
+        except Exception as s:
             print("Exception caught")
             return False
         return self.receive_ack_packet(pid)

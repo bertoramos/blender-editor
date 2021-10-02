@@ -411,6 +411,69 @@ class ManualRotationPacketMsgPackSerialization(st.Serialization):
         pid = list_packet[0]
         return datapacket.ManualRotationPacket(pid)
 
+class ManualStopPacketMsgPackSerialization(st.Serialization):
+    """
+    Defines an algorithm to pack-unpack a packet
+    """
+
+    @staticmethod
+    def pack(packet):
+        """
+        Apply a serialization method to pack
+        """
+        assert type(packet) == datapacket.ManualStopPacket, "Error: packet is not a manual stop packet"
+        return list(iter(packet))
+
+    @staticmethod
+    def unpack(list_packet):
+        """
+        Apply a deserialization method to unpack
+        """
+        assert len(list_packet) == 2, "Error: No valid manual stop packet"
+        assert list_packet[1] == 19, "Error: list_packet is not a manual stop packet"
+        return datapacket.StopPlanPacket(list_packet[0])
+
+class EndPlanReachedPacketMsgPackSerialization(st.Serialization):
+
+    @staticmethod
+    def pack(packet):
+        assert type(packet) == datapacket.EndPlanReachedPacket, "Error: packet is not an end plan reached"
+        return list(iter(packet))
+    
+    @staticmethod
+    def unpack(cls, list_packet: list):
+        assert len(list_packet) == 2, "Error: No valid end plan reached packet"
+        assert list_packet[1] == 20, "Error: list_packet is not an end plan reached packet"
+        return datapacket.EndPlanReachedPacket(list_packet[0])
+
+class CaptureStartedPacketMsgPackSerialization(st.Serialization):
+    
+    @staticmethod
+    def pack(packet):
+        assert type(packet) == datapacket.CaptureStartedPacket, "Error: packet is not a capture started packet"
+        return list(iter(packet))
+    
+    @staticmethod
+    def unpack(cls, list_packet: list):
+        assert len(list_packet) == 2, "Error: No valid capture started packet"
+        assert list_packet[1] == 21, "Error: list_packet is not a capture started packet"
+        return datapacket.EndPlanReachedPacket(list_packet[0])
+
+
+class CaptureEndedPacketMsgPackSerialization(st.Serialization):
+    
+    @staticmethod
+    def pack(packet):
+        assert type(packet) == datapacket.CaptureStartedPacket, "Error: packet is not a capture ended packet"
+        return list(iter(packet))
+    
+    @staticmethod
+    def unpack(cls, list_packet: list):
+        assert len(list_packet) == 2, "Error: No valid capture ended packet"
+        assert list_packet[1] == 22, "Error: list_packet is not a capture ended packet"
+        return datapacket.EndPlanReachedPacket(list_packet[0])
+
+
 # { ptype : SerializationClass, ... }
 # choose_serialization.get(ptype) -> return: ptype pack/unpack method
 choose_serialization = {
@@ -431,7 +494,11 @@ choose_serialization = {
                         15: AddUltrasoundBeaconPacketMsgPackSerialization,
                         16: CloseCalibrationPacketMsgPackSerialization,
                         17: ManualTranslationPacketMsgPackSerialization,
-                        18: ManualRotationPacketMsgPackSerialization
+                        18: ManualRotationPacketMsgPackSerialization,
+                        19: ManualStopPacketMsgPackSerialization,
+                        20: EndPlanReachedPacketMsgPackSerialization,
+                        21: CaptureStartedPacketMsgPackSerialization,
+                        22: CaptureEndedPacketMsgPackSerialization
                        }
 
 class MsgPackSerializator(st.Serializator):
