@@ -172,7 +172,7 @@ class SocketModalOperator(bpy.types.Operator):
                 
                 capture_started = cnh.Buffer().capture_started()
                 capture_ended = cnh.Buffer().capture_ended()
-
+                
                 if capture_started:
                     prop_capture_running = context.scene.com_props.prop_capture_running
                     if prop_capture_running:

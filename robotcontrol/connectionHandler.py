@@ -126,6 +126,10 @@ class ConnectionHandler:
     __instance = None
     running = False
 
+    firstTimeFPS = -1
+    lastTimeFPS = 0
+    countFPS = 0
+
     acknowledge_packet = {dp.StartCalibrationPacket,
                           dp.AddUltrasoundBeaconPacket,
                           dp.CloseCalibrationPacket,
@@ -159,6 +163,22 @@ class ConnectionHandler:
 
     def hasSocket(self):
         return ConnectionHandler.client_socket is not None
+    
+    def calculate_fps(self):
+        SAMPLE_TIME = 0.5
+
+        if ConnectionHandler.firstTimeFPS < 0:
+            ConnectionHandler.firstTimeFPS = time.time()
+        else:
+            ConnectionHandler.lastTimeFPS = time.time() - ConnectionHandler.firstTimeFPS
+            if ConnectionHandler.lastTimeFPS >= SAMPLE_TIME:
+                print("FPS : ", ConnectionHandler.countFPS / ConnectionHandler.lastTimeFPS)
+                ConnectionHandler.countFPS = 0
+                ConnectionHandler.firstTimeFPS = -1
+            else:
+                ConnectionHandler.countFPS += 1
+        ConnectionHandler.firstTimeFPS = time.time()
+        ConnectionHandler.lastTimeFPS = time.time()
 
     def receive_packet(self, op):
 
@@ -167,6 +187,7 @@ class ConnectionHandler:
             packet = ms.MsgPackSerializator.unpack(msgFromServer[0])
             if type(packet) != dp.TracePacket:
                 op.report({'INFO'}, "Receive: " + str(packet) + " " + str(type(packet)))
+                self.calculate_fps()
 
             #if packet.pid > bpy.context.scene.com_props.prop_last_recv_packet:
             Buffer().set_packet(packet)
