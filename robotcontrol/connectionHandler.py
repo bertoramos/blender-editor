@@ -35,8 +35,10 @@ class Buffer:
             bpy.context.scene.com_props.prop_last_recv_packet = packet.pid
         elif type(packet) in {dp.CalibrationRequestPacket, dp.StartCalibrationPacket, dp.CloseCalibrationPacket, dp.AddUltrasoundBeaconPacket}:
             self.__calibration_packets.append(packet)
-        elif type(packet) in {dp.CaptureStartedPacket, dp.CaptureEndedPacket}:
-            self.__capture_packets.append(packet)
+        elif type(packet) == dp.CaptureStartedPacket:
+            self.__start_capture_packet = packet
+        elif type(packet) == dp.CaptureEndedPacket:
+            self.__stop_capture_packet = packet
         elif type(packet) in {dp.EndPlanReachedPacket}:
             self.__end_reached = packet
         else:
@@ -166,7 +168,7 @@ class ConnectionHandler:
     
     def calculate_fps(self):
         SAMPLE_TIME = 0.5
-
+        
         if ConnectionHandler.firstTimeFPS < 0:
             ConnectionHandler.firstTimeFPS = time.time()
         else:
@@ -184,10 +186,12 @@ class ConnectionHandler:
 
         try:
             msgFromServer = ConnectionHandler.client_socket.recvfrom(bufferSize)
+            import msgpack
+            print("Mensaje : ", msgpack.unpackb(msgFromServer[0]))
             packet = ms.MsgPackSerializator.unpack(msgFromServer[0])
             if type(packet) != dp.TracePacket:
                 op.report({'INFO'}, "Receive: " + str(packet) + " " + str(type(packet)))
-                self.calculate_fps()
+                # self.calculate_fps()
 
             #if packet.pid > bpy.context.scene.com_props.prop_last_recv_packet:
             Buffer().set_packet(packet)

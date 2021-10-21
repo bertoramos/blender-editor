@@ -9,7 +9,7 @@ import robot as r
 import simulationOperator as so
 import calibrationOperator as cal_op
 import manualControlOperator as mco
-import selectScenarioOperator as sso
+#import selectScenarioOperator as sso
 # end local import: Change to from . import MODULE
 
 def autoregister():
@@ -55,7 +55,7 @@ class CommunicationPanel(bpy.types.Panel):
 
         self.layout.operator(cal_op.CalibrateOperator.bl_idname, icon="UV_SYNC_SELECT")
         self.layout.operator(cal_op.DropAllStaticBeacons.bl_idname, icon="TRASH")
-        self.layout.operator(sso.SelectScenarioOperator.bl_idname, icon="VIEW_PAN")
+        # self.layout.operator(sso.SelectScenarioOperator.bl_idname, icon="VIEW_PAN")
 
         box_com = self.layout.box()
         icon_play = "PAUSE" if context.scene.com_props.prop_running_nav and not context.scene.com_props.prop_paused_nav else "PLAY"

@@ -45,7 +45,6 @@ import simulationOperator
 import calibrationOperator
 import data_export
 import manualControlOperator
-import selectScenarioOperator
 # end local import: Change to from . import MODULE
 
 # begin remove
@@ -69,10 +68,9 @@ importlib.reload(simulationOperator)
 importlib.reload(calibrationOperator)
 importlib.reload(data_export)
 importlib.reload(manualControlOperator)
-importlib.reload(selectScenarioOperator)
 # end remove
 
-operadores = [cursorListener, pathEditor, robot, robot_props, robotCommunicationOperator, simulationOperator, calibrationOperator, data_export, manualControlOperator, selectScenarioOperator]
+operadores = [cursorListener, pathEditor, robot, robot_props, robotCommunicationOperator, simulationOperator, calibrationOperator, data_export, manualControlOperator]
 paneles = [robot_panel, pathEditorPanel, communicationPanel]
 
 def register():

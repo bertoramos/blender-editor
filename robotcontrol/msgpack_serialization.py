@@ -441,7 +441,7 @@ class EndPlanReachedPacketMsgPackSerialization(st.Serialization):
         return list(iter(packet))
     
     @staticmethod
-    def unpack(cls, list_packet: list):
+    def unpack(list_packet: list):
         assert len(list_packet) == 2, "Error: No valid end plan reached packet"
         assert list_packet[1] == 20, "Error: list_packet is not an end plan reached packet"
         return datapacket.EndPlanReachedPacket(list_packet[0])
@@ -454,24 +454,24 @@ class CaptureStartedPacketMsgPackSerialization(st.Serialization):
         return list(iter(packet))
     
     @staticmethod
-    def unpack(cls, list_packet: list):
+    def unpack(list_packet: list):
         assert len(list_packet) == 2, "Error: No valid capture started packet"
         assert list_packet[1] == 21, "Error: list_packet is not a capture started packet"
-        return datapacket.EndPlanReachedPacket(list_packet[0])
+        return datapacket.CaptureStartedPacket(list_packet[0])
 
 
 class CaptureEndedPacketMsgPackSerialization(st.Serialization):
     
     @staticmethod
     def pack(packet):
-        assert type(packet) == datapacket.CaptureStartedPacket, "Error: packet is not a capture ended packet"
+        assert type(packet) == datapacket.CaptureEndedPacket, "Error: packet is not a capture ended packet"
         return list(iter(packet))
     
     @staticmethod
-    def unpack(cls, list_packet: list):
+    def unpack(list_packet: list):
         assert len(list_packet) == 2, "Error: No valid capture ended packet"
         assert list_packet[1] == 22, "Error: list_packet is not a capture ended packet"
-        return datapacket.EndPlanReachedPacket(list_packet[0])
+        return datapacket.CaptureEndedPacket(list_packet[0])
 
 
 # { ptype : SerializationClass, ... }

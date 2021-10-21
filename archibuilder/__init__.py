@@ -34,6 +34,8 @@ import ceilOperator
 import hideAreaOperator
 import beaconOperator
 import beaconPanel
+import hideScenarioOperator
+import selectScenarioOperator
 # end local import: Change to from . import MODULE
 
 # begin remove
@@ -48,9 +50,11 @@ importlib.reload(hideAreaOperator)
 importlib.reload(beaconOperator)
 importlib.reload(beaconPanel)
 importlib.reload(annotation_update)
+importlib.reload(hideScenarioOperator)
+importlib.reload(selectScenarioOperator)
 # end remove
 
-operadores = [wallOperator, obstacleOperator, ceilOperator, hideAreaOperator, beaconOperator, annotation_update]
+operadores = [wallOperator, obstacleOperator, ceilOperator, hideAreaOperator, beaconOperator, annotation_update, hideScenarioOperator, selectScenarioOperator]
 
 paneles = [envBuilderPanel, decoratePanel, beaconPanel]
 
