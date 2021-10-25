@@ -18,7 +18,7 @@ import os
 import sys
 from pathlib import Path
 
-project_folder = Path("E:\\Universidad\\Robomap\\Desarrollo\\blender-editor\\")
+project_folder = Path("F:\\Universidad\\Robomap\\Desarrollo\\blender-editor\\")
 
 dir = project_folder / Path(".\\robotcontrol\\")
 if not dir in sys.path:
@@ -45,6 +45,7 @@ import simulationOperator
 import calibrationOperator
 import data_export
 import manualControlOperator
+import hudWriter
 # end local import: Change to from . import MODULE
 
 # begin remove
@@ -68,9 +69,10 @@ importlib.reload(simulationOperator)
 importlib.reload(calibrationOperator)
 importlib.reload(data_export)
 importlib.reload(manualControlOperator)
+importlib.reload(hudWriter)
 # end remove
 
-operadores = [cursorListener, pathEditor, robot, robot_props, robotCommunicationOperator, simulationOperator, calibrationOperator, data_export, manualControlOperator]
+operadores = [cursorListener, pathEditor, robot, robot_props, robotCommunicationOperator, simulationOperator, calibrationOperator, data_export, manualControlOperator, hudWriter]
 paneles = [robot_panel, pathEditorPanel, communicationPanel]
 
 def register():

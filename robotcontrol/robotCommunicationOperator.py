@@ -10,7 +10,13 @@ import robot
 import pathContainer as pc
 import path
 import pathEditor
+import hudWriter
 # end local import: Change to from . import MODULE
+
+
+APP_STATUS = "APP_STATUS"
+RUNNING_STATUS = "RUNNING_STATUS"
+CAPTURE_STATUS = "CAPTURE_STATUS"
 
 keymaps = []
 
@@ -41,6 +47,8 @@ def autoregister():
 
         kmi = km.keymap_items.new(StopPlanOperator.bl_idname, type='C', value='PRESS', ctrl=True, shift=True)
         keymaps.append((km, kmi))
+    
+    hudWriter.HUDWriterOperator._textos[APP_STATUS] = hudWriter.Texto(text="EDITOR mode")
 
 def autounregister():
     global classes
@@ -52,6 +60,9 @@ def autounregister():
     for km, kmi in keymaps:
         km.keymap_items.remove(kmi)
     keymaps.clear()
+
+    if APP_STATUS in hudWriter.HUDWriterOperator._textos:
+        del hudWriter.HUDWriterOperator._textos[APP_STATUS]
 
 
 robot_modes_summary = ["EDITOR_MODE", # 0
@@ -115,6 +126,15 @@ class SocketModalOperator(bpy.types.Operator):
     closed = True
     error = ""
 
+    ROBOT_MODE = hudWriter.Texto(text="ROBOT mode", x=15, y=30)
+    EDITOR_MODE = hudWriter.Texto(text="EDITOR mode", x=15, y=30)
+
+    RUNNING_PLAN = hudWriter.Texto(text="RUNNING plan", x=15, y=60)
+    PAUSED_PLAN = hudWriter.Texto(text="PAUSED plan", x=15, y=60)
+
+    CAPTURE_ON = hudWriter.Texto(text="CAPTURE ON", x=30, y=60)
+    
+
     # active redrawing when a change occurs
     def check(self, context):
         return True
@@ -147,15 +167,19 @@ class SocketModalOperator(bpy.types.Operator):
 
         if context.scene.is_cursor_active:
             bpy.ops.scene.stop_cursor_listener()
-
-
+        
+        if RUNNING_STATUS in hudWriter.HUDWriterOperator._textos:
+            del hudWriter.HUDWriterOperator._textos[RUNNING_STATUS]
+        
+        if CAPTURE_STATUS in hudWriter.HUDWriterOperator._textos:
+            del hudWriter.HUDWriterOperator._textos[CAPTURE_STATUS]
+        
+    
     def modal(self, context, event):
         if event.type == "TIMER":
             
             if context.scene.com_props.prop_running_nav and not context.scene.com_props.prop_paused_nav:
                 last_pose = pc.PathContainer().poses[-1]
-                # TODO: Cambiar por paquete de fin de ruta recibido
-                # Comprobar que se haya llegado a la última pose
                 reached_poses = cnh.Buffer().get_reached_poses()
                 num_reached_poses = len(reached_poses)
                 num_path_poses = len(pc.PathContainer().poses)
@@ -164,6 +188,9 @@ class SocketModalOperator(bpy.types.Operator):
                 if num_reached_poses == num_path_poses and end_reached:
                     context.scene.com_props.prop_running_nav = False
                     context.scene.com_props.prop_paused_nav = False
+
+                    if RUNNING_STATUS in hudWriter.HUDWriterOperator._textos:
+                        del hudWriter.HUDWriterOperator._textos[RUNNING_STATUS]
                 
                 if num_reached_poses != num_path_poses and end_reached:
                     self.report({'ERROR'}, "End reached not expected")
@@ -180,6 +207,7 @@ class SocketModalOperator(bpy.types.Operator):
                     else:
                         context.scene.com_props.prop_capture_running = True
                         self.report({'INFO'}, "Capture started")
+                    hudWriter.HUDWriterOperator._textos[CAPTURE_STATUS] = SocketModalOperator.CAPTURE_ON
                 
                 if capture_ended:
                     prop_capture_running = context.scene.com_props.prop_capture_running
@@ -188,6 +216,9 @@ class SocketModalOperator(bpy.types.Operator):
                     else:
                         context.scene.com_props.prop_capture_running = False
                         self.report({'INFO'}, "Capture ended")
+                    
+                    if CAPTURE_STATUS in hudWriter.HUDWriterOperator._textos:
+                        del hudWriter.HUDWriterOperator._textos[CAPTURE_STATUS]
             
             if not SocketModalOperator.closed and context.scene.com_props.prop_rendering:
                 # Render robot position
@@ -252,6 +283,9 @@ class SocketModalOperator(bpy.types.Operator):
 
     # THREAD EXECUTION
     def run(operator):
+
+        hudWriter.HUDWriterOperator._textos[APP_STATUS] = SocketModalOperator.ROBOT_MODE
+
         limit = 10
         n_rcv = limit
         SocketModalOperator.running = True
@@ -267,6 +301,8 @@ class SocketModalOperator(bpy.types.Operator):
                 n_rcv = limit
                 operator.report({'ERROR'}, 'Unavailable server: changing mode')
                 bpy.ops.wm.change_mode()
+        
+        hudWriter.HUDWriterOperator._textos[APP_STATUS] = SocketModalOperator.EDITOR_MODE # hudWriter.Texto(text="EDITOR mode")
 
     def execute(self, context):
         wm = context.window_manager
@@ -427,6 +463,8 @@ class StartPauseResumePlanOperator(bpy.types.Operator):
                 if path_changed:
                     send_plan()
                     self.report({'INFO'}, "Paused plan: cancel current plan and start a new plan")
+
+                    hudWriter.HUDWriterOperator._textos[RUNNING_STATUS] = SocketModalOperator.RUNNING_PLAN
                 else:
                     com_props.prop_last_sent_packet += 1
                     pid = com_props.prop_last_sent_packet
@@ -435,6 +473,8 @@ class StartPauseResumePlanOperator(bpy.types.Operator):
                     com_props.prop_running_nav = True
                     com_props.prop_paused_nav = False
                     self.report({'INFO'}, "Paused plan: resume current plan")
+
+                    hudWriter.HUDWriterOperator._textos[RUNNING_STATUS] = SocketModalOperator.RUNNING_PLAN
             else:
                 com_props.prop_last_sent_packet += 1
                 pid = com_props.prop_last_sent_packet
@@ -443,6 +483,8 @@ class StartPauseResumePlanOperator(bpy.types.Operator):
                 com_props.prop_running_nav = True
                 com_props.prop_paused_nav = True
                 self.report({'INFO'}, "Running plan: pause current plan")
+
+                hudWriter.HUDWriterOperator._textos[RUNNING_STATUS] = SocketModalOperator.PAUSED_PLAN
         else:
             if com_props.prop_paused_nav:
                 self.report({'ERROR'}, "not running and paused")
@@ -450,6 +492,8 @@ class StartPauseResumePlanOperator(bpy.types.Operator):
                 com_props.prop_paused_nav = False
             else:
                 send_plan()
+
+                hudWriter.HUDWriterOperator._textos[RUNNING_STATUS] = SocketModalOperator.RUNNING_PLAN
         return {'FINISHED'}
 
 class StopPlanOperator(bpy.types.Operator):
@@ -471,6 +515,10 @@ class StopPlanOperator(bpy.types.Operator):
 
         context.scene.com_props.prop_last_path_update = -1
         cnh.Buffer().clear_reached_poses()
+
+        if RUNNING_STATUS in hudWriter.HUDWriterOperator._textos:
+            del hudWriter.HUDWriterOperator._textos[RUNNING_STATUS]
+
         return {'FINISHED'}
 
 class ChangeSpeedOperator(bpy.types.Operator):

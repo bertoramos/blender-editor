@@ -8,6 +8,7 @@ import time
 import msgpack_serialization as ms
 import datapacket as dp
 import connection_exceptions as exc
+import fps_counter
 # end local import: Change to from . import MODULE
 
 class Buffer:
@@ -162,28 +163,13 @@ class ConnectionHandler:
             ConnectionHandler.client_socket.close()
             ConnectionHandler.client_socket = None
             Buffer().clear()
+            fps_counter.FPSCounter().clear()
 
     def hasSocket(self):
         return ConnectionHandler.client_socket is not None
-    
-    def calculate_fps(self):
-        SAMPLE_TIME = 0.5
-        
-        if ConnectionHandler.firstTimeFPS < 0:
-            ConnectionHandler.firstTimeFPS = time.time()
-        else:
-            ConnectionHandler.lastTimeFPS = time.time() - ConnectionHandler.firstTimeFPS
-            if ConnectionHandler.lastTimeFPS >= SAMPLE_TIME:
-                print("FPS : ", ConnectionHandler.countFPS / ConnectionHandler.lastTimeFPS)
-                ConnectionHandler.countFPS = 0
-                ConnectionHandler.firstTimeFPS = -1
-            else:
-                ConnectionHandler.countFPS += 1
-        ConnectionHandler.firstTimeFPS = time.time()
-        ConnectionHandler.lastTimeFPS = time.time()
 
     def receive_packet(self, op):
-
+        
         try:
             msgFromServer = ConnectionHandler.client_socket.recvfrom(bufferSize)
             import msgpack
@@ -191,7 +177,9 @@ class ConnectionHandler:
             packet = ms.MsgPackSerializator.unpack(msgFromServer[0])
             if type(packet) != dp.TracePacket:
                 op.report({'INFO'}, "Receive: " + str(packet) + " " + str(type(packet)))
-                # self.calculate_fps()
+            
+            if type(packet) == dp.TracePacket:
+                fps_counter.FPSCounter().notifyPoseChange()
 
             #if packet.pid > bpy.context.scene.com_props.prop_last_recv_packet:
             Buffer().set_packet(packet)
