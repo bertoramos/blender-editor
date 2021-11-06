@@ -3,6 +3,7 @@ from bpy.types import Operator
 from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from mathutils import Vector
 from math import pi, radians
+import re
 
 # begin local import: Change to from . import MODULE
 import utils
@@ -39,23 +40,31 @@ class BeaconProps(bpy.types.PropertyGroup):
     prop_position: bpy.props.FloatVectorProperty(name="Position", description="Beacon position", default=(0.0, 0.0, 0.0), subtype='XYZ', size=3)
     prop_type_beacon: bpy.props.EnumProperty(items = beacon_types)
 
+def update_func(self, context):
+    mac = context.scene.bluetooth_beacon_props.prop_mac
+    patt = re.compile("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$")
+    if not patt.match(mac):
+        context.scene.bluetooth_beacon_props.prop_mac = "00:00:00:00:00:00"
 
 class BluetoothBeaconProps(bpy.types.PropertyGroup):
-    prop_distance: bpy.props.FloatProperty(name="Distance", description="Distance", default=2.0, min=0.0)
+    prop_mac: bpy.props.StringProperty(name="MAC", description="MAC address", default="00:00:00:00:00:00", update=update_func)
+    #prop_distance: bpy.props.FloatProperty(name="Distance", description="Distance", default=2.0, min=0.0)
 
-def draw_bluetooth_note(context, name, loc, distance):
+def draw_bluetooth_note(context, name, loc):
     color = Vector((1.0, 1.0, 1.0, 1.0))
     font = 14
     font_align = 'C'
     hint_space = 0.1
     font_rotation = 0
-    text = "Distance : " + "{:.4}".format(distance) + " m "
+    text = str(name) + "(bluetooth)"
 
     nota = utils.draw_text(context, name + "_note", text, loc, color, hint_space, font, font_align, font_rotation)
 
     bpy.data.objects[nota].lock_location[0:3] = (True, True, True)
     bpy.data.objects[nota].lock_rotation[0:3] = (True, True, True)
     bpy.data.objects[nota].lock_scale[0:3] = (True, True, True)
+
+    bpy.data.objects[nota].hide_select = True
 
     return nota
 
@@ -65,39 +74,42 @@ def add_bluetooth_beacon(self, context):
     loc = beacon_props.prop_position.xyz
 
     bluetooth_beacon_props = bpy.context.scene.bluetooth_beacon_props
+    mac = bluetooth_beacon_props.prop_mac
 
     bpy.ops.object.light_add(type='POINT', location=(loc.x, loc.y, loc.z))
     beacon = bpy.context.object
+
+    beacon['mac'] = mac
+
     beacon.object_type = "BLUETOOTH_BEACON"
     beacon.name = name
 
-    beacon.data.distance = bluetooth_beacon_props.prop_distance
+    beacon['mac'] = mac
+    nota = draw_bluetooth_note(context, beacon.name_full, Vector((0,0,0)))
 
-    #nota = draw_bluetooth_note(context, beacon.name, loc, beacon.data.distance)
+    bpy.data.objects[nota].parent = beacon
 
-    #bpy.data.objects[nota].parent = beacon
-    #bpy.data.objects[nota].protected = True
 
 class UltrasoundBeaconProps(bpy.types.PropertyGroup):
     prop_rotation: bpy.props.FloatVectorProperty(name="Rotation", description="Beacon rotation", default=(0.0, 0.0, 0.0), subtype='XYZ', size=3, min=-360, max=360)
     #prop_distance: bpy.props.FloatProperty(name="Distance", description="Distance", default=2.0, min=0.0)
     #prop_spot_size: bpy.props.FloatProperty(name="Spot size", description="Spot size", default=4.0, min=0.0, max=180)
 
-def draw_ultrasound_note(context, name, loc, rotation, distance, spot_size):
+def draw_ultrasound_note(context, name, loc, rotation):
     color = Vector((1.0, 1.0, 1.0, 1.0))
     font = 14
     font_align = 'C'
     hint_space = 0.1
     font_rotation = 0
-    text = "({:.4}".format(rotation.x) + ", " + "{:.4}".format(rotation.x) + ", " + "{:.4}".format(rotation.x) + ") º|" + \
-           "Distance : " + "{:.4}".format(distance) + " m |" + \
-           "Spot : " + "{:.4}".format(spot_size) + " º"
+    text = str(name) + " (ultrasound)"
 
     nota = utils.draw_text(context, name + "_note", text, loc, color, hint_space, font, font_align, font_rotation)
 
     bpy.data.objects[nota].lock_location[0:3] = (True, True, True)
     bpy.data.objects[nota].lock_rotation[0:3] = (True, True, True)
     bpy.data.objects[nota].lock_scale[0:3] = (True, True, True)
+
+    bpy.data.objects[nota].hide_select = True
 
     return nota
 
@@ -117,9 +129,9 @@ def add_ultrasound_beacon(self, context):
     #beacon.data.distance = ultrasound_beacon_props.prop_distance
     #beacon.data.spot_size = radians(ultrasound_beacon_props.prop_spot_size)
 
-    #nota = draw_ultrasound_note(context, beacon.name, loc, beacon.rotation_euler, beacon.data.distance, ultrasound_beacon_props.prop_spot_size)
+    nota = draw_ultrasound_note(context, beacon.name_full, Vector((0,0,0)), Vector((0,0,0)) )
 
-    #bpy.data.objects[nota].parent = beacon
+    bpy.data.objects[nota].parent = beacon
     #bpy.data.objects[nota].protected = True
 
 """
@@ -154,6 +166,10 @@ class AddBeaconOperator(Operator, AddObjectHelper):
         name = beacon_props.prop_beacon_name
         loc = beacon_props.prop_position.xyz
         type = beacon_props.prop_type_beacon
+
+        if name in bpy.data.objects:
+            self.report({'ERROR'}, name + " already exists")
+            return {'FINISHED'}
 
         beacon_add_function.get(type, lambda self, context: self.report({'ERROR'}, type + ' does not exist'))[0](self, context)
         return {'FINISHED'}

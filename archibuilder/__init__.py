@@ -24,7 +24,6 @@ if not dir in sys.path:
 # end remove
 
 # begin local import: Change to from . import MODULE
-import annotation_update
 import wallOperator
 import obstacleOperator
 import envBuilderPanel
@@ -36,6 +35,7 @@ import beaconOperator
 import beaconPanel
 import hideScenarioOperator
 import selectScenarioOperator
+import selectedObjInfoPanel
 # end local import: Change to from . import MODULE
 
 # begin remove
@@ -49,14 +49,14 @@ importlib.reload(ceilOperator)
 importlib.reload(hideAreaOperator)
 importlib.reload(beaconOperator)
 importlib.reload(beaconPanel)
-importlib.reload(annotation_update)
 importlib.reload(hideScenarioOperator)
 importlib.reload(selectScenarioOperator)
+importlib.reload(selectedObjInfoPanel)
 # end remove
 
-operadores = [wallOperator, obstacleOperator, ceilOperator, hideAreaOperator, beaconOperator, annotation_update, hideScenarioOperator, selectScenarioOperator]
+operadores = [wallOperator, obstacleOperator, ceilOperator, hideAreaOperator, beaconOperator, hideScenarioOperator, selectScenarioOperator]
 
-paneles = [envBuilderPanel, decoratePanel, beaconPanel]
+paneles = [envBuilderPanel, decoratePanel, beaconPanel, selectedObjInfoPanel]
 
 def register():
     for op in operadores:

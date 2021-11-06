@@ -174,7 +174,18 @@ class SocketModalOperator(bpy.types.Operator):
         if CAPTURE_STATUS in hudWriter.HUDWriterOperator._textos:
             del hudWriter.HUDWriterOperator._textos[CAPTURE_STATUS]
         
+        context.scene.com_props.prop_capture_running = False
+        
     
+    def clear_hud(self, context):
+        if RUNNING_STATUS in hudWriter.HUDWriterOperator._textos:
+            del hudWriter.HUDWriterOperator._textos[RUNNING_STATUS]
+        
+        if CAPTURE_STATUS in hudWriter.HUDWriterOperator._textos:
+            del hudWriter.HUDWriterOperator._textos[CAPTURE_STATUS]
+        
+        context.scene.com_props.prop_capture_running = False
+
     def modal(self, context, event):
         if event.type == "TIMER":
             
@@ -257,6 +268,8 @@ class SocketModalOperator(bpy.types.Operator):
                         self.thread.join() # se espera a que acabe el hilo
 
                         cnh.ConnectionHandler().remove_socket()
+
+                        self.clear_hud(context)
                         return {'FINISHED'}
 
                     #update_gui()
@@ -277,6 +290,7 @@ class SocketModalOperator(bpy.types.Operator):
                 context.scene.com_props.prop_running_nav = False
                 context.scene.com_props.prop_paused_nav = False
 
+                self.clear_hud(context)
                 return {'FINISHED'}
 
         return {'PASS_THROUGH'}
@@ -529,7 +543,7 @@ class ChangeSpeedOperator(bpy.types.Operator):
     update_speed: bpy.props.FloatProperty(name="Speed",
                                           min=0.0,
                                           max=100.0,
-                                          default=0.0)
+                                          default=100.0)
 
     @classmethod
     def poll(cls, context):

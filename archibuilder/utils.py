@@ -9,7 +9,7 @@ from mathutils import Vector
 # measureit execute method AddNote operator
 # Antonio Vazquez
 def draw_text(context, name, text, loc, color, hint_space, font, font_align, font_rotation):
-    """
+    """ 
     - context: blender context
     - text: str
         display text
