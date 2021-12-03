@@ -9,10 +9,10 @@ def menu_func(self, context):
 def autoregister():
     global classes
     classes = [ HideScenarioOperator ]
-    
+
     for c in classes:
         bpy.utils.register_class(c)
-    
+
     bpy.types.VIEW3D_MT_view.append(menu_func)
 
 def autounregister():
@@ -23,7 +23,7 @@ def autounregister():
     for c in classes:
         bpy.utils.unregister_class(c)
 
-scenario_obj = { "WALL", "CEIL"}
+scenario_obj = { "WALL", "CEIL", "OBSTACLE", "OBSTACLE_MARGIN"}
 
 class HideScenarioOperator(bpy.types.Operator):
     bl_idname = "object.hidescenario"
@@ -36,6 +36,6 @@ class HideScenarioOperator(bpy.types.Operator):
         for obj in bpy.data.objects:
             if hasattr(obj, "object_type") and obj.object_type in scenario_obj:
                 obj.hide_set(not HideScenarioOperator.hidden)
-        
+
         HideScenarioOperator.hidden = not HideScenarioOperator.hidden
         return {'FINISHED'}

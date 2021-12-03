@@ -37,7 +37,7 @@ class AddBeaconPanel(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Archibuilder" # Add new tab to N-Panel
-    
+
     def draw(self, context):
         props = bpy.context.scene.beacon_props
         self.layout.prop(props, "prop_beacon_name", text="Name")

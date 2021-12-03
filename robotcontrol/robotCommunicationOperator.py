@@ -132,7 +132,7 @@ class SocketModalOperator(bpy.types.Operator):
     RUNNING_PLAN = hudWriter.Texto(text="RUNNING plan", x=15, y=60)
     PAUSED_PLAN = hudWriter.Texto(text="PAUSED plan", x=15, y=60)
 
-    CAPTURE_ON = hudWriter.Texto(text="CAPTURE ON", x=30, y=60)
+    CAPTURE_ON = hudWriter.Texto(text="CAPTURE ON", x=15, y=90)
     
 
     # active redrawing when a change occurs
