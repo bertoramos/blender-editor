@@ -47,8 +47,8 @@ def autoregister():
 
         kmi = km.keymap_items.new(StopPlanOperator.bl_idname, type='C', value='PRESS', ctrl=True, shift=True)
         keymaps.append((km, kmi))
-    
-    hudWriter.HUDWriterOperator._textos[APP_STATUS] = hudWriter.Texto(text="EDITOR mode")
+
+    hudWriter.HUDWriterOperator._textos[APP_STATUS] = SocketModalOperator.EDITOR_MODE #hudWriter.Texto(text="EDITOR mode")
 
 def autounregister():
     global classes
@@ -129,11 +129,11 @@ class SocketModalOperator(bpy.types.Operator):
     ROBOT_MODE = hudWriter.Texto(text="ROBOT mode", x=15, y=30)
     EDITOR_MODE = hudWriter.Texto(text="EDITOR mode", x=15, y=30)
 
-    RUNNING_PLAN = hudWriter.Texto(text="RUNNING plan", x=15, y=60)
-    PAUSED_PLAN = hudWriter.Texto(text="PAUSED plan", x=15, y=60)
+    RUNNING_PLAN = hudWriter.Texto(text="RUNNING plan", x=15, y=90)
+    PAUSED_PLAN = hudWriter.Texto(text="PAUSED plan", x=15, y=90)
 
-    CAPTURE_ON = hudWriter.Texto(text="CAPTURE ON", x=15, y=90)
-    
+    CAPTURE_ON = hudWriter.Texto(text="CAPTURE ON", x=15, y=150)
+
 
     # active redrawing when a change occurs
     def check(self, context):
@@ -167,28 +167,28 @@ class SocketModalOperator(bpy.types.Operator):
 
         if context.scene.is_cursor_active:
             bpy.ops.scene.stop_cursor_listener()
-        
+
         if RUNNING_STATUS in hudWriter.HUDWriterOperator._textos:
             del hudWriter.HUDWriterOperator._textos[RUNNING_STATUS]
-        
+
         if CAPTURE_STATUS in hudWriter.HUDWriterOperator._textos:
             del hudWriter.HUDWriterOperator._textos[CAPTURE_STATUS]
-        
+
         context.scene.com_props.prop_capture_running = False
-        
-    
+
+
     def clear_hud(self, context):
         if RUNNING_STATUS in hudWriter.HUDWriterOperator._textos:
             del hudWriter.HUDWriterOperator._textos[RUNNING_STATUS]
-        
+
         if CAPTURE_STATUS in hudWriter.HUDWriterOperator._textos:
             del hudWriter.HUDWriterOperator._textos[CAPTURE_STATUS]
-        
+
         context.scene.com_props.prop_capture_running = False
 
     def modal(self, context, event):
         if event.type == "TIMER":
-            
+
             if context.scene.com_props.prop_running_nav and not context.scene.com_props.prop_paused_nav:
                 last_pose = pc.PathContainer().poses[-1]
                 reached_poses = cnh.Buffer().get_reached_poses()
@@ -202,15 +202,15 @@ class SocketModalOperator(bpy.types.Operator):
 
                     if RUNNING_STATUS in hudWriter.HUDWriterOperator._textos:
                         del hudWriter.HUDWriterOperator._textos[RUNNING_STATUS]
-                
+
                 if num_reached_poses != num_path_poses and end_reached:
                     self.report({'ERROR'}, "End reached not expected")
                     context.scene.com_props.prop_running_nav = False
                     context.scene.com_props.prop_paused_nav = False
-                
+
                 capture_started = cnh.Buffer().capture_started()
                 capture_ended = cnh.Buffer().capture_ended()
-                
+
                 if capture_started:
                     prop_capture_running = context.scene.com_props.prop_capture_running
                     if prop_capture_running:
@@ -219,7 +219,7 @@ class SocketModalOperator(bpy.types.Operator):
                         context.scene.com_props.prop_capture_running = True
                         self.report({'INFO'}, "Capture started")
                     hudWriter.HUDWriterOperator._textos[CAPTURE_STATUS] = SocketModalOperator.CAPTURE_ON
-                
+
                 if capture_ended:
                     prop_capture_running = context.scene.com_props.prop_capture_running
                     if not prop_capture_running:
@@ -227,10 +227,10 @@ class SocketModalOperator(bpy.types.Operator):
                     else:
                         context.scene.com_props.prop_capture_running = False
                         self.report({'INFO'}, "Capture ended")
-                    
+
                     if CAPTURE_STATUS in hudWriter.HUDWriterOperator._textos:
                         del hudWriter.HUDWriterOperator._textos[CAPTURE_STATUS]
-            
+
             if not SocketModalOperator.closed and context.scene.com_props.prop_rendering:
                 # Render robot position
                 sel_robot_id = bpy.context.scene.selected_robot_props.prop_robot_id
@@ -315,7 +315,7 @@ class SocketModalOperator(bpy.types.Operator):
                 n_rcv = limit
                 operator.report({'ERROR'}, 'Unavailable server: changing mode')
                 bpy.ops.wm.change_mode()
-        
+
         hudWriter.HUDWriterOperator._textos[APP_STATUS] = SocketModalOperator.EDITOR_MODE # hudWriter.Texto(text="EDITOR mode")
 
     def execute(self, context):
