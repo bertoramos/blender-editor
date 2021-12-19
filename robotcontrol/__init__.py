@@ -2,7 +2,7 @@
 bl_info = {
     "name": "Robotcontrol",
     "author": "Alberto Ramos Sanchez",
-    "version": (1, 0, 0),
+    "version": (1, 4, 2),
     "blender": (2, 80, 0),
     "location": "View3D > Sidebar Panel > Archibuilder Panel",
     "description": "Robot communication module",
