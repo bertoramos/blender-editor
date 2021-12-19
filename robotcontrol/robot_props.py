@@ -44,3 +44,4 @@ class MyRobotProps(bpy.types.PropertyGroup):
     prop_myrobot_rotation: bpy.props.FloatProperty(name="Rotation", description="Rotation angle [degree]", default=0, min=0, max=359)
     prop_myrobot_dim: bpy.props.FloatVectorProperty(name="Dimension", description="Robot dimension", default=(1.0, 1.0, 1.0), subtype='XYZ', size=3)
     prop_myrobot_margin: bpy.props.FloatVectorProperty(name="Margin (%)", description="Robot margin", default=(1.0, 1.0, 1.0), min=0, subtype='XYZ', size=3)
+    prop_myrobot_color: bpy.props.FloatVectorProperty(name="Color", subtype="COLOR", size=4, min=0.0, max=1.0, default=(1.0, 1.0, 1.0, 1.0))

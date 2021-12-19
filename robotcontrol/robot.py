@@ -219,7 +219,6 @@ class Robot:
     def __get_client_port(self):
         return self.__client_port
 
-
     def __hash__(self):
         return self.__idn
 
@@ -244,7 +243,8 @@ class Robot:
         del real_data['location']
         del real_data['rotation']
 
-        return Robot(**real_data)
+        robot = Robot(**real_data)
+        return robot
 
     idn = property(__get_idn)
     name = property(__get_name)
@@ -260,7 +260,7 @@ class Robot:
     client_port = property(__get_client_port)
 
 
-def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port, client_ip, client_port):
+def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port, client_ip, client_port, color):
 
     # Cuerpo
     bpy.ops.mesh.primitive_cube_add(location=(loc.x, loc.y, dim.z/2.0))
@@ -273,6 +273,11 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port, cli
     myrobot.lock_rotation[0:3] = (True, True, False)
     myrobot.lock_scale[0:3] = (True, True, True)
     myrobot.protected = True
+
+    if myrobot.active_material is None:
+        mat = bpy.data.materials.new("Material_robot" + name)
+        myrobot.active_material = mat
+    mat.diffuse_color = color
 
     # margen
     bpy.ops.mesh.primitive_cube_add(location=myrobot.location.xyz[:])
@@ -307,7 +312,6 @@ def draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port, cli
     # Notas
     note_name = draw_robot_note(context, Vector((0,0,0)), myrobot.name + " | Server: " + str(ip) + ":" + str(port) + " | Client: " + str(client_ip) + ":" + str(client_port), Vector((255,255,255,255)), 14, "C")
     bpy.data.objects[note_name].object_type = "ROBOT_NOTE"
-
 
     # Hierarchy area+robot
     myarea.select_set(True)
@@ -375,6 +379,7 @@ class MyRobot(Robot):
         super().__init__(idn, name, note_name, robot_type, ip, port, client_ip, client_port)
         self.__dim = dim
         self.__margin = margin
+        self.__color = Vector((1., 1., 1., 1.))
 
     def lock(self):
         myrobot = bpy.data.objects[super().name]
@@ -400,10 +405,17 @@ class MyRobot(Robot):
     def __get_margin(self):
         return self.__margin
 
+    def __get_color(self):
+        return self.__color
+
+    def __set_color(self, color):
+        self.__color = color
+
     def export(self):
         robot_data = super().export()
         data = {'dim': list(self.__dim[:]),
-                'margin': list(self.__margin[:])}
+                'margin': list(self.__margin[:]),
+                'color': self.color[:]}
         return robot_data | data
 
     @classmethod
@@ -412,10 +424,13 @@ class MyRobot(Robot):
         del real_data['location']
         del real_data['rotation']
 
-        return MyRobot(**real_data)
+        myrobot = MyRobot(**real_data)
+        myrobot.color = Vector(real_data['color'])
+        return myrobot
 
     dim = property(__get_dim)
     margin = property(__get_margin)
+    color = property(fget=__get_color, fset=__set_color)
 
 
 
@@ -519,6 +534,7 @@ class AddRobotOperator(bpy.types.Operator):
             self.layout.prop(props, "prop_myrobot_rotation")
             self.layout.prop(props, "prop_myrobot_dim")
             self.layout.prop(props, "prop_myrobot_margin")
+            self.layout.prop(props, "prop_myrobot_color")
 
     def invoke(self, context, event):
         wm = context.window_manager
@@ -537,6 +553,7 @@ class AddRobotOperator(bpy.types.Operator):
         client_ip = scene.robot_props.prop_client_ip
         client_port = scene.robot_props.prop_client_port
 
+
         robot_type_tuple = ()
         for ENUM, enum, empty, num in robot_props.robot_types:
             if robot_type == ENUM:
@@ -549,9 +566,13 @@ class AddRobotOperator(bpy.types.Operator):
             margin = scene.myrobot_props.prop_myrobot_margin.xyz
             rotation = Euler((0, pi/2, radians(rot)))
             loc.z = 0
-            complete_name, area_name = draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port, client_ip, client_port)
+
+            color = scene.myrobot_props.prop_myrobot_color
+
+            complete_name, area_name = draw_myrobot(context, name, loc, robot_type, rot, dim, margin, ip, port, client_ip, client_port, color)
 
             robot = MyRobot(idn, complete_name, area_name, robot_type_tuple, dim, margin, ip, port, client_ip, client_port)
+            robot.color = color
             RobotSet().addRobot(robot)
 
         if robot is not None:
