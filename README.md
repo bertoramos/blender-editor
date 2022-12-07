@@ -27,7 +27,9 @@ Para activar *Measureit* nos dirigimos a la pestaña preferencias : **Edit > Pre
 Figura 2: Instalación de *addons*.
 </p>
 
-### 2. Instalar *msgpack*.
+### 2. Instalar dependencias Python.
+
+#### 2.1. Instalar *msgpack*
 
 **Msgpack** es un módulo de *Python* encargado de comprimir los paquetes utilizados en la comunicación con las plataformas robóticas.
 
@@ -41,6 +43,16 @@ Para instalarlo, seguimos los siguientes pasos:
    3. **./python.exe -m pip install msgpack**
 
 > **_NOTA:_**  Las rutas y nombre de los ejecutables pueden variar ligeramente dependiendo de la versión de Blender y el sistema operativo. 
+
+#### 2.2. Instalar *hid*
+
+**HID** permite la entrada de datos.
+
+Para instalar este módulo seguimos los mismos pasos explicados anteriormente, e instalamos con pip:
+
+  1. **python.exe -m pip install hid**
+
+Además, debemos copiar en la ruta del ejecutable python (**ruta-instalación-blender/blender-2.82a-windows64/blender-2.82a-windows64/2.82/python/bin/**) la librería hidapi.dll. Se encuentra disponible en [https://github.com/libusb/hidapi/releases](https://github.com/libusb/hidapi/releases).
 
 ### 3. Instalar *addons*.
 
@@ -195,6 +207,25 @@ Sin necesidad de comunicarse con la plataforma se pueden simular planes de naveg
 <p align="center">
 Figura 13: Menú de control de la simulación.
 </p>
+
+#### Telecontrol
+
+Para activar el telecontrol, pulsar el botón *Open manual control* en la interfaz. Hay dos modos de telecontrol: con *gamepad* y con teclado. 
+
+Cambiar entre modos con la tecla P.
+
+##### Control con *gamepad Trust Runa*
+
+- Joystick izquierdo: Dirección de movimiento.
+- X: rotar a la izquierda
+- A: rotar a la derecha
+
+##### Control con teclado.
+
+- V: Activar/desactivar el movimiento. La plataforma se mueve continuamente en la dirección actual.
+- K/L : Ajustar dirección de la plataforma 1 grado a la izquierda/derecha.
+- W/S/A/D : Cambiar dirección hacia adelante/atrás/izquierda/derecha.
+- Flecha izquierda/derecha: rotar en sentido antihorario/horario.
 
 ## Referencias
 
