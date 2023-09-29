@@ -50,7 +50,7 @@ Para instalarlo, seguimos los siguientes pasos:
 
 Para instalar este módulo seguimos los mismos pasos explicados anteriormente, e instalamos con pip:
 
-  1. **python.exe -m pip install hid**
+  1. **./python.exe -m pip install hid**
 
 Además, debemos copiar en la ruta del ejecutable python (**ruta-instalación-blender/blender-2.82a-windows64/blender-2.82a-windows64/2.82/python/bin/**) la librería hidapi.dll. Se encuentra disponible en [https://github.com/libusb/hidapi/releases](https://github.com/libusb/hidapi/releases).
 
