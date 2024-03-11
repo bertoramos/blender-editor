@@ -2,7 +2,7 @@
 bl_info = {
     "name": "Utilities",
     "author": "Alberto Ramos Sanchez",
-    "version": (1, 4, 2),
+    "version": (1, 6, 0),
     "blender": (2, 80, 0),
     "location": "",
     "description": "General Utilities",

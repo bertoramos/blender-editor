@@ -46,13 +46,19 @@ Para instalarlo, seguimos los siguientes pasos:
 
 #### 2.2. Instalar *hid*
 
-**HID** permite la entrada de datos.
+**HID** permite la entrada de periféricos.
 
 Para instalar este módulo seguimos los mismos pasos explicados anteriormente, e instalamos con pip:
 
   1. **./python.exe -m pip install hid**
 
 Además, debemos copiar en la ruta del ejecutable python (**ruta-instalación-blender/blender-2.82a-windows64/blender-2.82a-windows64/2.82/python/bin/**) la librería hidapi.dll. Se encuentra disponible en [https://github.com/libusb/hidapi/releases](https://github.com/libusb/hidapi/releases).
+
+Posteriormente instalamos [x360ce](https://www.x360ce.com/). Mediante este programa podemos asignar las teclas de un mando genérico a uno de XBOX360. Seguimos las instrucciones de instalación en la web. 
+
+IMPORTANTE: al ejecutar por primera vez el programa, ir a la pestaña ISSUES e instalar el driver en *Virtual Gamepad Emulation Driver*. 
+
+Tras la instalación seguimos las instrucciones para asignar los controles de nuestro mando al de xbox.
 
 ### 3. Instalar *addons*.
 
@@ -210,15 +216,17 @@ Figura 13: Menú de control de la simulación.
 
 #### Telecontrol
 
-Para activar el telecontrol, pulsar el botón *Open manual control* en la interfaz. Hay dos modos de telecontrol: con *gamepad* y con teclado. 
+Para activar el telecontrol, pulsar el botón *Open manual control* en la interfaz. Seleccionamos en el cuadro de diálogo nuestro dispositivo.
 
-Cambiar entre modos con la tecla P.
+- Para utilizar el teclado seleccionamos  en el desplegable *keyboard*.
+- Para utilizar *x360ce*, abrimos el ejecutable *x360ce.exe*, asignamos controles y minimizamos para dejar en segundo plano. Posteriormente seleccionamos en el desplegable el dispositivo *"Controller (XBOX 360 For Windows)"*.
 
-##### Control con *gamepad Trust Runa*
+##### Control con *gamepad*.
 
 - Joystick izquierdo: Dirección de movimiento.
-- X: rotar a la izquierda
-- A: rotar a la derecha
+- L: rotar a la izquierda
+- R: rotar a la derecha
+- X/Y/A/B: parar
 
 ##### Control con teclado.
 

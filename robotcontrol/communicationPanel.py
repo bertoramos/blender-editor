@@ -1,4 +1,5 @@
 
+import json
 import bpy
 import bpy.utils.previews
 import os
@@ -29,6 +30,8 @@ class CommunicationPanel(bpy.types.Panel):
     def draw(self, context):
         global preview_collections
 
+        self.layout.label(text="Communication")
+
         icon_mode = ""
         mode = context.scene.com_props.prop_mode
 
@@ -36,21 +39,15 @@ class CommunicationPanel(bpy.types.Panel):
             icon_mode = "FILE_BLEND"
         if mode == co.robot_modes_summary.index("ROBOT_MODE"):
             icon_mode = "SYSTEM"
-
-        self.layout.label(text="Communication")
-
-        props = context.scene.com_props
-        #self.layout.prop(props, "prop_client_ip", text="Client Ip")
-        #self.layout.prop(props, "prop_client_port", text="Client Port")
-
+        
         self.layout.operator(co.ChangeModeOperator.bl_idname, icon = icon_mode, text="Change mode")
 
         rendering = context.scene.com_props.prop_rendering
         rendering_txt = "Rendering active" if rendering else "Rendering inactive"
         icon_rendering = "RESTRICT_RENDER_OFF" if rendering else "RESTRICT_RENDER_ON"
 
-
         self.layout.operator(co.ToggleRenderingOperator.bl_idname, icon = icon_rendering, text=rendering_txt)
+        
         self.layout.label(text="Control panel")
 
         self.layout.operator(cal_op.CalibrateOperator.bl_idname, icon="UV_SYNC_SELECT")
@@ -67,9 +64,11 @@ class CommunicationPanel(bpy.types.Panel):
         box_com.label(text=speed_lab)
         box_com.operator(co.ChangeSpeedOperator.bl_idname, icon="ANIM_DATA", text="Change speed")
 
-
         manual_control_button_text = "Open manual control" if not mco.ManualControlEventsOperator._open else "Close manual control"
 
+        selected_device = json.loads(context.scene.manual_control_selected_device)
+        selected_device_name = selected_device.get("product_string", "None")
+        self.layout.label(text=f"Selected device: {selected_device_name}")
         icon_value = "PROP_OFF" if not mco.ManualControlEventsOperator._open else "PROP_ON"
         self.layout.operator(mco.ToggleManualControlOperator.bl_idname, text=manual_control_button_text, icon=icon_value)
 

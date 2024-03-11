@@ -1,5 +1,6 @@
 
 
+import json
 from pathlib import Path
 import sys
 import ctypes
@@ -8,65 +9,19 @@ import hid
 
 import numpy as np
 
-class Gamepad:
-
-    def __init__(self, vendor=0x0079, product=0x0006):
-        self.gamepad = hid.Device(vendor, product)
-        self.gamepad.nonblocking = True
-
-    
-    def read(self):
-        report = list(self.gamepad.read(3200))
-        if not report:
-            return {}
-
-        x_button = ((report[5] & 0b10000000) >> 7) == 1
-        a_button = ((report[5] & 0b01000000) >> 6) == 1
-        b_button = ((report[5] & 0b00100000) >> 5) == 1
-        y_button = ((report[5] & 0b00010000) >> 4) == 1
-
-        x_left, y_left = self.__remap_joy(report[0], report[1], precision=0.5)
-        x_right, y_right = self.__remap_joy(report[3], report[4], precision=0.5)
-
-        return {
-            'x_button': x_button,
-            'y_button': y_button,
-            'a_button': a_button,
-            'b_button': b_button,
-            'left_joystick': (x_left, y_left),
-            'right_joystick': (x_right, y_right)
-        }
-
-    def __maprange(self, a, b, s):
-        (a1, a2), (b1, b2) = a, b
-        return  b1 + ((s - a1) * (b2 - b1) / (a2 - a1))
-
-    def __normalize(self, v):
-        norm = np.linalg.norm(v)
-        if norm == 0: 
-            return v
-        return v / norm
-
-    def __remap_joy(self, rx, ry, precision=0):
-        x, y = rx, ry
-        x = self.__maprange((0, 255), (-1, 1), x)
-        y = self.__maprange((0, 255), (1, -1), y)
-        direction = np.array([x, y])
-        if np.linalg.norm(direction) < precision:
-            return 0, 0
-        [x, y] = self.__normalize(direction)
-        return x, y
-
-########################################################################################
-
 import bpy
 import mathutils
 import math
+
+import copy
 
 # begin local import: Change to from . import MODULE
 import connectionHandler as ch
 import robotCommunicationOperator as rco
 # end local import: Change to from . import MODULE
+
+from collections import namedtuple
+EventContainer = namedtuple("EventContainer", "type value")
 
 def autoregister():
     global classes
@@ -74,10 +29,89 @@ def autoregister():
     for c in classes:
         bpy.utils.register_class(c)
 
+    bpy.types.Scene.manual_control_selected_device = bpy.props.StringProperty(name="manual_control_selected_device_name", description="Manual Control Selected Device", default="{}")
+    
 def autounregister():
     global classes
     for c in classes:
         bpy.utils.unregister_class(c)
+    
+    del bpy.types.Scene.manual_control_selected_device
+
+##################################################################
+# GAMEPAD
+##################################################################
+
+def _maprange(a, b, s):
+        (a1, a2), (b1, b2) = a, b
+        return  b1 + ((s - a1) * (b2 - b1) / (a2 - a1))
+
+def _normalize(v):
+    norm = np.linalg.norm(v)
+    if norm == 0: 
+        return v
+    return v / norm
+
+def _remap_joy(rx, ry, precision=0):
+    x, y = rx, ry
+    x = _maprange((0, 255), (-1, 1), x)
+    y = _maprange((0, 255), (1, -1), y)
+    direction = np.array([x, y])
+    if np.linalg.norm(direction) < precision:
+        return 0, 0
+    [x, y] = _normalize(direction)
+    return x, y
+
+class Gamepad:
+
+    def __init__(self, vid, pid):
+        self.__dev = hid.Device(vid, pid)
+        self.__dev.nonblocking = True
+        self.__last_report = {
+            "joyL": (0.0, 0.0),
+            "joyR": (0.0, 0.0),
+            "A": False,
+            "B": False,
+            "X": False,
+            "Y": False,
+            "L": False,
+            "R": False,
+            "START": False,
+            "BACK": False
+        }
+
+    def read(self):
+        new_report = copy.deepcopy(self.__last_report)
+        data = list(self.__dev.read(3200))
+        if data:
+            # joystick
+            jl_y, jl_x = data[3], data[1]
+            jr_y, jr_x = data[7], data[5]
+            new_report["joyL"] = _remap_joy(jl_x, jl_y, precision=0.5)
+            new_report["joyR"] = _remap_joy(jr_x, jr_y, precision=0.5)
+
+            # buttons
+            buttons_byte = data[10]
+            new_report["A"]     = ( buttons_byte & 0b0000_0001 ) > 0
+            new_report["B"]     = ( buttons_byte & 0b0000_0010 ) > 0
+            new_report["X"]     = ( buttons_byte & 0b0000_0100 ) > 0
+            new_report["Y"]     = ( buttons_byte & 0b0000_1000 ) > 0
+            new_report["L"]     = ( buttons_byte & 0b0001_0000 ) > 0
+            new_report["R"]     = ( buttons_byte & 0b0010_0000 ) > 0
+            new_report["START"] = ( buttons_byte & 0b0100_0000 ) > 0
+            new_report["BACK"]  = ( buttons_byte & 0b1000_0000 ) > 0
+        
+        last_report = copy.deepcopy(self.__last_report)
+
+        self.__last_report = new_report
+        
+        return new_report, last_report
+    
+    def close(self):
+        self.__dev.close()
+
+
+##################################################################
 
 class ManualControlEventsOperator(bpy.types.Operator):
     bl_idname = "wm.manual_control_events_operator"
@@ -85,177 +119,143 @@ class ManualControlEventsOperator(bpy.types.Operator):
     bl_description = "Manual Control Events Operator"
 
     _open = False
-    _last_sent = None
+    _last_processed_event = None
 
-    def _apply_move(self, context, value, type):
-        speed = context.scene.com_props.prop_speed
-        displacement = 1
-    
+    _timer = None
+
+    _vid = None
+    _pid = None
+
+    # Running globals
+    _direction = mathutils.Vector((0, 1))
+    _rotation_displacement = 0
+    _gear = False
+    _prev_gear = False
+    _gamepad = None
+
+    def _send_translation(self, context, vx, vy, speed):        
         pid = context.scene.com_props.prop_last_sent_packet + 1
-        
-        action = {('PRESS','W'): lambda : ch.ConnectionHandler().send_manual_translation_packet(pid, 0, +displacement, speed),
-                  ('PRESS','S'): lambda : ch.ConnectionHandler().send_manual_translation_packet(pid, 0, -displacement, speed),
-                  ('PRESS','D'): lambda : ch.ConnectionHandler().send_manual_translation_packet(pid, +displacement, 0, speed),
-                  ('PRESS','A'): lambda : ch.ConnectionHandler().send_manual_translation_packet(pid, -displacement, 0, speed),
-                  ('PRESS','RIGHT_ARROW'): lambda : ch.ConnectionHandler().send_manual_rotation_packet(pid, +displacement, speed),
-                  ('PRESS','LEFT_ARROW'): lambda : ch.ConnectionHandler().send_manual_rotation_packet(pid, -displacement, speed),
-                  ('RELEASE', 'W'): lambda: ch.ConnectionHandler().send_manual_stop_packet(pid),
-                  ('RELEASE', 'S'): lambda: ch.ConnectionHandler().send_manual_stop_packet(pid),
-                  ('RELEASE', 'D'): lambda: ch.ConnectionHandler().send_manual_stop_packet(pid),
-                  ('RELEASE', 'A'): lambda: ch.ConnectionHandler().send_manual_stop_packet(pid),
-                  ('RELEASE', 'RIGHT_ARROW'): lambda: ch.ConnectionHandler().send_manual_stop_packet(pid),
-                  ('RELEASE', 'LEFT_ARROW'): lambda: ch.ConnectionHandler().send_manual_stop_packet(pid)
-                 }
-    
-        last_sent = ManualControlEventsOperator._last_sent
-        if last_sent is not None and last_sent[0] == value and last_sent[1] == type: return {'RUNNING_MODAL'}
-        if (value,type) not in action: return {'PASS_THROUGH'}
-    
-        # Send message
-        rescode = action[(value,type)]()
-        print("ACK rescode from send translation ", rescode)
-        context.scene.com_props.prop_last_sent_packet = pid
-        ManualControlEventsOperator._last_sent = (value, type)
-        if rescode is not None and rescode:
-            return {'RUNNING_MODAL'} # is correct
-        else:
-            self.report({'ERROR'}, f"WARNING: Robot could not be stopped")
-            return {'RUNNING_MODAL'}
-
-    def _send_translation(self, context, x, y):
-        speed = context.scene.com_props.prop_speed
-        pid = context.scene.com_props.prop_last_sent_packet + 1
-
-        rescode = ch.ConnectionHandler().send_manual_translation_packet(pid, x, y, speed)
+        rescode = ch.ConnectionHandler().send_manual_translation_packet(pid, vx, vy, speed)
 
         context.scene.com_props.prop_last_sent_packet = pid
 
-        if rescode is not None and rescode:
-            return {'RUNNING_MODAL'} # is correct
-        else:
-            self.report({'ERROR'}, f"WARNING: Robot could not be translated")
-            return {'RUNNING_MODAL'}
+        return rescode is not None and rescode
     
-    def _send_rotation(self, context, rotation):
-        speed = context.scene.com_props.prop_speed
+    def _send_rotation(self, context, rotation, speed):
         pid = context.scene.com_props.prop_last_sent_packet + 1
-
         rescode = ch.ConnectionHandler().send_manual_rotation_packet(pid, rotation, speed)
-        
+
         context.scene.com_props.prop_last_sent_packet = pid
 
-        if rescode is not None and rescode:
-            return {'RUNNING_MODAL'} # is correct
-        else:
-            self.report({'ERROR'}, f"WARNING: Robot could not be rotated")
-            return {'RUNNING_MODAL'}
+        return rescode is not None and rescode
     
     def _send_stop(self, context):
         pid = context.scene.com_props.prop_last_sent_packet + 1
-
         rescode = ch.ConnectionHandler().send_manual_stop_packet(pid)
-        
+
         context.scene.com_props.prop_last_sent_packet = pid
 
-        if rescode is not None and rescode:
-            return {'RUNNING_MODAL'} # is correct
-        else:
-            self.report({'ERROR'}, f"WARNING: Robot could not be stopped")
-            return {'RUNNING_MODAL'}
-
-    def _update_pose(self, context, event):
-
-        rotation_matrix = lambda angle : mathutils.Matrix([[math.cos(angle),-math.sin(angle)],[math.sin(angle),math.cos(angle)]])
-        
-
-        if not self.gamepad_on:
-            if event.value == "PRESS":
-                angle_inc = 1
-                if event.type == "K":
-                    self.direction.rotate(rotation_matrix(math.radians(angle_inc)))
-                if event.type == "L":
-                    self.direction.rotate(rotation_matrix(math.radians(-angle_inc)))
-            
-            if event.value == "PRESS":
-                if event.type == "W":
-                    self.direction = mathutils.Vector((+0, +1))
-                if event.type == "S":
-                    self.direction = mathutils.Vector((+0, -1))
-                if event.type == "A":
-                    self.direction = mathutils.Vector((-1, +0))
-                if event.type == "D":
-                    self.direction = mathutils.Vector((+1, +0))
-        
-            if event.value == "PRESS":
-                if event.type == "V":
-                    self.gear = not self.gear
-            
-            if event.value == "PRESS":
-                if event.type == "LEFT_ARROW":
-                    self.gear = False
-                    self._send_rotation(context, -1)
-                if event.type == "RIGHT_ARROW":
-                    self.gear = False
-                    self._send_rotation(context, +1)
-            if event.value == "RELEASE":
-                if event.type in {"LEFT_ARROW", "RIGHT_ARROW"}:
-                    self.gear = False
-                    self._send_stop(context)
-                
-        if event.value == "PRESS":
-            if event.type == "P":
-                self.gear = False
-                self.gamepad_on = not self.gamepad_on
-                self._send_stop(context)
-
-                self.direction = mathutils.Vector((+0, +1))
-
-        if event.type == 'TIMER':
-
-            if self.gamepad_on:
-                # Gamepad direction
-                report = self.gamepad.read()
-                if report:
-                    self.direction = mathutils.Vector(report["left_joystick"])
-                    if self.direction.length > 0:
-                        self.gear = True
-                    else:
-                        self.gear = False
-                    
-                    if report['x_button'] == True:
-                        self.gear = False
-                        self._send_rotation(context, -1)
-                    if report['b_button'] == True:
-                        self.gear = False
-                        self._send_rotation(context, +1)
-
-                    if self.prev_report is not None:
-                        # Release button
-                        if report['x_button'] == False and self.prev_report["x_button"] == True:
-                            self._send_stop(context)
-                        if report['y_button'] == False and self.prev_report["y_button"] == True:
-                            self._send_stop(context)
-
-                    self.prev_report = report
-            
-            # Update
-            if self.gear:
-                self._send_translation(context, self.direction[0], self.direction[1])
-            else:
-                self._send_stop(context)
-
-            return {"RUNNING_MODAL"}
-
-        # Ensure modal return
-        if event.value in {"PRESS", "RELEASE"}:
-            if event.type in {"P", 'LEFT_ARROW', 'RIGHT_ARROW', "V", "A", "W", "S", "D", "K", "L"}:
-                return {"RUNNING_MODAL"}
-        
-        return {'PASS_THROUGH'}
+        return rescode is not None and rescode
     
+    def _timer_handler(self, context):
 
+        if self._gamepad is not None: # Esta activo el gamepad
+            report, prev_report = self._gamepad.read()
+            joyL = report["joyL"]
+            self._direction = mathutils.Vector(joyL)
+            
+            self._gear = self._direction.length > 0 # Para si el joystick está suelto
+
+            if report["L"]: # L está presionado
+                self._rotation_displacement = -1
+                self._gear = True
+            elif report["L"] != prev_report["L"]: # Se soltó L (L no está presionado y antes lo estaba)
+                self._rotation_displacement = 0
+                self._gear = False
+            
+            if report["R"]: # R está presionado
+                self._rotation_displacement = +1
+                self._gear = True
+            elif report["R"] != prev_report["R"]: # Se soltó R (R no está presionado y antes lo estaba)
+                self._rotation_displacement = 0
+                self._gear = False
+            
+            if report["A"] or report["B"] or report["X"] or report["Y"]:
+                self._gear = False
+        
+        speed = context.scene.com_props.prop_speed
+
+        rescode = True
+        # Update pose
+        if self._gear == False and self._prev_gear != self._gear: # Si se ha solicitado pararlo y anteriormente no se paró
+            rescode = self._send_stop(context)
+            print("PARADA")
+        
+        if self._gear == True:
+            if self._rotation_displacement != 0: # Si el desplazamiento a realizar es mayor a 0
+                rescode = self._send_rotation(context, self._rotation_displacement, speed)
+                print(f"ROTACION {self._rotation_displacement}")
+            
+            if self._direction.length > 0: # Si el vector de direccion tiene longitud mayor a 0
+                rescode = self._send_translation(context, self._direction[0], self._direction[1], speed)
+                print(f"MOVIMIENTO {self._direction[0]}, {self._direction[1]}")
+            else: # Si no se para el robot
+                rescode = self._send_stop(context)
+                print("PARADA")
+
+        print(rescode)
+        
+    
+    def _event_handler(self, context, event):
+        # Lambda utils
+        def set_direction(vx, vy): self._direction = mathutils.Vector((vx, vy))
+        def set_rotation_displacement(angle): self._rotation_displacement=angle
+        def set_gear(value): self._gear=value
+        rotation_matrix = lambda angle : mathutils.Matrix([[math.cos(angle),-math.sin(angle)],[math.sin(angle),math.cos(angle)]])
+
+        value, type = event.value, event.type
+        
+        angle_inc = 1
+        keyboard_action = {('PRESS','W'): lambda : [set_direction(+0, +1)],
+                  ('PRESS','S'): lambda : [set_direction(+0, -1)],
+                  ('PRESS','D'): lambda : [set_direction(+1, +0)],
+                  ('PRESS','A'): lambda : [set_direction(-1, +0)],
+                  ('PRESS', 'K'): lambda : [self._direction.rotate(rotation_matrix(math.radians(angle_inc)))],
+                  ('PRESS', 'L'): lambda : [self._direction.rotate(rotation_matrix(math.radians(-angle_inc)))],
+                  ('PRESS', 'V'): lambda : [set_gear(False if self._gear else True)],
+                  ('PRESS','RIGHT_ARROW'): lambda : [set_rotation_displacement(+1), set_gear(True)],
+                  ('PRESS','LEFT_ARROW'): lambda : [set_rotation_displacement(-1), set_gear(True)],
+                  ('RELEASE', 'RIGHT_ARROW'): lambda: [set_rotation_displacement(+0), set_gear(False)],
+                  ('RELEASE', 'LEFT_ARROW'): lambda: [set_rotation_displacement(+0), set_gear(False)],
+                 }
+
+        last_processed_event = ManualControlEventsOperator._last_processed_event
+
+        if event.type!="TIMER": # ** TIMER se procesa siempre
+            # Si ya ha sido procesado no se procesa de nuevo (**Excepto TIMER)
+            if last_processed_event is not None and \
+                last_processed_event.value == value and last_processed_event.type == type: return {'RUNNING_MODAL'}
+            # Se ignoran los eventos no utilizados (**Excepto TIMER)
+            if (value,type) not in keyboard_action: return {'PASS_THROUGH'}
+        
+        self._prev_gear = self._gear
+        if self._gamepad is None and (value, type) in keyboard_action:
+            keyboard_action[(value, type)]()
+        
+        if event.type == "TIMER":
+            self._timer_handler(context) # Handle gamepad and/or update pose
+
+        ManualControlEventsOperator._last_processed_event = EventContainer(type=event.type, value=event.value)
+
+        return {"RUNNING_MODAL"}
+    
     def modal(self, context, event):
         if not ManualControlEventsOperator._open:
+            if self._gamepad:
+                try:
+                    self._gamepad.close()
+                except:
+                    pass
             return {'FINISHED'}
         context.scene.com_props.prop_running_nav
         if ManualControlEventsOperator._open:
@@ -263,34 +263,39 @@ class ManualControlEventsOperator(bpy.types.Operator):
                 context.scene.com_props.prop_running_nav:
 
                 ManualControlEventsOperator._open = False
+
+                if self._gamepad:
+                    try:
+                        self._gamepad.close()
+                    except:
+                        pass
                 return {'FINISHED'}
 
-        return self._update_pose(context, event)
-        #return self._apply_move(context, event.value, event.type)
+        return self._event_handler(context, event)
 
-    def execute(self, context):
-        self.gamepad = Gamepad(0x0079, 0x0006)
-        self.direction = mathutils.Vector((0, 1))
-        self.gear = False
-        self.gamepad_on = True
-        self.prev_report = None
-
-        self.robot = context.object
-
-        self.report({'INFO'}, "JOYSTICK " + "ON" if self.gamepad_on else "OFF")
-
-        #context.window_manager.modal_handler_add(self)
-        millis_to_sec = lambda t : t / 1000
-
+    def execute(self, context):        
+        
+        selected_device = json.loads(context.scene.manual_control_selected_device)
+        self._vid = selected_device["vendor_id"]
+        self._pid = selected_device["product_id"]
+        
+        if self._vid is not None and self._pid is not None:
+            # open gamepad
+            self._gamepad = Gamepad(self._vid, self._pid)
+        else:
+            self._gamepad = None
+        
+        # Run timer
         wm = context.window_manager
-        self._timer = wm.event_timer_add(millis_to_sec(300), window=context.window)
+        self._timer = wm.event_timer_add(0.3, window=context.window) # 300ms
         wm.modal_handler_add(self)
 
         return {'RUNNING_MODAL'}
     
     def cancel(self, context):
-        wm = context.window_manager
-        wm.event_timer_remove(self._timer)
+        if self._timer is not None:
+            wm = context.window_manager
+            wm.event_timer_remove(self._timer)
 
 
 class ToggleManualControlOperator(bpy.types.Operator):
@@ -298,14 +303,44 @@ class ToggleManualControlOperator(bpy.types.Operator):
     bl_label = "Toggle Manual Control Operator"
     bl_description = "Toggle Manual Control Operator"
 
+    
+    def get_available_devices(scene, context):
+        available_devices = [
+            (json.dumps({
+                "product_string": e["product_string"],
+                "vendor_id": e["vendor_id"],
+                "product_id": e["product_id"]
+            }), e["product_string"], "", i)
+            for i, e in enumerate(hid.enumerate())
+        ]
+
+        keyboard_tag = json.dumps({"product_string": "Keyboard",
+                                   "vendor_id": None,
+                                   "product_id": None})
+        available_devices += [(keyboard_tag, "Keyboard", "", len(available_devices) + 1)]
+        return available_devices
+
+    prop_available_devices: bpy.props.EnumProperty(items = get_available_devices)
+    
+    def invoke(self, context, event):
+        if not ManualControlEventsOperator._open:
+            wm = context.window_manager
+            return wm.invoke_props_dialog(self)
+        else:
+            return self.execute(context)
+
     @classmethod
     def poll(cls, context):
-        return context.scene.com_props.prop_mode == rco.robot_modes_summary.index("ROBOT_MODE") and not context.scene.com_props.prop_running_nav
-
+        return context.scene.com_props.prop_mode == rco.robot_modes_summary.index("ROBOT_MODE") and\
+            not context.scene.com_props.prop_running_nav
+    
     def execute(self, context):
         if ManualControlEventsOperator._open:
             ManualControlEventsOperator._open = False
+            context.scene.manual_control_selected_device = "{}"
         else:
             ManualControlEventsOperator._open = True
+            context.scene.manual_control_selected_device = self.prop_available_devices
+            # print("Toggle says : ", str(self.available_devices), type(self.available_devices))
             bpy.ops.wm.manual_control_events_operator('INVOKE_DEFAULT')
         return {'FINISHED'}
