@@ -13,6 +13,8 @@ Figura 1: Ejecución de plan de navegación.
 
 ## Instalación.
 
+TODO: Añadir instrucciones de instalación para versión antigua y nueva (4.X).
+
 En el último *release* se encuentra el código preparado para ser instalado.
 
 ### 1. Activar *addon Measureit*.
