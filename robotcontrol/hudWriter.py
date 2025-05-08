@@ -5,7 +5,7 @@ import blf
 import gpu
 from gpu_extras.batch import batch_for_shader
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 from mathutils import Vector
@@ -49,7 +49,7 @@ class Texto:
     size: int = 20
     dpi : int = 72
 
-    text_color: RGBAColor = RGBAColor(0,0,0,1)
+    text_color: RGBAColor = field(default_factory=lambda: RGBAColor(0,0,0,1))
 
     text: str = "TEXTO"
 
@@ -67,13 +67,13 @@ class Point3D:
 @dataclass
 class Curve:
     points : List
-    color  : RGBAColor = RGBAColor(0, 0, 0, 1)
+    color  : RGBAColor = field(default_factory=lambda: RGBAColor(0, 0, 0, 1))
 
 @dataclass
 class DashedCurve:
     points : List
     scale  : float
-    color  : RGBAColor = RGBAColor(0, 0, 0, 1)
+    color  : RGBAColor = field(default_factory=lambda: RGBAColor(0, 0, 0, 1))
 
 @dataclass
 class Arrow:
@@ -81,14 +81,14 @@ class Arrow:
     end: Point3D
     head_len: float
     head_size: float
-    color  : RGBAColor = RGBAColor(0, 0, 0, 1)
+    color  : RGBAColor = field(default_factory=lambda: RGBAColor(0, 0, 0, 1))
 
 @dataclass
 class Star:
     point: Point3D
     size: float
 
-    color: RGBAColor = RGBAColor(1, 1, 0, 1)
+    color: RGBAColor = field(default_factory=lambda: RGBAColor(1, 1, 0, 1))
 
 #######################################################
 

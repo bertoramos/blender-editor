@@ -16,8 +16,19 @@ import bpy
 import os
 import sys
 from pathlib import Path
+# Get the real path of the current script
+def get_script_folder():
+    # Check if the script is being run from a Blender Text Editor or external file
+    if bpy.context.space_data.type == 'TEXT_EDITOR':
+        script_path = bpy.context.space_data.text.filepath
+        if script_path:
+            return Path(os.path.realpath(script_path)).parent
+        else:
+            return None
+    else:
+        return None
 
-project_folder = Path("C:\\Users\\alber\\Desktop\\IPS_BLENDER\\Robomap_Blender\\robomap_repo\\blender-editor\\")
+project_folder = Path(get_script_folder())
 dir = project_folder / Path(".\\archibuilder\\")
 if not dir in sys.path:
     sys.path.append(str(dir))
