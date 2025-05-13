@@ -25,6 +25,8 @@ Para crear una versión completamente portable, antes de la primera ejecución h
 
 ### 2. Activar *addon Measureit*.
 
+#### 2.1 Blender <4
+
 Para activar *Measureit* nos dirigimos a la pestaña preferencias : **Edit > Preferences**. Posteriormente, en la pestaña *add-ons*, buscamos *Measureit* y comprobamos que el *checklist* esté seleccionado.
 
 <p align="center">
@@ -34,6 +36,30 @@ Para activar *Measureit* nos dirigimos a la pestaña preferencias : **Edit > Pre
 <p align="center">
 Figura 2: Instalación de *addons*.
 </p>
+
+#### 2.2 Blender >=4
+
+En las versiones >=4 la instalación cambia en algunos pasos. Para activar *Measureit* nos dirigimos a *Get extensions* y permitimos el acceso a internet *Allow Online Access*
+
+<p align="center">
+<img src="images/blender4-measureit-allowonline.png" alt="Activate addon menu">
+<!--![Activate addon menu](images/edit_install.png)-->
+</p>
+<p align="center">
+Figura 3: Permitir acceso a internet.
+</p>
+
+Posteriormente instalamos el *addon*.
+
+<p align="center">
+<img src="images/blender4-measureit-install.png" alt="Activate addon menu">
+<!--![Activate addon menu](images/edit_install.png)-->
+</p>
+<p align="center">
+Figura 4: Instalación de *addon*.
+</p>
+
+Si queremos comprobar que está activo, podemos dirigirnos a la pestaña *Addons* y buscamos *Measureit*, comprobando que el *checklist* esté activo.
 
 ### 3. Instalar dependencias Python.
 
@@ -100,7 +126,7 @@ Se pueden crear paredes con las que delimitar un escenario virtual.
 <!--![Crear paredes](images/wall_create.png)-->
 </p>
 <p align="center">
-Figura 3: Creación de paredes.
+Figura 5: Creación de paredes.
 </p>
 
 #### Crear habitaciones.
@@ -112,7 +138,7 @@ Utilizando paredes, se facilita la creación de habitaciones, que pueden modific
 <!--![Crear habitaciones](images/room_create.png)-->
 </p>
 <p align="center">
-Figura 4: Creación de habitaciones.
+Figura 6: Creación de habitaciones.
 </p>
 
 #### Crear techos.
@@ -124,7 +150,7 @@ Los techos se representan como planos semitransparentes. Pueden situarse sobre e
 <!--![Crear techos](images/ceil_create.png)-->
 </p>
 <p align="center">
-Figura 5: Creación de techos.
+Figura 7: Creación de techos.
 </p>
 
 #### Crear obstáculos.
@@ -136,7 +162,7 @@ Los obstáculos representan zonas en las que las plataformas robóticas no puede
 <!--![Crear obstáculos](images/obstacle_create.png)-->
 </p>
 <p align="center">
-Figura 6: Creación de obstáculos.
+Figura 8: Creación de obstáculos.
 </p>
 
 #### Posicionar *beacons*.
@@ -148,14 +174,14 @@ Los *beacons* son emisores de señales que utiliza la plataforma robótica para 
 <!--![Crear beacons](images/beacon_create.png)-->
 </p>
 <p align="center">
-Figura 7: *Beacon bluetooth* y ultrasónico.
+Figura 9: *Beacon bluetooth* y ultrasónico.
 </p>
 
 <p align="center">
 <img src="images/beacon_menu.png" alt="Beacon menu">
 </p>
 <p align="center">
-Figura 8: Menú de creación de beacons.
+Figura 10: Menú de creación de beacons.
 </p>
 <br>
 <br>
@@ -168,7 +194,7 @@ Los escenarios diseñados pueden exportarse a ficheros ***.blend***.
 <img src="images/filemanager_interfaz.png" alt="Exportar escenarios">
 </p>
 <p align="center">
-Figura 9: Menú exportar escenarios.
+Figura 11: Menú exportar escenarios.
 </p>
 
 ### Control de plataformas robóticas.
@@ -186,7 +212,7 @@ El *addon* está adaptado para poder diseñar múltiples tipos de plataformas ro
 <!-- ![Crear robots](images/robot_create.png)-->
 </p>
 <p align="center">
-Figura 10: Creación de plataformas robóticas.
+Figura 12: Creación de plataformas robóticas.
 </p>
 
 #### Diseño de planes de navegación.
@@ -197,7 +223,7 @@ Siempre que exista una plataforma robótica en el escenario virtual, pueden crea
   <img src="images/path_creation.gif" alt="Creacion de rutas">
 </p>
 <p align="center">
-Figura 11: Creación de ruta.
+Figura 13: Creación de ruta.
 </p>
 
 #### Ejecución de rutas.
@@ -208,7 +234,7 @@ Se pueden enviar rutas, pausar la plataforma, controlar su velocidad y cancelar 
   <img src="images/iniciar_plan.png" alt="Menu control de plataforma">
 </p>
 <p align="center">
-Figura 12: Panel de control de plataformas.
+Figura 14: Panel de control de plataformas.
 </p>
 
 #### Simulación.
@@ -219,7 +245,7 @@ Sin necesidad de comunicarse con la plataforma se pueden simular planes de naveg
   <img src="images/panel_simulacion.png" alt="Creacion de rutas">
 </p>
 <p align="center">
-Figura 13: Menú de control de la simulación.
+Figura 15: Menú de control de la simulación.
 </p>
 
 #### Telecontrol
