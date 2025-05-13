@@ -3,7 +3,6 @@
 
 *Robotcontrol editor toolbox* es un conjunto de herramientas creado para diseñar escenarios en 3D y controlar de forma remota plataformas robóticas. Es compatible para versiones superiores a 2.8 de *Blender*.
 
-
 <p align="center">
   <img src="images/ejecucion.gif" alt="Creacion de rutas">
 </p>
@@ -13,11 +12,18 @@ Figura 1: Ejecución de plan de navegación.
 
 ## Instalación.
 
-TODO: Añadir instrucciones de instalación para versión antigua y nueva (4.X).
-
 En el último *release* se encuentra el código preparado para ser instalado.
 
-### 1. Activar *addon Measureit*.
+### 1. Descargar Blender.
+
+Se recomienda descargar la versión portable de Blender. Para ello dirigirse a la url [https://www.blender.org/download/](https://www.blender.org/download/), seleccionar la versión de Blender requerida y elegir la versión portable.
+
+Para crear una versión completamente portable, antes de la primera ejecución hay que crear una carpeta tal y como se explica en los siguientes recursos:
+
+ * Versiones de Blender <4  : [https://docs.blender.org/manual/en/3.6/advanced/blender_directory_layout.html](https://docs.blender.org/manual/en/3.6/advanced/blender_directory_layout.html)
+ * Versiones de Blender >=4 : [https://docs.blender.org/manual/en/4.4/advanced/blender_directory_layout.html#portable-installation](https://docs.blender.org/manual/en/4.4/advanced/blender_directory_layout.html#portable-installation)
+
+### 2. Activar *addon Measureit*.
 
 Para activar *Measureit* nos dirigimos a la pestaña preferencias : **Edit > Preferences**. Posteriormente, en la pestaña *add-ons*, buscamos *Measureit* y comprobamos que el *checklist* esté seleccionado.
 
@@ -29,9 +35,9 @@ Para activar *Measureit* nos dirigimos a la pestaña preferencias : **Edit > Pre
 Figura 2: Instalación de *addons*.
 </p>
 
-### 2. Instalar dependencias Python.
+### 3. Instalar dependencias Python.
 
-#### 2.1. Instalar *msgpack*
+#### 3.1. Instalar *msgpack*
 
 **Msgpack** es un módulo de *Python* encargado de comprimir los paquetes utilizados en la comunicación con las plataformas robóticas.
 
@@ -46,7 +52,7 @@ Para instalarlo, seguimos los siguientes pasos:
 
 > **_NOTA:_**  Las rutas y nombre de los ejecutables pueden variar ligeramente dependiendo de la versión de Blender y el sistema operativo. 
 
-#### 2.2. Instalar *hid*
+#### 3.2. Instalar *hid*
 
 **HID** permite la entrada de periféricos.
 
@@ -62,7 +68,7 @@ IMPORTANTE: al ejecutar por primera vez el programa, ir a la pestaña ISSUES e i
 
 Tras la instalación seguimos las instrucciones para asignar los controles de nuestro mando al de xbox.
 
-### 3. Instalar *addons*.
+### 4. Instalar *addons*.
 
 Este *toolbox* debemos instalarlo a partir de los 4 ficheros comprimidos en zip que se encuentran dentro del archivo zip del último *release* (*archibuilder.zip*, *robotcontrol.zip*, *utilities.zip* y *filemanager.zip*).
 

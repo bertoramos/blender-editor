@@ -13,9 +13,9 @@ FLAGS = {
 # Procesado de las etiquetas del código
 def process_file(file, result):
     current_flag = FLAGS["NONE"]
-
+    
     result_file = result / file
-
+    
     result_file.parent.mkdir(parents=True, exist_ok=True)
 
     input_fid=open(file, "r", encoding="utf-8")
