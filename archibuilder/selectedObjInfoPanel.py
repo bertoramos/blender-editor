@@ -16,8 +16,9 @@ class SelectedObjectInfoPanel(bpy.types.Panel):
     
     def draw(self, context):
         obj = context.object
-
-        if obj is not None and obj.object_type == "BLUETOOTH_BEACON":
-            self.layout.label(text="Name : " + obj.name)
-            self.layout.label(text="Type : Bluetooth beacon")
-            self.layout.label(text="MAC address : " + obj['mac'])
+        
+        if obj is not None:
+            if obj.object_type == "BLUETOOTH_BEACON":
+                self.layout.label(text="Name : " + obj.name)
+                self.layout.label(text="Type : Bluetooth beacon")
+                self.layout.label(text="MAC address : " + obj['mac'])
