@@ -131,6 +131,7 @@ class ManualControlEventsOperator(bpy.types.Operator):
     _rotation_displacement = 0
     _gear = False
     _prev_gear = False
+    _prev_timer_gear = False
     _gamepad = None
 
     def _send_translation(self, context, vx, vy, speed):        
@@ -187,24 +188,25 @@ class ManualControlEventsOperator(bpy.types.Operator):
 
         rescode = True
         # Update pose
-        if self._gear == False and self._prev_gear != self._gear: # Si se ha solicitado pararlo y anteriormente no se paró
+        if self._gear == False and self._prev_timer_gear != self._gear: # Si se ha solicitado pararlo y anteriormente no se paró
             rescode = self._send_stop(context)
             print("PARADA")
-        
+        rotation_sent = False
         if self._gear == True:
             if self._rotation_displacement != 0: # Si el desplazamiento a realizar es mayor a 0
                 rescode = self._send_rotation(context, self._rotation_displacement, speed)
+                rotation_sent = True
                 print(f"ROTACION {self._rotation_displacement}")
             
             if self._direction.length > 0: # Si el vector de direccion tiene longitud mayor a 0
-                rescode = self._send_translation(context, self._direction[0], self._direction[1], speed)
-                print(f"MOVIMIENTO {self._direction[0]}, {self._direction[1]}")
+                if not rotation_sent:
+                    rescode = self._send_translation(context, self._direction[0], self._direction[1], speed)
+                    print(f"MOVIMIENTO {self._direction[0]}, {self._direction[1]}")
             else: # Si no se para el robot
                 rescode = self._send_stop(context)
                 print("PARADA")
-
-        print(rescode)
-        
+        self._prev_timer_gear = self._gear
+        #print(rescode)
     
     def _event_handler(self, context, event):
         # Lambda utils
