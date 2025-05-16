@@ -10,6 +10,8 @@ FLAGS = {
          "REPLACE_IMPORT" : ("(^[\t ]*)# begin local import", lambda s : re.sub(r'(^.*)import', r'\1from . import', s)) # reemplaza imports de ficheros locales añadiendo la orden from . import modulo
         }
 
+modules = ["archibuilder.zip", "filemanager.zip", "robotcontrol.zip", "utilities.zip"]
+
 # Procesado de las etiquetas del código
 def process_file(file, result):
     current_flag = FLAGS["NONE"]
@@ -45,19 +47,34 @@ def compress(outfolder):
             zfid.close()
             shutil.move(zname, outfolder / zname)
 
+if __name__ == "__main__":
+    is_empty = lambda f : len(list(f.iterdir())) == 0
+    
+    source_folder = pathlib.Path(".")
+    result_folder = source_folder / pathlib.Path("releases")
+    
+    if result_folder.is_dir() and not is_empty(result_folder):
+        print("[ERROR] Release folder is not empty")
+        exit()
+    
+    # Procesado del codigo fuente
+    for folder in source_folder.iterdir():
+        if folder.is_dir():
+            if folder.name == result_folder.name:
+                continue
+            
+            for file in folder.iterdir():
+                try:
+                    process_file(file, result_folder)
+                except Exception as e:
+                    print(e)
+    
+    compress(result_folder)
 
-source_folder = pathlib.Path(".")
-result_folder = source_folder / pathlib.Path("releases")
-
-for folder in source_folder.iterdir():
-    if folder.is_dir():
-        if folder.name == result_folder.name:
-            continue
-
-        for file in folder.iterdir():
-            try:
-                process_file(file, result_folder)
-            except Exception as e:
-                print(e)
-
-compress(result_folder)
+    # Remove temporal code
+    for fd in result_folder.iterdir():
+        if fd.is_dir():
+            shutil.rmtree(fd)
+        
+        if fd.is_file() and fd.name not in modules:
+            fd.unlink()
