@@ -561,7 +561,7 @@ class ChangeSpeedOperator(bpy.types.Operator):
         context.scene.com_props.prop_last_sent_packet += 1
         pid = context.scene.com_props.prop_last_sent_packet
         if not cnh.ConnectionHandler().send_change_speed(pid, curre_speed):
-            self.report({"ERROR", "Speed can not be changed"})
+            self.report({"ERROR"}, "Speed can not be changed")
         else:
             context.scene.com_props.prop_speed = curre_speed
         return {'FINISHED'}
