@@ -146,8 +146,10 @@ def is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1):
     rs = robot_tools.RobotSet()
 
     obstacles = []
+    obstacles_names = []
     for obj in bpy.data.objects:
         if obj.object_type == "WALL":
+            # Create a copy for collision detection
             bpy.ops.mesh.primitive_cube_add()
             cube = bpy.context.active_object
 
@@ -165,13 +167,17 @@ def is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1):
             bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='MEDIAN')
 
             bpy.context.scene.collection.objects.link(cube)
-
+            
+            # save original name for idetification
+            obstacles_names.append(obj.name)
+            
             obstacles.append(cube)
 
             cube.object_type = "TEMPORAL"
 
 
         if obj.object_type == "OBSTACLE_MARGIN":
+            # Create a copy for collision detection
             o = obj.copy()
             o.parent = None
             o.object_type = "TEMPORAL"
@@ -181,6 +187,8 @@ def is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1):
             o.rotation_euler = obj.parent.rotation_euler
 
             bpy.context.scene.collection.objects.link(o)
+            
+            obstacles_names.append(obj.name) # saves original name for identification
             obstacles.append(o)
 
         if obj.object_type == "ROBOT": # Search other robots
@@ -198,6 +206,8 @@ def is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1):
                         o.rotation_euler = margin.parent.rotation_euler
 
                         bpy.context.scene.collection.objects.link(o)
+                        
+                        obstacles_names.append(obj.name) # saves original name for identificationssss
                         obstacles.append(o)
 
     # Copy robot
@@ -215,15 +225,19 @@ def is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1):
     bpy.context.scene.cursor.location = save_cursor_loc
 
     # Check
-    res = collision_detection.check_collision(area_robot_obj_tmp, pos0, pos1, obstacles)
-
+    res, overlapping_indeces = collision_detection.check_collision(area_robot_obj_tmp, pos0, pos1, obstacles)
+    
+    # Get obstacle names
+    
+    obj_colliding_names = [obstacles_names[i] for i in overlapping_indeces if i < len(obstacles_names) and i >= 0 and obstacles_names[i] is not None]
+    
     # Remove all objects
     for obj in obstacles:
         if obj.object_type == "TEMPORAL":
             bpy.data.objects.remove(obj, do_unlink=True)
     bpy.data.objects.remove(area_robot_obj_tmp, do_unlink=True)
 
-    return res
+    return res, obj_colliding_names
 
 
 def append_pose(self, context):
@@ -237,10 +251,10 @@ def append_pose(self, context):
     robot_obj = bpy.data.objects[robot.name]
     area_robot_obj = bpy.data.objects[robot.area_name]
 
-    res = is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1)
+    res, obstacles_names = is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1)
 
     if res:
-        self.report({'ERROR'}, "Collision detected: Robot will collide if takes this path")
+        self.report({'ERROR'}, f"Collision detected: Robot will collide if takes this path. Obstacles: {obstacles_names}")
         return {'FINISHED'}
     else:
         self.report({'INFO'}, "Undetected collision")
@@ -271,12 +285,12 @@ def apply_modification(self, context):
     robot_obj = bpy.data.objects[robot.name]
     area_robot_obj = bpy.data.objects[robot.area_name]
 
-    res_first_action = is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1)
+    res_first_action, first_obstacles_names = is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1)
 
-    res_second_action = is_colliding(idx, robot_obj, area_robot_obj, pos1, pos2) if pos2 is not None else False
+    res_second_action, second_obstacles_names = is_colliding(idx, robot_obj, area_robot_obj, pos1, pos2) if pos2 is not None else False
 
     if res_first_action or res_second_action:
-        self.report({'ERROR'}, "Collision detected: Robot will collide if takes this path")
+        self.report({'ERROR'}, f"Collision detected: Robot will collide if takes this path. Obstacles: {first_obstacles_names + second_obstacles_names}")
         return {'FINISHED'}
     else:
         self.report({'INFO'}, "Undetected collision")
@@ -436,58 +450,6 @@ class MoveCursorSelectedPoseOperator(bpy.types.Operator):
                     return {'FINISHED'}
         return {'FINISHED'}
 
-
-"""
-class ApplyChangePoseOperator(bpy.types.Operator):
-    bl_idname = "scene.apply_change_pose"
-    bl_label = "Apply Change Pose"
-    bl_description = "Apply change pose"
-
-    @classmethod
-    def poll(cls, context):
-        return context.scene.is_cursor_active and context.scene.isModifying
-
-    def execute(self, context):
-        global pd
-        # validate current_action and next_action
-        pos0 = pd.current_action.p0
-        pos1 = pd.current_action.p1
-        pos2 = getattr(pd.next_action, 'p1', None)
-
-        idx = bpy.context.scene.selected_robot_props.prop_robot_id
-        robot = robot_tools.RobotSet().getRobot(idx)
-        robot_obj = bpy.data.objects[robot.name]
-        area_robot_obj = bpy.data.objects[robot.area_name]
-
-        res_first_action = is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1)
-
-        res_second_action = is_colliding(idx, robot_obj, area_robot_obj, pos1, pos2) if pos2 is not None else False
-
-        if res_first_action or res_second_action:
-            self.report({'ERROR'}, "Collision detected: Robot will collide if takes this path")
-            return {'FINISHED'}
-        else:
-            self.report({'INFO'}, "Undetected collision")
-
-        # Guardamos nueva action y dibujamos la informacion para la action previa
-        pd.current_action.draw_annotation(context)
-        #pc.TempPathContainer().appendAction(pd.current_action)
-
-        last_action = pc.TempPathContainer().getLastAction()
-        pd.next_action = None
-
-        # Siguiente action
-        p1 = last_action.p1
-        pd.current_action = path.Action(p1, p1)
-
-        cl.CursorListener.select_cursor()
-        context.scene.isModifying = False
-
-        cl.CursorListener.set_pose(p1)
-
-        return {'FINISHED'}
-"""
-
 class RemoveSelectedPoseOperator(bpy.types.Operator):
     bl_idname = "scene.remove_selected_pose"
     bl_label = "Remove selected pose"
@@ -523,10 +485,10 @@ class RemoveSelectedPoseOperator(bpy.types.Operator):
                     robot_obj = bpy.data.objects[robot.name]
                     area_robot_obj = bpy.data.objects[robot.area_name]
 
-                    res = is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1)
+                    res, obstacles_names = is_colliding(idx, robot_obj, area_robot_obj, pos0, pos1)
 
                     if res:
-                        self.report({'ERROR'}, "Collision detected: Resulting path after deleting this point is not valid")
+                        self.report({'ERROR'}, f"Collision detected: Resulting path after deleting this point is not valid. Obstacles: {obstacles_names}")
                         return {'FINISHED'}
                     else:
                         self.report({'INFO'}, "Undetected collision")

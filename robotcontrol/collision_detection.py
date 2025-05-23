@@ -129,13 +129,15 @@ def check_collision(robot_obj, pos0, pos1, objects):
     area = generate_area(robot_obj, pos0, pos1)
     bmarea = create_bmesh(area)
     overlap = False
-    for obj in objects:
+    overlapping_indeces = []
+    for obj_num, obj in enumerate(objects):
         bmobj = create_bmesh(obj)
         if overlap_check.check_overlap(bmobj, bmarea):
             overlap = True
         bmobj.free()
         if overlap:
+            overlapping_indeces.append(obj_num)
             break
     bmarea.free()
     bpy.data.objects.remove(area, do_unlink=True)
-    return overlap
+    return overlap, overlapping_indeces

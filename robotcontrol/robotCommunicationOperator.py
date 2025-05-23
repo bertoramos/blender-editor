@@ -441,16 +441,16 @@ class StartPauseResumePlanOperator(bpy.types.Operator):
                 area_robot_obj = bpy.data.objects[r.area_name]
 
                 if pose_robot != poses_list[0]:
-                    collide = pathEditor.is_colliding(sel_robot_id, robot_obj, area_robot_obj, pose_robot, poses_list[0])
+                    collide, obstacle_names = pathEditor.is_colliding(sel_robot_id, robot_obj, area_robot_obj, pose_robot, poses_list[0])
                     if collide:
-                        self.report({"ERROR"}, "Collision : robot cannot be moved to the indicated start position")
+                        self.report({"ERROR"}, f"Collision : robot cannot be moved to the indicated start position. Obstacles: {obstacle_names}")
                         return
 
                 # Comprobar colision para el resto de poses de la ruta
                 for pose_index in range(len(poses_list)-1):
-                    collide = pathEditor.is_colliding(sel_robot_id, robot_obj, area_robot_obj, poses_list[pose_index], poses_list[pose_index + 1])
+                    collide, obstacle_names = pathEditor.is_colliding(sel_robot_id, robot_obj, area_robot_obj, poses_list[pose_index], poses_list[pose_index + 1])
                     if collide:
-                        self.report({"ERROR"}, "Collision: robot cannot execute current path")
+                        self.report({"ERROR"}, f"Collision: robot cannot execute current path. Obstacles: {obstacle_names}")
                         return
 
                 bpy.context.scene.com_props.prop_last_sent_packet += 1
