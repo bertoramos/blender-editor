@@ -547,7 +547,12 @@ class ChangeSpeedOperator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return SocketModalOperator.running
+        com_props = context.scene.com_props
+        # Está conectado al servidor Robomap
+        # y
+        # No está en ejecucion el plan
+        return SocketModalOperator.running and\
+            not com_props.prop_running_nav
 
     def invoke(self, context, event):
         self.update_speed = bpy.context.scene.com_props.prop_speed
