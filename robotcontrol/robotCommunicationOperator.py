@@ -314,6 +314,14 @@ class SocketModalOperator(bpy.types.Operator):
             if n_rcv == 0:
                 n_rcv = limit
                 operator.report({'ERROR'}, 'Unavailable server: changing mode')
+                
+                # TODO: if plan running
+                # stop plan()
+                com_props = bpy.context.scene.com_props
+                if com_props.prop_running_nav:
+                    bpy.ops.wm.stop_plan()
+                
+                toggle_deactivate_options(robot_modes_summary.index("EDITOR_MODE"))
                 bpy.ops.wm.change_mode()
 
         hudWriter.HUDWriterOperator._textos[APP_STATUS] = SocketModalOperator.EDITOR_MODE # hudWriter.Texto(text="EDITOR mode")
