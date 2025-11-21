@@ -75,6 +75,15 @@ robot_modes_summary = ["EDITOR_MODE", # 0
 #    if not p.match(ip):
 #        context.scene.com_props.prop_client_ip = "127.0.0.1"
 
+def set_start_pose_index(self, value):
+    """Establece el valor validado del índice de pose inicial"""
+    max_idx = max(0, len(pc.PathContainer()) - 1)
+    self["prop_start_pose_index"] = min(value, max_idx+1) # no deberia ser +1 (??)
+
+def get_start_pose_index(self):
+    """Obtiene el valor del índice de pose inicial"""
+    return self.get("prop_start_pose_index", 0)
+
 class CommunicationProps(bpy.types.PropertyGroup):
     #prop_client_ip: bpy.props.StringProperty(name="Ip", default = "127.0.0.1", update=update_func)
     #prop_client_port : bpy.props.IntProperty(name="Port", default=1500, min=0)
@@ -93,6 +102,14 @@ class CommunicationProps(bpy.types.PropertyGroup):
     prop_speed: bpy.props.FloatProperty(name="Speed", default=100.0, min=0.0, max=100.0)
 
     prop_capture_running: bpy.props.BoolProperty(name="Capture running", default=False)
+    
+    prop_start_pose_index: bpy.props.IntProperty(
+        name="start pose", 
+        default=0, 
+        min=0,
+        set=set_start_pose_index,
+        get=get_start_pose_index
+    )
 
 # SOLUTION BUG: Create and drop a cube to update gui buttons
 def update_gui():
@@ -438,12 +455,20 @@ class StartPauseResumePlanOperator(bpy.types.Operator):
             cnh.Buffer().clear_reached_poses()
             # send plan
             if len(pc.PathContainer()) > 0:
+                
                 sel_robot_id = bpy.context.scene.selected_robot_props.prop_robot_id
                 r = robot.RobotSet().getRobot(sel_robot_id)
                 pose_robot = r.pose
 
                 poses_list = pc.PathContainer().poses
+                
+                # Tomar como pose inicial la indicada por el usuario
+                start_pose_index = com_props.prop_start_pose_index
+                poses_list = poses_list[start_pose_index:]
 
+                if len(poses_list) <= 0: # si no hay poses que enviar
+                    self.report({"ERROR"}, "Indexed start pose is out of range")
+                    return
 
                 robot_obj = bpy.data.objects[r.name]
                 area_robot_obj = bpy.data.objects[r.area_name]

@@ -52,11 +52,18 @@ class CommunicationPanel(bpy.types.Panel):
 
         self.layout.operator(cal_op.CalibrateOperator.bl_idname, icon="UV_SYNC_SELECT")
         self.layout.operator(cal_op.DropAllStaticBeacons.bl_idname, icon="TRASH")
-        # self.layout.operator(sso.SelectScenarioOperator.bl_idname, icon="VIEW_PAN")
-
+        
         box_com = self.layout.box()
+        
+        # TODO: pose index input
+        # warning : if you set a start pose index different than 0 path collision detection and overlap check may not work properly
+        box_com.label(text="WARNING: Start pose index ≠ 0 will skip")
+        box_com.label(text="obstacle checking before that pose")
+        box_com.prop(context.scene.com_props, "prop_start_pose_index", text="Start pose index")
+        
         icon_play = "PAUSE" if context.scene.com_props.prop_running_nav and not context.scene.com_props.prop_paused_nav else "PLAY"
         play_row = box_com.split()
+        
         play_row.operator(co.StartPauseResumePlanOperator.bl_idname, icon=icon_play, text="")
         play_row.operator(co.StopPlanOperator.bl_idname, icon="CANCEL", text="")
 
