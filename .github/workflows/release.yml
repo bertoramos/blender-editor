@@ -4,6 +4,9 @@ on:
   push:
     tags: [ "v*" ]
 
+env:
+  BLENDER_VERSION: "4.2.9LTS"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,7 +30,7 @@ jobs:
       - name: Create release ZIP
         run: |
           cd releases
-          7z a -r blender-editor-release.zip .
+          7z a -r "robotcontrol-toolbox-blender${{ env.BLENDER_VERSION }}-${{ github.ref_name }}.zip" .
           cd ..
 
       - name: Create GitHub Release
@@ -47,6 +50,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./releases/blender-editor-release.zip
-          asset_name: blender-editor-release.zip
+          asset_path: ./releases/robotcontrol-toolbox-blender${{ env.BLENDER_VERSION }}-${{ github.ref_name }}.zip
+          asset_name: robotcontrol-toolbox-blender${{ env.BLENDER_VERSION }}-${{ github.ref_name }}.zip
           asset_content_type: application/zip
