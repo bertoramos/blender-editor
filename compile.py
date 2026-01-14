@@ -4,6 +4,9 @@ import re
 from zipfile import ZipFile
 import shutil
 
+"""Script to prepare the release packages by processing source files to remove
+development code and compressing them into ZIP files."""
+
 FLAGS = {
          "NONE" : ("(^[\t ]*)# end", lambda s : s), # No aplica ninguna operacion a la línea
          "COMMENT" : ("(^[\t ]*)# begin remove", lambda s : "#" + s), # comenta lineas entre un begin remove y un end
