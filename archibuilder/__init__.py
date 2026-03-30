@@ -2,7 +2,11 @@
 bl_info = {
     "name": "Archibuilder",
     "author": "Alberto Ramos Sanchez",
+<<<<<<< HEAD
     "version": (1, 10, 0),
+=======
+    "version": (1, 9, 0),
+>>>>>>> 1fb1b73bf271032dd18c850b64ae4244bd10443b
     "blender": (2, 80, 0),
     "location": "View3D > Sidebar Panel > Archibuilder Panel",
     "description": "Scene editor",
