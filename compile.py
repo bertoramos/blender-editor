@@ -4,12 +4,23 @@ import re
 from zipfile import ZipFile
 import shutil
 
-<<<<<<< HEAD
-# Al hacer git push en la rama main, se ejecutará este script para generar los archivos de release a partir del código fuente. El script procesa las etiquetas # begin remove, # end, # begin local import y # end en el código fuente para eliminar o modificar partes del código que no deben incluirse en el release. Luego, comprime cada módulo en un archivo ZIP y limpia los archivos temporales.
-=======
+"""
+Local compile instructions:
+
+Github actions compile release instructions:
+    1. Ensure that the remote master branch is up to date with the latest changes.
+    2. git checkout master
+    3. git tag -a v{version-numer} -m "{title}"
+    4. git push origin v{version-numer}
+    
+Delete tag:
+    1. git tag -d v{version-numer}
+    2. git push origin --delete v{version-numer}
+"""
+
+
 """Script to prepare the release packages by processing source files to remove
 development code and compressing them into ZIP files."""
->>>>>>> 1fb1b73bf271032dd18c850b64ae4244bd10443b
 
 FLAGS = {
          "NONE" : ("(^[\t ]*)# end", lambda s : s), # No aplica ninguna operacion a la línea
