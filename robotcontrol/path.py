@@ -73,35 +73,52 @@ def update_arrow(arrow_name, pose):
     bpy.data.objects[arrow_name].location = pose.loc
     bpy.data.objects[arrow_name].rotation_euler = pose.rotation
 
+# def draw_pose_note(context, name, pose, color, font, font_align):
+#     # Draw notes
+#     num_dec = len(str(( bpy.context.scene.TOL - int(bpy.context.scene.TOL) )))-2
+#     loc = pose.loc
+#     rot = pose.rotation
+
+#     txt = '(x={:0.4f}, y={:0.4f}, z={:0.4f}) [meters]'.format(loc.x, loc.y, loc.z)
+
+#     hint_space = 10
+#     rotation = 0
+#     loc_note_name = utils.draw_text(context, name, txt, loc, color, hint_space, font, font_align, rotation)
+
+#     bpy.data.objects[loc_note_name].lock_location[0:3] = (True, True, True)
+#     bpy.data.objects[loc_note_name].lock_rotation[0:3] = (True, True, True)
+#     bpy.data.objects[loc_note_name].lock_scale[0:3] = (True, True, True)
+#     bpy.data.objects[loc_note_name].protected = True
+
+#     txt = '(x={:0.4f}, y={:0.4f}, z={:0.4f}) degrees'.format(degrees(rot.x), degrees(rot.y), degrees(rot.z))
+
+#     rot_note_name = utils.draw_text(context, name, txt, loc, color, hint_space, font, font_align, rotation)
+
+#     bpy.data.objects[rot_note_name].location += rot.to_matrix().col[2]
+
+#     bpy.data.objects[rot_note_name].lock_location[0:3] = (True, True, True)
+#     bpy.data.objects[rot_note_name].lock_rotation[0:3] = (True, True, True)
+#     bpy.data.objects[rot_note_name].lock_scale[0:3] = (True, True, True)
+#     bpy.data.objects[rot_note_name].protected = True
+
+#     return loc_note_name, rot_note_name
+
 def draw_pose_note(context, name, pose, color, font, font_align):
-    # Draw notes
-    num_dec = len(str(( bpy.context.scene.TOL - int(bpy.context.scene.TOL) )))-2
-    loc = pose.loc
-    rot = pose.rotation
-
-    txt = '(x={:0.4f}, y={:0.4f}, z={:0.4f}) [meters]'.format(loc.x, loc.y, loc.z)
-
+    pose_index = pose.pose_index if pose.pose_index is not None else ""
+    txt = f"{pose_index}"
+    
     hint_space = 10
     rotation = 0
-    loc_note_name = utils.draw_text(context, name, txt, loc, color, hint_space, font, font_align, rotation)
-
-    bpy.data.objects[loc_note_name].lock_location[0:3] = (True, True, True)
-    bpy.data.objects[loc_note_name].lock_rotation[0:3] = (True, True, True)
-    bpy.data.objects[loc_note_name].lock_scale[0:3] = (True, True, True)
-    bpy.data.objects[loc_note_name].protected = True
-
-    txt = '(x={:0.4f}, y={:0.4f}, z={:0.4f}) degrees'.format(degrees(rot.x), degrees(rot.y), degrees(rot.z))
-
-    rot_note_name = utils.draw_text(context, name, txt, loc, color, hint_space, font, font_align, rotation)
-
-    bpy.data.objects[rot_note_name].location += rot.to_matrix().col[2]
-
-    bpy.data.objects[rot_note_name].lock_location[0:3] = (True, True, True)
-    bpy.data.objects[rot_note_name].lock_rotation[0:3] = (True, True, True)
-    bpy.data.objects[rot_note_name].lock_scale[0:3] = (True, True, True)
-    bpy.data.objects[rot_note_name].protected = True
-
-    return loc_note_name, rot_note_name
+    
+    loc = pose.loc
+    pose_note_name = utils.draw_text(context, name, txt, loc, color, hint_space, font, font_align, rotation)
+    
+    bpy.data.objects[pose_note_name].lock_location[0:3] = (True, True, True)
+    bpy.data.objects[pose_note_name].lock_rotation[0:3] = (True, True, True)
+    bpy.data.objects[pose_note_name].lock_scale[0:3] = (True, True, True)
+    bpy.data.objects[pose_note_name].protected = True
+    
+    return pose_note_name
 
 class Line:
 
@@ -158,13 +175,15 @@ class Arrow:
 
 class Pose:
 
-    def __init__(self, x, y, z, alpha, beta, gamma):
+    def __init__(self, x, y, z, alpha, beta, gamma, pose_index=None):
         self._x = x
         self._y = y
         self._z = z
         self._a = alpha
         self._b = beta
         self._g = gamma
+        
+        self._pose_index = pose_index
 
     @classmethod
     def fromVector(cls, loc, angle):
@@ -193,6 +212,12 @@ class Pose:
 
     def get_rotation(self):
         return Euler((self._a, self._b, self._g))
+    
+    def get_pose_index(self):
+        return self._pose_index
+    
+    def set_pose_index(self, index):
+        self._pose_index = index
 
     def __eq__(self, other):
         return abs(self._x - other.x) <= bpy.context.scene.TOL and abs(self._y - other.y) <= bpy.context.scene.TOL and abs(self._z - other.z) <= bpy.context.scene.TOL and \
@@ -201,7 +226,7 @@ class Pose:
     def __str__(self):
         return "Location(" + str(self.x) + ", " + str(self.y) + ", " + str(self.z) + ") " + \
             "Angle(" + str(self.alpha) + ", " + str(self.beta) + ", " + str(self.gamma) + ") "
-
+    
     x = property(get_x)
     y = property(get_y)
     z = property(get_z)
@@ -210,6 +235,8 @@ class Pose:
     gamma = property(get_g)
     loc = property(get_loc)
     rotation = property(get_rotation)
+    
+    pose_index = property(fget=get_pose_index, fset=set_pose_index)
 
 class Action:
 
@@ -231,8 +258,11 @@ class Action:
 
         self._loc_note_name = ""
         self._rot_note_name = ""
+        self._pose_note_name = ""
+        
         self._pre_loc_note_name = ""
         self._pre_rot_note_name = ""
+        self._pre_pose_note_name = ""
 
     def set_first_action(self):
         self._first_action = True
@@ -254,16 +284,20 @@ class Action:
         color = Vector((1.0, 1.0, 1.0, 1.0))
         font = 14
         font_align = 'C'
-        self._loc_note_name, self._rot_note_name = draw_pose_note(context, "Note_pose", self.p1, color, font, font_align)
+        # self._loc_note_name, self._rot_note_name = draw_pose_note(context, "Note_pose", self.p1, color, font, font_align)
 
-        bpy.data.objects[self._loc_note_name].object_type = "PATH_ELEMENTS"
-        bpy.data.objects[self._rot_note_name].object_type = "PATH_ELEMENTS"
-
+        # bpy.data.objects[self._loc_note_name].object_type = "PATH_ELEMENTS"
+        # bpy.data.objects[self._rot_note_name].object_type = "PATH_ELEMENTS"
+        self._pose_note_name = draw_pose_note(context, "Note_pose", self.p1, color, font, font_align)
+        bpy.data.objects[self._pose_note_name].object_type = "PATH_ELEMENTS"
+        
         if self._first_action:
-            self._pre_loc_note_name, self._pre_rot_note_name = draw_pose_note(context, "Pre_note_pose", self.p0, color, font, font_align)
-
-            bpy.data.objects[self._pre_loc_note_name].object_type = "PATH_ELEMENTS"
-            bpy.data.objects[self._pre_rot_note_name].object_type = "PATH_ELEMENTS"
+            # self._pre_loc_note_name, self._pre_rot_note_name = draw_pose_note(context, "Pre_note_pose", self.p0, color, font, font_align)
+            
+            # bpy.data.objects[self._pre_loc_note_name].object_type = "PATH_ELEMENTS"
+            # bpy.data.objects[self._pre_rot_note_name].object_type = "PATH_ELEMENTS"
+            self._pre_pose_note_name = draw_pose_note(context, "Pre_note_pose", self.p0, color, font, font_align)
+            bpy.data.objects[self._pre_pose_note_name].object_type = "PATH_ELEMENTS"
 
     def del_annotation(self):
 
@@ -271,13 +305,20 @@ class Action:
             bpy.data.objects.remove(bpy.data.objects[self._loc_note_name], do_unlink=True)
         if self._rot_note_name in bpy.data.objects:
             bpy.data.objects.remove(bpy.data.objects[self._rot_note_name], do_unlink=True)
-
+        if self._pose_note_name in bpy.data.objects:
+            bpy.data.objects.remove(bpy.data.objects[self._pose_note_name], do_unlink=True)
+        
         if self._first_action and self._pre_loc_note_name in bpy.data.objects:
             bpy.data.objects.remove(bpy.data.objects[self._pre_loc_note_name], do_unlink=True)
         if self._first_action and self._pre_rot_note_name in bpy.data.objects:
             bpy.data.objects.remove(bpy.data.objects[self._pre_rot_note_name], do_unlink=True)
+        if self._first_action and self._pre_pose_note_name in bpy.data.objects:
+            bpy.data.objects.remove(bpy.data.objects[self._pre_pose_note_name], do_unlink=True)
 
-
+    def redraw_annotation(self, context):
+        self.del_annotation()
+        self.draw_annotation(context)
+    
     def get_p0(self):
         return self._p0
 

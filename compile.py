@@ -4,6 +4,8 @@ import re
 from zipfile import ZipFile
 import shutil
 
+# Al hacer git push en la rama main, se ejecutará este script para generar los archivos de release a partir del código fuente. El script procesa las etiquetas # begin remove, # end, # begin local import y # end en el código fuente para eliminar o modificar partes del código que no deben incluirse en el release. Luego, comprime cada módulo en un archivo ZIP y limpia los archivos temporales.
+
 FLAGS = {
          "NONE" : ("(^[\t ]*)# end", lambda s : s), # No aplica ninguna operacion a la línea
          "COMMENT" : ("(^[\t ]*)# begin remove", lambda s : "#" + s), # comenta lineas entre un begin remove y un end

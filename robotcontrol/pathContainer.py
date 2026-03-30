@@ -53,10 +53,10 @@ class PathContainer:
         self.clear()
         for pose_index in range(len(poses_list)-1):
             action = path.Action(poses_list[pose_index], poses_list[pose_index+1])
-            if context is not None:
-                action.draw_annotation(context)
             if pose_index == 0:
                 action.set_first_action()
+            if context is not None:
+                action.draw_annotation(context)
             PathContainer.__instance.__list.append(action)
         self.__last_update = int(time.time())
 

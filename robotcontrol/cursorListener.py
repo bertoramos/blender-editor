@@ -120,6 +120,14 @@ class StopPosesListener(bpy.types.Operator):
 
         # Deseleccionamos todo objeto
         bpy.ops.object.select_all(action='DESELECT')
+        
+        # Actualizar indice de poses
+        for action_index, action in enumerate(pc.PathContainer()):
+            action.p0.pose_index = action_index
+            action.p1.pose_index = action_index + 1
+            
+            action.redraw_annotation(context)
+        
         return {'FINISHED'}
 
 class StartPosesListener(bpy.types.Operator):

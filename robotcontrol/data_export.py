@@ -32,8 +32,8 @@ def autounregister():
 def parse_data(json_poses):
     try:
         poses = []
-        for p in json_poses['poses']:
-            poses.append(path.Pose(p['x'], p['y'], p['z'], p['rx'], p['ry'], p['rz']))
+        for pose_index, p in enumerate(json_poses['poses']):
+            poses.append(path.Pose(p['x'], p['y'], p['z'], p['rx'], p['ry'], p['rz'], pose_index=pose_index))
     except Exception as e:
         return None
     return poses
