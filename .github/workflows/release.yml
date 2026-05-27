@@ -27,6 +27,11 @@ jobs:
       - name: Run compile script
         run: python compile.py
 
+      - name: Copy installation files
+        run: |
+          cp install.bat releases/
+          cp requirements.txt releases/
+
       - name: Create release ZIP
         run: |
           cd releases

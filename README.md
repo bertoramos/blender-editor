@@ -14,7 +14,17 @@ Figura 1: Ejecución de plan de navegación.
 
 En el último *release* se encuentra el código preparado para ser instalado.
 
-### 1. Descargar Blender.
+### 1. Instalación automática
+
+Si el sistema operativo es Windows, se puede usar el script de instalación automática. Esta opción está disponible a partir de la versión 1.11.0.
+
+Para ello, hay que descargar el último release y extraerlo en una carpeta donde queremos tener instalado el editor de forma portable.
+
+Posteriormente, se debe ejecutar el script `install.bat`. Este instalará de forma portable Blender, las dependencias necesarias y los addons requeridos.
+
+### 2. Instalación manual
+
+#### 1. Descargar Blender.
 
 Se recomienda descargar la versión portable de Blender. Para ello dirigirse a la url [https://www.blender.org/download/](https://www.blender.org/download/), seleccionar la versión de Blender requerida y elegir la versión portable.
 
@@ -23,9 +33,9 @@ Para crear una versión completamente portable, antes de la primera ejecución h
  * Versiones de Blender <4  : [https://docs.blender.org/manual/en/3.6/advanced/blender_directory_layout.html](https://docs.blender.org/manual/en/3.6/advanced/blender_directory_layout.html)
  * Versiones de Blender >=4 : [https://docs.blender.org/manual/en/4.4/advanced/blender_directory_layout.html#portable-installation](https://docs.blender.org/manual/en/4.4/advanced/blender_directory_layout.html#portable-installation)
 
-### 2. Activar *addon Measureit*.
+#### 2. Activar *addon Measureit*.
 
-#### 2.1 Blender <4
+##### 2.1 Blender <4
 
 Para activar *Measureit* nos dirigimos a la pestaña preferencias : **Edit > Preferences**. Posteriormente, en la pestaña *add-ons*, buscamos *Measureit* y comprobamos que el *checklist* esté seleccionado.
 
@@ -37,7 +47,7 @@ Para activar *Measureit* nos dirigimos a la pestaña preferencias : **Edit > Pre
 Figura 2: Instalación de *addons*.
 </p>
 
-#### 2.2 Blender >=4
+##### 2.2 Blender >=4
 
 En las versiones >=4 la instalación cambia en algunos pasos. Para activar *Measureit* nos dirigimos a *Get extensions* y permitimos el acceso a internet *Allow Online Access*
 
@@ -61,9 +71,9 @@ Figura 4: Instalación de *addon*.
 
 Si queremos comprobar que está activo, podemos dirigirnos a la pestaña *Addons* y buscamos *Measureit*, comprobando que el *checklist* esté activo.
 
-### 3. Instalar dependencias Python.
+##### 3. Instalar dependencias Python.
 
-#### 3.1. Instalar *msgpack*
+###### 3.1. Instalar *msgpack*
 
 **Msgpack** es un módulo de *Python* encargado de comprimir los paquetes utilizados en la comunicación con las plataformas robóticas.
 
