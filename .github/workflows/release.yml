@@ -5,7 +5,7 @@ on:
     tags: [ "v*" ]
 
 env:
-  BLENDER_VERSION: "4.2.9LTS"
+  BLENDER_VERSION: "4.5.10LTS"
 
 jobs:
   build:
