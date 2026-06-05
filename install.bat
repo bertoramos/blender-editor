@@ -7,7 +7,7 @@ set BLENDER_URL=https://download.blender.org/release/Blender%BLENDER_SHORT_VERSI
 set HIDAPI_VERSION=0.15.0
 set HIDAPI_URL=https://github.com/libusb/hidapi/releases/download/hidapi-%HIDAPI_VERSION%/hidapi-win.zip
 
-set ADDONS_BUNDLE_URL=https://github.com/bertoramos/blender-editor/releases/download/v1.10.0/robotcontrol-toolbox-blender4.2.9LTS-v1.10.0.zip
+set ADDONS_BUNDLE_URL=https://github.com/bertoramos/blender-editor/releases/download/v1.11.1/robotcontrol-toolbox-blender4.2.9LTS-v1.11.1.zip
 
 set TARGET_ARCH=x64
 

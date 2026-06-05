@@ -12,12 +12,11 @@ Github actions compile release instructions:
     2. git checkout master
     3. git tag -a v{version-numer} -m "{title}"
     4. git push origin v{version-numer}
-    
+
 Delete tag:
     1. git tag -d v{version-numer}
     2. git push origin --delete v{version-numer}
 """
-
 
 """Script to prepare the release packages by processing source files to remove
 development code and compressing them into ZIP files."""

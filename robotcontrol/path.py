@@ -104,7 +104,7 @@ def update_arrow(arrow_name, pose):
 #     return loc_note_name, rot_note_name
 
 def draw_pose_note(context, name, pose, color, font, font_align):
-    pose_index = pose.pose_index if pose.pose_index is not None else ""
+    pose_index = pose.pose_index + 1 if pose.pose_index is not None else ""
     txt = f"{pose_index}"
     
     hint_space = 10
